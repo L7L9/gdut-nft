@@ -1,4 +1,5 @@
 import Web3 from "web3";
+var ipfsAPI = require('ipfs-api');
 import factoryArtifact from "../../build/contracts/Factory.json";
 
 //web3实例
@@ -18,7 +19,7 @@ const init = {
     },
 
     getIpfs: async function(){
-        ipfs =  window.IpfsHttpClient.create("/ip4/127.0.0.1/tcp/5001");
+        ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/8080')
     }
 }
 
@@ -34,7 +35,7 @@ const accountModel = {
                 this.account = tempAccount;
                 alert("登陆成功");
                 //跳转到登陆页面
-                window.location.replace("http://localhost:8080/home.html");
+                window.location.replace("http://localhost:8081/home.html");
             } else {
                 alert("密码错误，请重新输入密码");
             }
@@ -52,7 +53,7 @@ const accountModel = {
 
     logout: async function(){
         this.account = null;
-        window.location.replace("http://localhost:8080/index.html");
+        window.location.replace("http://localhost:8081/index.html");
     }
 }
 
@@ -81,7 +82,7 @@ const nftModel = {
 }
 
 window.accountModel = accountModel;
-
+window.nftModel = nftModel;
 window.onload = async function(){
     web3 = new Web3(
         new Web3.providers.HttpProvider("http://127.0.0.1:8545")
