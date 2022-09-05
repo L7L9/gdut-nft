@@ -46,8 +46,7 @@ const accountModel = {
         var password = document.getElementById("password").value;
 
         web3.eth.personal.newAccount(password).then(function(res){
-            console.log(res);
-            alert("注册成功，请记住账号密码");
+            prompt("注册成功，请记住账号密码\n你的账号：",res);
         })
     },
 
