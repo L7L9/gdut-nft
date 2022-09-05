@@ -15,9 +15,5 @@
   },
   "dependencies": {
     "web3": "^1.2.4"
-  },
-  "devServe": {
-    "host": "127.0.0.1",
-    "port": 8088
   }
 }
