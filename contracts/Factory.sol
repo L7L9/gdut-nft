@@ -34,7 +34,6 @@ contract Factory is ERC721{
 
     //铸造
     function mint(uint256 _tokenId,string memory _name,string memory _cid) external{
-        _mint(msg.sender, _tokenId);
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
