@@ -63,4 +63,9 @@ contract Factory is ERC721{
         nftProperty memory nft = nftOwner[msg.sender][id];
         return (nft.tokenId,nft.cid,nft.name,nft.author);
     }
+
+    //查询nft的总量
+    function getNFTAmount() public view returns(uint256){
+        return nftAmount;
+    }
 }
