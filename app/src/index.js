@@ -19,7 +19,7 @@ const init = {
     },
 
     getIpfs: async function(){
-        ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/8080')
+        ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
     }
 }
 
@@ -59,27 +59,58 @@ const accountModel = {
 
 const nftModel = {
     create: async function(){
-        var file = document.getElementById("nft");
+        var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
+        var img;
         //暂时没用
         var message = document.getElementById("nftMessage").value;
         
         //将文件存入ipfs中并获取cid
-
-        
+        console.log(file[0]);
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(file[0]);
+        reader.onloadend=async function(){
+            console.log(reader.result);
+            var img=Buffer.from(reader.result);
+            console.log("前："+img);
+            var cids=await ipfs.add(img);
+            var cid=cids[0].hash;
+            console.log(cid);
+            //测试查看图片
+            var buffer=null;
+            await ipfs.get(cid,function (err,files) {
+                console.log("后："+files[0].content);
+                buffer=files[0].content;
+                var url = window.URL.createObjectURL(new Blob([buffer]));
+                var img = document.createElement('img')
+                img.src = url;
+                document.getElementById('nftShower').appendChild(img);
+            })
+        }
         //计算tokenId
 
 
-        //调用合约的铸造方法
-        const { mint } = factory.methods;
-        await mint().send({
-            from: this.accountModel.account,
-            gas: 1000000
-        }).then(() =>{
+        // //调用合约的铸造方法
+        // const { mint } = factory.methods;
+        // await mint().send({
+        //     from: this.accountModel.account,
+        //     gas: 1000000
+        // }).then(() =>{
             
-        })
+        // })
     },
 }
+
+function getBase64Image(img){
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        var ext = img.src.substring(img.src.lastIndexOf(".") + 1).toLowerCase();
+        var dataURL = canvas.toDataURL("image/" + ext);
+        return dataURL;
+    }
 
 window.accountModel = accountModel;
 window.nftModel = nftModel;

@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>创建nft</title>
+    <script src="index.js"></script>
   </head>
   <style>
     input {
@@ -11,11 +12,11 @@
   </style>
   <body>
     <input type="file" id="nft"/>
+    <div id="nftShower">图片预览</div>
     <label>名字</label>
     <input type="text" id="nftName"/>
     <label>nft描述</label>
     <input type="text" id="nftMessage">
     <input type ="button" onclick="nftModel.create()" value="创建"></button>
-    <script src="index.js"></script>
   </body>
 </html>
