@@ -59,26 +59,31 @@ const nftModel = {
     create: async function(){
         var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
-        var img;
         //暂时没用
         var message = document.getElementById("nftMessage").value;
         
         //将文件存入ipfs中并获取cid
+        var cid = null;
+        var tokenId = null;
         console.log(file[0]);
         var reader = new FileReader();
         reader.readAsArrayBuffer(file[0]);
-        reader.onloadend=async function(){
+        reader.onloadend = async function(){
             console.log(reader.result);
-            var img=Buffer.from(reader.result);
+            var img = Buffer.from(reader.result);
             console.log("前："+img);
-            var cids=await ipfs.add(img);
-            var cid=cids[0].hash;
+            var cids = await ipfs.add(img);
+
+            cid = cids[0].hash;
             console.log(cid);
+            
+            tokenId = web3.utils.sha3(cid);
+            console.log(tokenId);
             //图片预览
-            var buffer=null;
+            var buffer = null;
             await ipfs.get(cid,function (err,files) {
                 console.log("后："+files[0].content);
-                buffer=files[0].content;
+                buffer = files[0].content;
                 var url = window.URL.createObjectURL(new Blob([buffer]));
                 var img = document.createElement('img')
                 img.src = url;
@@ -86,8 +91,8 @@ const nftModel = {
             })
         }
         //计算tokenId
-        var tokenId = web3.utils.sha3(trueCid);
-        console.log(tokenId);
+        // var tokenId = web3.utils.sha3(cid);
+        // console.log(tokenId);
 
         //获取登录的账号
         var account = sessionStorage.getItem("account");
@@ -106,14 +111,14 @@ const nftModel = {
             console.log(res);
         });
 
-        // //调用合约的铸造方法
-        // const { mint } = factory.methods;
-        // await mint().send({
-        //     from: this.accountModel.account,
-        //     gas: 1000000
-        // }).then(() =>{
-            
-        // })
+        //调用合约的铸造方法
+        const { mint } = factory.methods;
+        await mint(tokenId,name,cid).send({
+            from: account,
+            gas: 1000000
+        }).then((res) =>{
+            console.log(res);
+        })
     },
 }
 
