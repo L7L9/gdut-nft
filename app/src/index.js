@@ -71,7 +71,7 @@ const nftModel = {
         reader.onloadend = async function(){
             console.log(reader.result);
             var img = Buffer.from(reader.result);
-            console.log("前："+img);
+            // console.log("前："+img);
             var cids = await ipfs.add(img);
 
             cid = cids[0].hash;
@@ -82,11 +82,14 @@ const nftModel = {
             //图片预览
             var buffer = null;
             await ipfs.get(cid,function (err,files) {
-                console.log("后："+files[0].content);
+                if(err) throw err;
+                // console.log("后："+files[0].content);
                 buffer = files[0].content;
                 var url = window.URL.createObjectURL(new Blob([buffer]));
-                var img = document.createElement('img')
+                var img = document.createElement('img');
                 img.src = url;
+                img.style.width = "350px";
+                img.style.height = "350px";
                 document.getElementById('nftShower').appendChild(img);
             })
         }
@@ -120,6 +123,73 @@ const nftModel = {
             console.log(res);
         })
     },
+
+    showMyNFT: async function(){
+        
+    },
+
+    showAllNFT: async function(){
+        const { getNFTAmount } = factory.methods;
+
+        //获取nft总量
+        var amount = await getNFTAmount().call();
+        //每次展示出来的页数
+        const showNumber = 4;
+        //计算出最大页数
+        var maxPage = (amount % showNumber == 0)? (amount / showNumber):(Math.ceil(amount / showNumber));
+        //获取页面的当前页数
+        let page = document.getElementById("page").value;
+        
+        //获取查询信息的方法
+        const { getProperty } = factory.methods;
+        
+        //用于接受文件内容
+        var content = null;
+        //用于获取ipfs中的cid
+        var cid = null;
+        //用于获取url
+        var url = null;
+        var num = 0;
+        for(let i = (page-1) * showNumber;i < page * showNumber;i++){
+            await getProperty(i).call().then((res)=>{
+                //将res中数据渲染到前端
+                //获取图片信息
+                //res: 0=>tokenId  1=>cid  2=>name 3=>author
+                cid = res[1];
+                ipfs.get(cid,function(err,files){
+                    if(err) throw err;
+                    content = files[0].content;
+                    url = window.URL.createObjectURL(new Blob([content]));
+                    var img = document.createElement("img");
+                    img.src = url;
+                    img.style.width = "350px";
+                    img.style.height = "350px";
+                    document.getElementById('num'+ num).appendChild(img);
+                    num++;
+                })
+                
+            })
+        }
+    },
+
+    test: async function(){
+        const { getProperty } = factory.methods;
+        await getProperty(0).call().then((res)=>{
+            console.log(res);
+            var cid = res[1];
+            ipfs.get(cid,function(err,files){
+                if(err) throw err;
+                var buffer = files[0].content;
+
+                var url = window.URL.createObjectURL(new Blob([buffer]));
+                var img = document.createElement('img');
+                img.src = url;
+                img.style.width = "350px";
+                img.style.height = "350px";
+                document.getElementById('num1').appendChild(img);
+            })
+        })
+    }
 }
 
 window.accountModel = accountModel;
