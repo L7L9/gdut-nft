@@ -138,19 +138,27 @@ const nftModel = {
         //计算出最大页数
         var maxPage = (amount % showNumber == 0)? (amount / showNumber):(Math.ceil(amount / showNumber));
         //获取页面的当前页数
-        let page = document.getElementById("page").value;
+        var page = document.getElementById("page").innerText.trim();
+        console.log(page);
         
         //获取查询信息的方法
         const { getProperty } = factory.methods;
         
+        //实际展示数量
+        var trueNum = showNumber * page;
+        if(page == maxPage && (amount % showNumber) != 0 ){
+            trueNum = (page - 1) * showNumber + amount % showNumber;
+        }
+
         //用于接受文件内容
         var content = null;
         //用于获取ipfs中的cid
         var cid = null;
         //用于获取url
         var url = null;
+        //用于记录第几个的临时变量
         var num = 0;
-        for(let i = (page-1) * showNumber;i < page * showNumber;i++){
+        for(let i = (page-1) * showNumber;i < trueNum;i++){
             await getProperty(i).call().then((res)=>{
                 //将res中数据渲染到前端
                 //获取图片信息
@@ -162,34 +170,14 @@ const nftModel = {
                     url = window.URL.createObjectURL(new Blob([content]));
                     var img = document.createElement("img");
                     img.src = url;
-                    img.style.width = "350px";
-                    img.style.height = "350px";
+                    img.style.width = "200px";
+                    img.style.height = "200px";
                     document.getElementById('num'+ num).appendChild(img);
                     num++;
-                })
-                
+                })       
             })
         }
     },
-
-    test: async function(){
-        const { getProperty } = factory.methods;
-        await getProperty(0).call().then((res)=>{
-            console.log(res);
-            var cid = res[1];
-            ipfs.get(cid,function(err,files){
-                if(err) throw err;
-                var buffer = files[0].content;
-
-                var url = window.URL.createObjectURL(new Blob([buffer]));
-                var img = document.createElement('img');
-                img.src = url;
-                img.style.width = "350px";
-                img.style.height = "350px";
-                document.getElementById('num1').appendChild(img);
-            })
-        })
-    }
 }
 
 window.accountModel = accountModel;
@@ -201,8 +189,13 @@ window.onload = async function(){
     );
     
     //获取factory合约实例
-    init.getFactory();
+    await init.getFactory();
     
     //获取ipfs实例
     init.getIpfs();
+
+    var url = window.location.href;
+    if(url == "http://localhost:8081/home.html"){
+        nftModel.showAllNFT();
+    }
 }
