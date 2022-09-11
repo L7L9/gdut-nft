@@ -65,7 +65,7 @@ contract Factory is ERC721{
     }
 
     //查询nft的总量
-    function getNFTAmount() public view returns(uint256){
+    function getNFTAmount() external view returns(uint256){
         return nftAmount;
     }
 }

@@ -8,8 +8,13 @@ var web3 = null;
 var factory = null;
 //ipfs实例
 var ipfs = null;
+//当前账户
+var account=null;
 
 const init = {
+    getAccount: async function(){
+        account=localStorage.getItem("account");
+    },
     getFactory: async function(){
         const networkId = await new web3.eth.net.getId();
         factory = new web3.eth.Contract(
@@ -30,7 +35,9 @@ const accountModel = {
 
         web3.eth.personal.unlockAccount(tempAccount,password,10).then((res) =>{
             if(res == true){
-                sessionStorage.setItem("account",tempAccount);
+                // sessionStorage.setItem("account",tempAccount);
+                localStorage.setItem("account",tempAccount);
+                account=tempAccount;
                 alert("登陆成功");
                 //跳转到登陆页面
                 window.location.replace("http://localhost:8081/home.html");
@@ -98,7 +105,8 @@ const nftModel = {
         // console.log(tokenId);
 
         //获取登录的账号
-        var account = sessionStorage.getItem("account");
+        // var account = sessionStorage.getItem("account");
+        var account = localStorage.getItem("account");
 
         //转入以太以便调用方法
         const accounts = await web3.eth.getAccounts();
@@ -125,7 +133,54 @@ const nftModel = {
     },
 
     showMyNFT: async function(){
+        const { getPersonalNFT } = factory.methods;
+        const { balanceOf } = factory.methods;
+
+        //获取个人拥有的nft数量
+        var amount = await balanceOf(account).call();
+        console.log(amount);
+        //每次展示出来的页数
+        const showNumber = 4;
+        //计算出最大页数
+        var maxPage = (amount % showNumber == 0)? (amount / showNumber):(Math.ceil(amount / showNumber));
+        //获取页面的当前页数
+        var page = document.getElementById("page").innerText.trim();
+        console.log(page);
         
+        //实际展示数量
+        var trueNum = showNumber * page;
+        if(page == maxPage && (amount % showNumber) != 0 ){
+            trueNum = (page - 1) * showNumber + amount % showNumber;
+        }
+
+        //用于接受文件内容
+        var content = null;
+        //用于获取ipfs中的cid
+        var cid = null;
+        //用于获取url
+        var url = null;
+        //用于记录第几个的临时变量
+        var num = 0;
+        for(let i = (page-1) * showNumber;i < trueNum;i++){
+            await getPersonalNFT(i).call({from:account}).then((res)=>{
+                //将res中数据渲染到前端
+                //获取图片信息
+                //res: 0=>tokenId  1=>cid  2=>name 3=>author
+                console.log(res)
+                cid = res[1];
+                ipfs.get(cid,function(err,files){
+                    if(err) throw err;
+                    content = files[0].content;
+                    url = window.URL.createObjectURL(new Blob([content]));
+                    var img = document.createElement("img");
+                    img.src = url;
+                    img.style.width = "200px";
+                    img.style.height = "200px";
+                    document.getElementById('num'+ num).appendChild(img);
+                    num++;
+                })       
+            })
+        }
     },
 
     showAllNFT: async function(){
@@ -194,8 +249,13 @@ window.onload = async function(){
     //获取ipfs实例
     init.getIpfs();
 
+    init.getAccount();
+
     var url = window.location.href;
     if(url == "http://localhost:8081/home.html"){
         nftModel.showAllNFT();
+    }
+    if(url == "http://localhost:8081/myInformation.html"){
+        nftModel.showMyNFT();
     }
 }
