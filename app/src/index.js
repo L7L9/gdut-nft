@@ -172,11 +172,11 @@ const nftModel = {
                     if(err) throw err;
                     content = files[0].content;
                     url = window.URL.createObjectURL(new Blob([content]));
-                    var img = document.createElement("img");
+                    var img = document.getElementById("num"+num);
                     img.src = url;
                     img.style.width = "200px";
                     img.style.height = "200px";
-                    document.getElementById('num'+ num).appendChild(img);
+                    document.getElementById("name"+num).innerText=res[2];
                     num++;
                 })       
             })
@@ -223,11 +223,11 @@ const nftModel = {
                     if(err) throw err;
                     content = files[0].content;
                     url = window.URL.createObjectURL(new Blob([content]));
-                    var img = document.createElement("img");
+                    var img = document.getElementById("num"+num);
                     img.src = url;
                     img.style.width = "200px";
                     img.style.height = "200px";
-                    document.getElementById('num'+ num).appendChild(img);
+                    document.getElementById("name"+num).innerText=res[2];
                     num++;
                 })       
             })

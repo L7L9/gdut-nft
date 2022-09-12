@@ -15,12 +15,29 @@
   <body>
     <a href="http://localhost:8081/create.html">创建自己的nft</a><br/>
     <a href="http://localhost:8081/myInformation.html">个人信息</a><br/><br/>
-    <label id="page" hidden>1</label>
 
-    <div id="num0"></div>
-    <div id="num1"></div>
-    <div id="num2"></div>
-    <div id="num3"></div>
+    当前链上nft：
+    <div><img id="num0"/><br><span id=name0></span></div><br>
+    <div><img id="num1"/><br><span id=name1></span></div><br>
+    <div><img id="num2"/><br><span id=name2></span></div><br>
+    <div><img id="num3"/><br><span id=name3></span></div><br>
+    <br>第 <label id="page">1</label> 页
+    <input type="button" onclick="previous()" value="上一页">
+    <script>
+      function previous(){
+        console.log(document.getElementById("page").innerText)
+        document.getElementById("page").innerText--;
+        nftModel.showAllNFT();
+      }
+    </script>
+    <input type="button" onclick="next()" value="下一页">
+    <script>
+      function next(){
+        console.log(document.getElementById("page").innerText)
+        document.getElementById("page").innerText++;
+        nftModel.showAllNFT();
+      }
+    </script>
     <script src="index.js"></script>
   </body>
 </html>
