@@ -50,7 +50,7 @@ contract Factory is ERC721{
 
         nftOwner[msg.sender][balanceOf(msg.sender)] = nft;
 
-        personalNftOrder[msg.sender][_tokenId]=balanceOf(msg.sender);
+        personalNftOrder[msg.sender][_tokenId] = balanceOf(msg.sender);
 
         _mint(msg.sender, _tokenId);
 
@@ -78,11 +78,20 @@ contract Factory is ERC721{
 
     //转赠
     function give(address to,uint256 tokenId) external {
-        nftOwner[to][balanceOf(to)]=nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
-        personalNftOrder[to][tokenId]=balanceOf(to);
-        _transfer(msg.sender, to, tokenId);
-        delete nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
+        //获赠者
+        nftOwner[to][balanceOf(to)] = nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
+        personalNftOrder[to][tokenId] = balanceOf(to);
+
+        //转赠者
+        nftProperty memory nft = nftOwner[msg.sender][balanceOf(msg.sender)];
+
+        nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]] = nft;
+        personalNftOrder[msg.sender][nft.tokenId] = personalNftOrder[msg.sender][tokenId];
+
+        delete nftOwner[msg.sender][balanceOf(msg.sender)];
         delete personalNftOrder[msg.sender][tokenId];
+
+        _transfer(msg.sender, to, tokenId);
         emit Give(msg.sender, to, tokenId);
     }
 }

@@ -177,7 +177,7 @@ const pageModel = {
         //实际展示数量
         var trueNum = this.showNumber * page;
         if(page == maxPage && (amount % this.showNumber) != 0 ){
-            trueNum = (page - 1) * this.showNumber + amount % showNumber;
+            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
             for(let i = amount % this.showNumber; i < this.showNumber;i++){
                 var nftShow = document.getElementById("nft"+i);
                 nftShow.style.display="none";
@@ -192,7 +192,7 @@ const pageModel = {
         var url = null;
         //用于记录第几个的临时变量
         var num = 0;
-        for(let i = (page-1) * showNumber;i < trueNum;i++){
+        for(let i = (page-1) * this.showNumber;i < trueNum;i++){
             await getPersonalNFT(i).call({from:account}).then((res)=>{
                 //将res中数据渲染到前端
                 //获取图片信息
@@ -212,10 +212,6 @@ const pageModel = {
                     num++;
                 })       
             })
-        }
-        for(let j = num;j<showNumber;j++){
-            var img = document.getElementById("num"+j);
-            img = null;
         }
     },
 
@@ -283,6 +279,19 @@ const pageModel = {
             img.src = url;
         }
     },
+
+    getMaxHomePage: async function(){
+        const { getNFTAmount } = factory.methods;
+        var amount = getNFTAmount().call();
+        var max = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
+        return max;
+    },
+    
+    getMaxPersonal: async function(){
+        const { balanceOf } = factory.methods;
+        var amount = balanceOf(account).call();
+        return amount;
+    }
 }
 
 window.accountModel = accountModel;
