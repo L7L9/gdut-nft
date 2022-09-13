@@ -206,8 +206,8 @@ const pageModel = {
                     img.src = url;
                     img.style.width = "200px";
                     img.style.height = "200px";
-                    document.getElementById("id"+num).innerText="tokenId:"+web3.utils.toHex(res[0]);
-                    document.getElementById("name"+num).innerText="nft名称:"+res[2];
+                    document.getElementById("id"+num).innerText="tokenId："+web3.utils.toHex(res[0]);
+                    document.getElementById("name"+num).innerText="nft名称："+res[2];
                     num++;
                 })       
             })
@@ -256,7 +256,9 @@ const pageModel = {
                     url = window.URL.createObjectURL(new Blob([content]));
                     var img = document.getElementById("num"+num);
                     img.src = url;
-                    document.getElementById("name"+num).innerText = res[2];
+                    document.getElementById("name"+num).innerText = "name："+res[2];
+                    document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
+                    document.getElementById("author"+num).innerText = "author："+res[3];
                     num++;
                 })       
             })
