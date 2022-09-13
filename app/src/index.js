@@ -67,7 +67,7 @@ const nftModel = {
         var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
         //暂时没用
-        var message = document.getElementById("nftMessage").value;
+        // var message = document.getElementById("nftMessage").value;
         
         //将文件存入ipfs中并获取cid
         var cid = null;
@@ -82,23 +82,23 @@ const nftModel = {
             var cids = await ipfs.add(img);
 
             cid = cids[0].hash;
-            console.log(cid);
+            console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
-            console.log(tokenId);
+            console.log("tokenId:" + tokenId);
             //图片预览
-            var buffer = null;
-            await ipfs.get(cid,function (err,files) {
-                if(err) throw err;
-                // console.log("后："+files[0].content);
-                buffer = files[0].content;
-                var url = window.URL.createObjectURL(new Blob([buffer]));
-                var img = document.createElement('img');
-                img.src = url;
-                img.style.width = "350px";
-                img.style.height = "350px";
-                document.getElementById('nftShower').appendChild(img);
-            })
+            // var buffer = null;
+            // await ipfs.get(cid,function (err,files) {
+            //     if(err) throw err;
+            //     // console.log("后："+files[0].content);
+            //     buffer = files[0].content;
+            //     var url = window.URL.createObjectURL(new Blob([buffer]));
+            //     var img = document.createElement('img');
+            //     img.src = url;
+            //     img.style.width = "200px";
+            //     img.style.height = "200px";
+            //     document.getElementById('nftShower').appendChild(img);
+            // })
         }
         //计算tokenId
         // var tokenId = web3.utils.sha3(cid);
@@ -118,9 +118,7 @@ const nftModel = {
             value: web3.utils.toWei('1','ether')
         };
 
-        await web3.eth.sendTransaction(transfer).then(function(res){
-            console.log(res);
-        });
+        await web3.eth.sendTransaction(transfer);
 
         //调用合约的铸造方法
         const { mint } = factory.methods;
@@ -131,6 +129,33 @@ const nftModel = {
             console.log(res);
         })
     },
+
+    give: async function(){
+        var tokenId = prompt("请输入要送出nft的tokenId:","请在此输入");
+        if(tokenId != null){
+            var to = prompt("请输入要送给的账户：","请在此输入");
+            if(to != null){
+                console.log(tokenId);
+                console.log(to);
+                const { give } = factory.methods;
+                //转入以太以便调用方法
+                const accounts = await web3.eth.getAccounts();
+                var defaultAccount = accounts[0];
+                console.log(defaultAccount);
+                var _transfer = {
+                    from:defaultAccount,
+                    to:account,
+                    value: web3.utils.toWei('1','ether')
+                };
+
+                await web3.eth.sendTransaction(_transfer);
+
+                await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
+                    console.log(res);
+                });
+            }
+        }
+    }
 }
 
 const pageModel = {
@@ -188,9 +213,9 @@ const pageModel = {
                 })       
             })
         }
-        for(let j=num;j<showNumber;j++){
-            var img=document.getElementById("num"+j);
-            img=null;
+        for(let j = num;j<showNumber;j++){
+            var img = document.getElementById("num"+j);
+            img = null;
         }
     },
 
@@ -236,38 +261,28 @@ const pageModel = {
                     url = window.URL.createObjectURL(new Blob([content]));
                     var img = document.getElementById("num"+num);
                     img.src = url;
-                    document.getElementById("name"+num).innerText=res[2];
+                    document.getElementById("name"+num).innerText = res[2];
                     num++;
                 })       
             })
         }
     },
 
-    give: async function(){
-        var tokenId=prompt("请输入要送出nft的tokenId:","请在此输入");
-        if(tokenId!=null){
-            var to=prompt("请输入要送给的账户：","请在此输入");
-            if(to!=null){
-                console.log(tokenId);
-                console.log(to);
-                const { give } = factory.methods;
-                //转入以太以便调用方法
-                const accounts = await web3.eth.getAccounts();
-                var defaultAccount = accounts[0];
-                console.log(defaultAccount);
-                var _transfer = {
-                    from:defaultAccount,
-                    to:account,
-                    value: web3.utils.toWei('1','ether')
-                };
+    //图片预览
+    preview: async function(){
+        var files = document.querySelector("#nft").files;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(files[0]);
+        reader.onloadend = async function(){
+            console.log(reader.result);
+            var file = Buffer.from(reader.result);
 
-                await web3.eth.sendTransaction(_transfer).then(function(res){
-                    console.log(res);
-                });
-                await give(to,tokenId).send({from:account,gas:1000000});
-            }
+            var url = window.URL.createObjectURL(new Blob([file]));
+
+            var img = document.getElementById("nftShower");
+            img.src = url;
         }
-    }
+    },
 }
 
 window.accountModel = accountModel;

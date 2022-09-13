@@ -9,10 +9,14 @@
       display: block;
       margin-bottom: 12px;
     }
+    img{
+      height: 250px;
+      width: 250px;
+    }
   </style>
   <body>
-    <input type="file" id="nft"/>
-    <div id="nftShower">图片预览</div><br/>
+    <input type="file" id="nft" onchange="pageModel.preview()"/>
+    <div><img id="nftShower"/></div><br/>
     <label>名字</label>
     <input type="text" id="nftName"/>
     <label>nft描述</label>
