@@ -176,10 +176,15 @@ const nftModel = {
                     img.src = url;
                     img.style.width = "200px";
                     img.style.height = "200px";
-                    document.getElementById("name"+num).innerText=res[2];
+                    document.getElementById("id"+num).innerText="tokenId:"+web3.utils.toHex(res[0]);
+                    document.getElementById("name"+num).innerText="nft名称:"+res[2];
                     num++;
                 })       
             })
+        }
+        for(let j=num;j<showNumber;j++){
+            var img=document.getElementById("num"+j);
+            img=null;
         }
     },
 
@@ -233,6 +238,32 @@ const nftModel = {
             })
         }
     },
+
+    give: async function(){
+        var tokenId=prompt("请输入要送出nft的tokenId:","请在此输入");
+        if(tokenId!=null){
+            var to=prompt("请输入要送给的账户：","请在此输入");
+            if(to!=null){
+                console.log(tokenId);
+                console.log(to);
+                const { give } = factory.methods;
+                //转入以太以便调用方法
+                const accounts = await web3.eth.getAccounts();
+                var defaultAccount = accounts[0];
+                console.log(defaultAccount);
+                var _transfer = {
+                    from:defaultAccount,
+                    to:account,
+                    value: web3.utils.toWei('1','ether')
+                };
+
+                await web3.eth.sendTransaction(_transfer).then(function(res){
+                    console.log(res);
+                });
+                await give(to,tokenId).send({from:account,gas:1000000});
+            }
+        }
+    }
 }
 
 window.accountModel = accountModel;

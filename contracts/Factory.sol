@@ -6,6 +6,8 @@ import "../lib/contracts/token/ERC721/ERC721.sol";
 contract Factory is ERC721{
     //铸造事件
     event Mint(address indexed owner,uint256 tokenId,string name,string cid,bool status);
+    //转赠事件
+    event Give(address indexed from,address indexed to, uint256 tokenId);
 
     //nft属性
     struct nftProperty{
@@ -27,6 +29,9 @@ contract Factory is ERC721{
     //个人的nft集合
     mapping(address => mapping(uint256 => nftProperty)) nftOwner;
 
+    //tokenId在个人所有拥有nft的序号
+    mapping(address => mapping(uint256 => uint256)) personalNftOrder;
+
     //nft的总数量
     uint256 nftAmount;
 
@@ -44,6 +49,8 @@ contract Factory is ERC721{
         nfts[nftAmount] = nft;
 
         nftOwner[msg.sender][balanceOf(msg.sender)] = nft;
+
+        personalNftOrder[msg.sender][_tokenId]=balanceOf(msg.sender);
 
         _mint(msg.sender, _tokenId);
 
@@ -67,5 +74,15 @@ contract Factory is ERC721{
     //查询nft的总量
     function getNFTAmount() external view returns(uint256){
         return nftAmount;
+    }
+
+    //转赠
+    function give(address to,uint256 tokenId) external {
+        nftOwner[to][balanceOf(to)]=nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
+        personalNftOrder[to][tokenId]=balanceOf(to);
+        _transfer(msg.sender, to, tokenId);
+        delete nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
+        delete personalNftOrder[msg.sender][tokenId];
+        emit Give(msg.sender, to, tokenId);
     }
 }

@@ -11,24 +11,25 @@
   </style>
   <body>
     我拥有的nft:<br>
-    <div><img id="num0"/><br><span id=name0></span></div><br>
-    <div><img id="num1"/><br><span id=name1></span></div><br>
-    <div><img id="num2"/><br><span id=name2></span></div><br>
-    <div><img id="num3"/><br><span id=name3></span></div><br>
+    <div><img id="num0"/><br><span id=name0></span><br><span id="id0"></span></div><br>
+    <div><img id="num1"/><br><span id=name1></span><br><span id="id1"></span></div><br>
+    <div><img id="num2"/><br><span id=name2></span><br><span id="id2"></span></div><br>
+    <div><img id="num3"/><br><span id=name3></span><br><span id="id3"></span></div><br>
+    <input type="button" onclick="nftModel.give()" value="转赠">
     <a href="http://localhost:8081/home.html">返回</a>
     <br>第 <label id="page">1</label> 页
     <input type="button" onclick="previous()" value="上一页">
     <script>
       function previous(){
-        console.log(document.getElementById("page").innerText)
-        document.getElementById("page").innerText--;
+        if(document.getElementById("page").innerText>1){
+          document.getElementById("page").innerText--;
         nftModel.showMyNFT();
+        }else alert("已经是第一页了")
       }
     </script>
     <input type="button" onclick="next()" value="下一页">
     <script>
       function next(){
-        console.log(document.getElementById("page").innerText)
         document.getElementById("page").innerText++;
         nftModel.showMyNFT();
       }
