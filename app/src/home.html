@@ -30,20 +30,31 @@
     <script>
       function previous(){
         // console.log(document.getElementById("page").innerText)；
+        var page = document.getElementById("page").innerText;
         if(document.getElementById("page").innerText > 1){
           document.getElementById("page").innerText--;
           pageModel.showAllNFT();
         } else {
           console.log("first page!");
         }
+        var amount = pageModel.getMaxHomePage().then(res=>{
+          var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
+          if(new Number(page) == maxPage){
+            for(let i = 0;i < 4;i++){
+              var nftShow = document.getElementById("nft"+i);
+                nftShow.style.display="block";
+            } 
+          }
+        });
       }
     </script>
     <input type="button" onclick="next()" value="下一页">
     <script>
       function next(){
-        var amount = pageModel.getMaxHomePage().then((res)=>{
-          console.log(res);
-          if(document.getElementById("page") < res){
+        var amount = pageModel.getMaxHomePage().then(res=>{
+          var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
+          var page = document.getElementById("page").innerText;
+          if(new Number(page)< maxPage){
             document.getElementById("page").innerText++;
             pageModel.showAllNFT();
           } else {

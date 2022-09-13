@@ -167,12 +167,11 @@ const pageModel = {
 
         //获取个人拥有的nft数量
         var amount = await balanceOf(account).call();
-        console.log(amount);
         //计算出最大页数
         var maxPage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
+        console.log(maxPage);
         //获取页面的当前页数
         var page = document.getElementById("page").innerText;
-        console.log(page);
         
         //实际展示数量
         var trueNum = this.showNumber * page;
@@ -280,14 +279,13 @@ const pageModel = {
         }
     },
 
-    getMaxHomePage: async function(){
+    getMaxHomePage: function(){
         const { getNFTAmount } = factory.methods;
         var amount = getNFTAmount().call();
-        var max = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
-        return max;
+        return amount;
     },
     
-    getMaxPersonal: async function(){
+    getMaxPersonalPage: async function(){
         const { balanceOf } = factory.methods;
         var amount = balanceOf(account).call();
         return amount;

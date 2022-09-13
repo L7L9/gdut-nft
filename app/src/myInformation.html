@@ -25,17 +25,37 @@
     <input type="button" onclick="previous()" value="上一页">
     <script>
       function previous(){
-        if(document.getElementById("page").innerText>1){
+        var page = document.getElementById("page").innerText;
+        if(document.getElementById("page").innerText > 1){
           document.getElementById("page").innerText--;
-        pageModel.showMyNFT();
-        }else alert("已经是第一页了")
+          pageModel.showMyNFT();
+        }else {
+          alert("已经是第一页了");
+        }
+        pageModel.getMaxPersonalPage().then(res=>{
+          var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
+          if(new Number(page) == maxPage){
+            for(let i = 0;i < 4;i++){
+              var nftShow = document.getElementById("nft"+i);
+                nftShow.style.display="block";
+            } 
+          }
+        });
       }
     </script>
     <input type="button" onclick="next()" value="下一页">
     <script>
       function next(){
-        document.getElementById("page").innerText++;
-        pageModel.showMyNFT();
+        pageModel.getMaxPersonalPage().then(res=>{
+          var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
+          var page = document.getElementById("page").innerText;
+          if(new Number(page)< maxPage){
+            document.getElementById("page").innerText++;
+            pageModel.showMyNFT();
+          } else {
+            alert("final page!");
+          }
+        });
       }
     </script>
     <script src="index.js"></script>
