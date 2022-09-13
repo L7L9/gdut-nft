@@ -9,11 +9,11 @@ var factory = null;
 //ipfs实例
 var ipfs = null;
 //当前账户
-var account=null;
+var account = null;
 
 const init = {
     getAccount: async function(){
-        account=localStorage.getItem("account");
+        account = localStorage.getItem("account");
     },
     getFactory: async function(){
         const networkId = await new web3.eth.net.getId();
@@ -37,7 +37,7 @@ const accountModel = {
             if(res == true){
                 // sessionStorage.setItem("account",tempAccount);
                 localStorage.setItem("account",tempAccount);
-                account=tempAccount;
+                account = tempAccount;
                 alert("登陆成功");
                 //跳转到登陆页面
                 window.location.replace("http://localhost:8081/home.html");
@@ -131,6 +131,10 @@ const nftModel = {
             console.log(res);
         })
     },
+}
+
+const pageModel = {
+    showNumber: 4,
 
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
@@ -139,18 +143,20 @@ const nftModel = {
         //获取个人拥有的nft数量
         var amount = await balanceOf(account).call();
         console.log(amount);
-        //每次展示出来的页数
-        const showNumber = 4;
         //计算出最大页数
-        var maxPage = (amount % showNumber == 0)? (amount / showNumber):(Math.ceil(amount / showNumber));
+        var maxPage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
         //获取页面的当前页数
-        var page = document.getElementById("page").innerText.trim();
+        var page = document.getElementById("page").innerText;
         console.log(page);
         
         //实际展示数量
-        var trueNum = showNumber * page;
-        if(page == maxPage && (amount % showNumber) != 0 ){
-            trueNum = (page - 1) * showNumber + amount % showNumber;
+        var trueNum = this.showNumber * page;
+        if(page == maxPage && (amount % this.showNumber) != 0 ){
+            trueNum = (page - 1) * this.showNumber + amount % showNumber;
+            for(let i = amount % this.showNumber; i < this.showNumber;i++){
+                var nftShow = document.getElementById("nft"+i);
+                nftShow.style.display="none";
+            }
         }
 
         //用于接受文件内容
@@ -188,21 +194,21 @@ const nftModel = {
 
         //获取nft总量
         var amount = await getNFTAmount().call();
-        //每次展示出来的页数
-        const showNumber = 4;
-        //计算出最大页数
-        var maxPage = (amount % showNumber == 0)? (amount / showNumber):(Math.ceil(amount / showNumber));
         //获取页面的当前页数
-        var page = document.getElementById("page").innerText.trim();
-        console.log(page);
+        var page = document.getElementById("page").innerText;
         
+        var maxHomePage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
         //获取查询信息的方法
         const { getProperty } = factory.methods;
         
         //实际展示数量
-        var trueNum = showNumber * page;
-        if(page == maxPage && (amount % showNumber) != 0 ){
-            trueNum = (page - 1) * showNumber + amount % showNumber;
+        var trueNum = this.showNumber * page;
+        if(page == maxHomePage && (amount % this.showNumber) != 0 ){
+            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
+            for(let i = amount % this.showNumber; i < this.showNumber;i++){
+                var nftShow = document.getElementById("nft"+i);
+                nftShow.style.display="none";
+            }
         }
 
         //用于接受文件内容
@@ -213,7 +219,7 @@ const nftModel = {
         var url = null;
         //用于记录第几个的临时变量
         var num = 0;
-        for(let i = (page-1) * showNumber;i < trueNum;i++){
+        for(let i = (page-1) * this.showNumber;i < trueNum;i++){
             await getProperty(i).call().then((res)=>{
                 //将res中数据渲染到前端
                 //获取图片信息
@@ -225,18 +231,28 @@ const nftModel = {
                     url = window.URL.createObjectURL(new Blob([content]));
                     var img = document.getElementById("num"+num);
                     img.src = url;
-                    img.style.width = "200px";
-                    img.style.height = "200px";
                     document.getElementById("name"+num).innerText=res[2];
                     num++;
                 })       
             })
         }
     },
+    getMaxHomePage: async function(){
+        const { getNFTAmount } = factory.methods;
+        var amount = getNFTAmount().call();
+        var max = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
+        return max;
+    },
+    getMaxPersonal: async function(){
+        const { balanceOf } = factory.methods;
+        var amount = balanceOf(account).call();
+        return amount;
+    }
 }
 
 window.accountModel = accountModel;
 window.nftModel = nftModel;
+window.pageModel = pageModel;
 
 window.onload = async function(){
     web3 = new Web3(
@@ -253,9 +269,9 @@ window.onload = async function(){
 
     var url = window.location.href;
     if(url == "http://localhost:8081/home.html"){
-        nftModel.showAllNFT();
+        pageModel.showAllNFT();
     }
     if(url == "http://localhost:8081/myInformation.html"){
-        nftModel.showMyNFT();
+        pageModel.showMyNFT();
     }
 }

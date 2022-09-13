@@ -8,29 +8,39 @@
       display: block;
       margin-bottom: 12px;
     }
+    img {
+      height: 200px;
+      width: 200px;
+    }
   </style>
   <body>
     我拥有的nft:<br>
-    <div><img id="num0"/><br><span id=name0></span></div><br>
-    <div><img id="num1"/><br><span id=name1></span></div><br>
-    <div><img id="num2"/><br><span id=name2></span></div><br>
-    <div><img id="num3"/><br><span id=name3></span></div><br>
+    <div id="nft0"><img id="num0"/><br><span id=name0></span></div><br>
+    <div id="nft1"><img id="num1"/><br><span id=name1></span></div><br>
+    <div id="nft2"><img id="num2"/><br><span id=name2></span></div><br>
+    <div id="nft3"><img id="num3"/><br><span id=name3></span></div><br>
     <a href="http://localhost:8081/home.html">返回</a>
     <br>第 <label id="page">1</label> 页
     <input type="button" onclick="previous()" value="上一页">
     <script>
       function previous(){
-        console.log(document.getElementById("page").innerText)
-        document.getElementById("page").innerText--;
-        nftModel.showMyNFT();
+        if(document.getElementById("page").innerText > 1){
+          document.getElementById("page").innerText--;
+          pageModel.showMyNFT();
+        } else {
+          console.log("first page!");
+        }
       }
     </script>
     <input type="button" onclick="next()" value="下一页">
     <script>
       function next(){
-        console.log(document.getElementById("page").innerText)
-        document.getElementById("page").innerText++;
-        nftModel.showMyNFT();
+        if(document.getElementById("page") < res){
+            document.getElementById("page").innerText++;
+            pageModel.showAllNFT();
+          } else {
+            console.log("final page!");
+          }
       }
     </script>
     <script src="index.js"></script>
