@@ -83,12 +83,12 @@ contract Factory is ERC721{
         personalNftOrder[to][tokenId] = balanceOf(to);
 
         //转赠者
-        nftProperty memory nft = nftOwner[msg.sender][balanceOf(msg.sender)];
+        nftProperty memory nft = nftOwner[msg.sender][balanceOf(msg.sender)-1];
 
         nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]] = nft;
         personalNftOrder[msg.sender][nft.tokenId] = personalNftOrder[msg.sender][tokenId];
 
-        delete nftOwner[msg.sender][balanceOf(msg.sender)];
+        delete nftOwner[msg.sender][balanceOf(msg.sender)-1];
         delete personalNftOrder[msg.sender][tokenId];
 
         _transfer(msg.sender, to, tokenId);
