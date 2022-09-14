@@ -21,6 +21,8 @@ contract Factory is ERC721{
         string name;
         //作者
         address author;
+        //nft描述
+        string description;
     }
 
     //nft集合
@@ -43,13 +45,14 @@ contract Factory is ERC721{
     }
 
     //铸造
-    function mint(uint256 _tokenId,string memory _name,string memory _cid) external{
+    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description) external{
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
             cid: _cid,
             name: _name,
-            author: msg.sender
+            author: msg.sender,
+            description: _description
         });
         nfts[nftAmount] = nft;
 
@@ -65,15 +68,15 @@ contract Factory is ERC721{
     }
 
     //获取单个nft的信息
-    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address){
+    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,string memory){
         nftProperty memory nft = nfts[id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description);
     }
 
     //获取个人nft的信息
-    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address){
+    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory){
         nftProperty memory nft = nftOwner[msg.sender][id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description);
     }
 
     //查询nft的总量

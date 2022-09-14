@@ -68,7 +68,7 @@ const nftModel = {
         var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
         //暂时没用
-        // var message = document.getElementById("nftMessage").value;
+        var message = document.getElementById("nftMessage").value;
         
         //将文件存入ipfs中并获取cid
         var cid = null;
@@ -123,7 +123,7 @@ const nftModel = {
 
         //调用合约的铸造方法
         const { mint } = factory.methods;
-        await mint(tokenId,name,cid).send({
+        await mint(tokenId,name,cid,message).send({
             from: account,
             gas: 1000000
         }).then((res) =>{
@@ -160,6 +160,10 @@ const nftModel = {
         }
         
     }
+}
+
+const activityModel = {
+    
 }
 
 const pageModel = {
@@ -200,7 +204,7 @@ const pageModel = {
                 await getPersonalNFT(i).call({from:account}).then((res)=>{
                     //将res中数据渲染到前端
                     //获取图片信息
-                    //res: 0=>tokenId  1=>cid  2=>name 3=>author
+                    //res: 0=>tokenId  1=>cid  2=>name 3=>author 4=>description
                     // console.log(res);
                     cid = res[1];
                     ipfs.get(cid,function(err,files){
@@ -212,6 +216,7 @@ const pageModel = {
                         img.style.width = "200px";
                         document.getElementById("id"+num).innerText="tokenId："+web3.utils.toHex(res[0]);
                         document.getElementById("name"+num).innerText="nft名称："+res[2];
+                        document.getElementById("description"+num).innerText="nft描述："+res[4];
                         num++;
                     })       
                 })
@@ -270,6 +275,7 @@ const pageModel = {
                         document.getElementById("name"+num).innerText = "name："+res[2];
                         document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
                         document.getElementById("author"+num).innerText = "author："+res[3];
+                        document.getElementById("description"+num).innerText = "nft描述："+res[4];
                         num++;
                     })       
                 })
@@ -314,6 +320,7 @@ const pageModel = {
 window.accountModel = accountModel;
 window.nftModel = nftModel;
 window.pageModel = pageModel;
+window.activityModel = activityModel;
 
 window.onload = async function(){
     web3 = new Web3(
