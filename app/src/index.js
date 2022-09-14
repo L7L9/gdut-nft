@@ -57,7 +57,8 @@ const accountModel = {
     },
 
     logout: async function(){
-        this.account = null;
+        account = null;
+        localStorage.removeItem("account");
         window.location.replace("http://localhost:8081/index.html");
     }
 }
@@ -111,7 +112,7 @@ const nftModel = {
         //转入以太以便调用方法
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[0];
-        console.log(defaultAccount);
+        // console.log(defaultAccount);
         var transfer = {
             from:defaultAccount,
             to:account,
@@ -153,8 +154,11 @@ const nftModel = {
                 await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
                     console.log(res);
                 });
+                //刷新页面
+                pageModel.showMyNFT();
             }
         }
+        
     }
 }
 
@@ -206,7 +210,6 @@ const pageModel = {
                         var img = document.getElementById("num"+num);
                         img.src = url;
                         img.style.width = "200px";
-                        img.style.height = "200px";
                         document.getElementById("id"+num).innerText="tokenId："+web3.utils.toHex(res[0]);
                         document.getElementById("name"+num).innerText="nft名称："+res[2];
                         num++;
