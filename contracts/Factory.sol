@@ -71,9 +71,9 @@ contract Factory is ERC721{
     }
 
     //获取单个nft的信息
-    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,string memory){
+    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,uint256){
         nftProperty memory nft = nfts[id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.activityId);
     }
 
     //获取个人nft的信息
@@ -85,12 +85,6 @@ contract Factory is ERC721{
     //查询nft的总量
     function getNFTAmount() external view returns(uint256){
         return nftAmount;
-    }
-
-    //查询nft是否为活动发行的nft
-    function checkIsActivityNFT(uint256 id) returns(uint256){
-        nftProperty memory nft = nfts[id];
-        return nft.activityId;
     }
 
     //转赠
