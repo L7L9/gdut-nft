@@ -23,6 +23,8 @@ contract Factory is ERC721{
         address author;
         //nft描述
         string description;
+        //是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+        uint256 activityId;
     }
 
     //nft集合
@@ -45,14 +47,15 @@ contract Factory is ERC721{
     }
 
     //铸造
-    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description) external{
+    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description,uint256 status) external{
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
             cid: _cid,
             name: _name,
             author: msg.sender,
-            description: _description
+            description: _description,
+            activityId: status
         });
         nfts[nftAmount] = nft;
 
@@ -82,6 +85,12 @@ contract Factory is ERC721{
     //查询nft的总量
     function getNFTAmount() external view returns(uint256){
         return nftAmount;
+    }
+
+    //查询nft是否为活动发行的nft
+    function checkIsActivityNFT(uint256 id) returns(uint256){
+        nftProperty memory nft = nfts[id];
+        return nft.activityId;
     }
 
     //转赠
