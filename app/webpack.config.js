@@ -16,6 +16,7 @@ module.exports = {
     new CopyWebpackPlugin([{ from: "./src/home.html", to: "home.html" }]),
     new CopyWebpackPlugin([{ from: "./src/create.html", to: "create.html" }]),
     new CopyWebpackPlugin([{ from: "./src/myInformation.html", to: "myInformation.html" }]),
+    new CopyWebpackPlugin([{ from: "./src/activities.html", to: "activities.html" }]),
   ],
   devServer: { 
     contentBase: path.join(__dirname, "dist"),
