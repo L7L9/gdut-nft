@@ -1,11 +1,14 @@
 import Web3 from "web3";
 const ipfsAPI = require('ipfs-api');
 import factoryArtifact from "../../build/contracts/Factory.json";
+import activityArtifact from "../../build/contracts/Activity.json";
 
 //web3实例
 var web3 = null;
 //factory合约实例
 var factory = null;
+//artivity合约实例
+var activity = null;
 //ipfs实例
 var ipfs = null;
 //当前账户
@@ -15,14 +18,17 @@ const init = {
     getAccount: async function(){
         account = localStorage.getItem("account");
     },
-    getFactory: async function(){
+    getSolidityObject: async function(){
         const networkId = await new web3.eth.net.getId();
         factory = new web3.eth.Contract(
             factoryArtifact.abi,
             factoryArtifact.networks[networkId].address
         );
+        activity = new web3.eth.Contract(
+            activityArtifact.abi,
+            activityArtifact.networks[networkId].address
+        )
     },
-
     getIpfs: async function(){
         ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
     }
@@ -231,40 +237,52 @@ const pageModel = {
 
     showAllNFT: async function(){
         const { getNFTAmount } = factory.methods;
+        const { getCountAmount } = activity.methods;
+        const { getActivityNFTAmount } = activity.methods;
 
+        var numberForCountAmount = await getCountAmount().call();
+        console.log("用于计算的数："+numberForCountAmount);
         //获取nft总量
-        var amount = await getNFTAmount().call();
+        var tempAmount = await getNFTAmount().call();
+        console.log("总量:" + tempAmount);
+        //获取真实显示数量
+        var amount = tempAmount - numberForCountAmount;
+        console.log("真实数量:" + amount);
         //获取页面的当前页数
         var page = document.getElementById("page").innerText;
         
         var maxHomePage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
+        console.log("maxPage:"+maxHomePage);
         //获取查询信息的方法
         const { getProperty } = factory.methods;
         
         //实际展示数量
-        var trueNum = this.showNumber * page;
+        var trueNum = this.showNumber;
         if(page == maxHomePage && (amount % this.showNumber) != 0 ){
-            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
+            trueNum = amount % this.showNumber;
             for(let i = amount % this.showNumber; i < this.showNumber;i++){
                 var nftShow = document.getElementById("nft"+i);
                 nftShow.style.display="none";
             }
         }
+        console.log("展示数量: "+ trueNum);
 
-        //用于接受文件内容
-        var content = null;
-        //用于获取ipfs中的cid
-        var cid = null;
-        //用于获取url
-        var url = null;
-        //用于记录第几个的临时变量
-        var num = 0;
         if(amount > 0){
-            for(let i = (page-1) * this.showNumber;i < trueNum;i++){
-                await getProperty(i).call().then((res)=>{
-                    //将res中数据渲染到前端
+            //用于接受文件内容
+            var content = null;
+            //用于获取ipfs中的cid
+            var cid = null;
+            //用于获取url
+            var url = null;
+            //用于记录第几个的临时变量
+            var num = 0;
+            //nft的id
+            var id = (page-1) * this.showNumber;
+            while(num < trueNum){
+                await getProperty(id).call().then(res=>{
+                         //将res中数据渲染到前端
                     //获取图片信息
-                    //res: 0=>tokenId  1=>cid  2=>name 3=>author
+                    //res: 0=>tokenId  1=>cid  2=>name 3=>author 4=>description 5=> activityId(nft是否为活动发放)
                     cid = res[1];
                     ipfs.get(cid,function(err,files){
                         if(err) throw err;
@@ -276,9 +294,16 @@ const pageModel = {
                         document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
                         document.getElementById("author"+num).innerText = "author："+res[3];
                         document.getElementById("description"+num).innerText = "nft描述："+res[4];
-                        num++;
-                    })       
-                })
+                    });
+                    var activityId = res[5];
+                    if(activityId != 0){
+                        var increment = getActivityNFTAmount(activityId).call();
+                        id += increment;
+                    } else {
+                        id++;
+                    }
+                    num++;
+                }) 
             }
         } else {
             for(let i = 0;i < 4;i++){
@@ -328,7 +353,7 @@ window.onload = async function(){
     );
     
     //获取factory合约实例
-    await init.getFactory();
+    await init.getSolidityObject();
     
     //获取ipfs实例
     init.getIpfs();
