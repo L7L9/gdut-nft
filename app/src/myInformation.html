@@ -49,10 +49,7 @@
         if(document.getElementById("page").innerText > 1){
           document.getElementById("page").innerText--;
           pageModel.showMyNFT();
-        }else {
-          alert("已经是第一页了");
-        }
-        pageModel.getMaxPersonalPage().then(res=>{
+          pageModel.getMaxPersonalPage().then(res=>{
           var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
           if(new Number(page) == maxPage){
             for(let i = 0;i < 4;i++){
@@ -61,6 +58,9 @@
             } 
           }
         });
+        }else {
+          alert("已经是第一页了");
+        }
       }
     </script>
     <input type="button" onclick="next()" value="下一页">
