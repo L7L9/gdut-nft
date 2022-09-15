@@ -123,7 +123,7 @@ const nftModel = {
 
         //调用合约的铸造方法
         const { mint } = factory.methods;
-        await mint(tokenId,name,cid,message).send({
+        await mint(tokenId,name,cid,message,0).send({
             from: account,
             gas: 1000000
         }).then((res) =>{
