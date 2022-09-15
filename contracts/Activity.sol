@@ -3,7 +3,7 @@ pragma solidity ^0.8.16;
 
 contract Activity{
     //发起活动的事件
-    event Initiate(address indexed host,string name,uint126 amount,string password);
+    event Initiate(address indexed host,string name,uint128 amount,string password);
 
     //活动结束的事件
     event End(uint256 indexed id,string name);
@@ -35,7 +35,7 @@ contract Activity{
     }
 
     //发起抽奖活动的函数
-    function initiate(string memory _name,string memory _description,uint256 _amount,uint256 _nftCid,string memory _password) external{
+    function initiate(string memory _name,string memory _description,uint128 _amount,uint256 _nftCid,string memory _password) external{
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
