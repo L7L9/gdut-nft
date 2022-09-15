@@ -3,7 +3,7 @@ pragma solidity ^0.8.16;
 
 contract Activity{
     //发起活动的事件
-    event Initiate(address indexed host,string name,uint128 amount,string password);
+    event Initiate(address indexed host,string name,uint256 amount,string password);
 
     //活动结束的事件
     event End(uint256 indexed id,string name);
@@ -20,9 +20,9 @@ contract Activity{
         //密码
         string password;
         //nft数量
-        uint128 amount;
+        uint256 amount;
         //标记送出的nft
-        uint128 index;
+        uint256 index;
     }
 
     mapping(uint256 => activityProperty) activities;
@@ -30,12 +30,15 @@ contract Activity{
     //活动的总数量（从1开始）
     uint256 activityAmount;
 
+    //活动nft的总量-活动量：用于主页计算真实的展示nft个数
+    uint256 amountForCount;
+
     constructor() {
         activityAmount = 1;
     }
 
     //发起抽奖活动的函数
-    function initiate(string memory _name,string memory _description,uint128 _amount,uint256 _nftCid,string memory _password) external{
+    function initiate(string memory _name,string memory _description,uint256 _amount,uint256 _nftCid,string memory _password) external{
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
@@ -46,6 +49,7 @@ contract Activity{
             index : 0
         });
 
+        amountForCount += (_amount - 1);
         activities[activityAmount] = activity;
         activityAmount++;
 
@@ -59,8 +63,12 @@ contract Activity{
     }
 
     //获取活动中nft数量
-    function getActivityNFTAmount(uint256 id) external view returns(uint128){
+    function getActivityNFTAmount(uint256 id) external view returns(uint256){
         return activities[id].amount;
     }
 
+    //获取amountForCount
+    function getCountAmount() external view returns(uint256){
+        return amountForCount;
+    }
 }
