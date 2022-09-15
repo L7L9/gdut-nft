@@ -59,6 +59,17 @@ const accountModel = {
 
         web3.eth.personal.newAccount(password).then(function(res){
             prompt("注册成功，请记住账号密码\n你的账号：",res);
+
+            //转入以太以便使用
+            const accounts = await web3.eth.getAccounts();
+            var defaultAccount = accounts[0];
+            var _transfer = {
+                from:defaultAccount,
+                to:res,
+                value: web3.utils.toWei('5','ether')
+            };
+
+            await web3.eth.sendTransaction(_transfer);
         })
     },
 
@@ -92,40 +103,8 @@ const nftModel = {
             // console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
-            // console.log("tokenId:" + tokenId);
-            //图片预览
-            // var buffer = null;
-            // await ipfs.get(cid,function (err,files) {
-            //     if(err) throw err;
-            //     // console.log("后："+files[0].content);
-            //     buffer = files[0].content;
-            //     var url = window.URL.createObjectURL(new Blob([buffer]));
-            //     var img = document.createElement('img');
-            //     img.src = url;
-            //     img.style.width = "200px";
-            //     img.style.height = "200px";
-            //     document.getElementById('nftShower').appendChild(img);
-            // })
         }
-        //计算tokenId
-        // var tokenId = web3.utils.sha3(cid);
-        // console.log(tokenId);
-
-        //获取登录的账号
-        // var account = sessionStorage.getItem("account");
         var account = localStorage.getItem("account");
-
-        //转入以太以便调用方法
-        const accounts = await web3.eth.getAccounts();
-        var defaultAccount = accounts[0];
-        // console.log(defaultAccount);
-        var transfer = {
-            from:defaultAccount,
-            to:account,
-            value: web3.utils.toWei('1','ether')
-        };
-
-        await web3.eth.sendTransaction(transfer);
 
         //调用合约的铸造方法
         const { mint } = factory.methods;
@@ -135,6 +114,8 @@ const nftModel = {
         }).then((res) =>{
             console.log(res);
         })
+
+        return cid;
     },
 
     give: async function(){
@@ -145,15 +126,15 @@ const nftModel = {
                 // console.log(tokenId);
                 // console.log(to);
                 const { give } = factory.methods;
-                //转入以太以便调用方法
-                const accounts = await web3.eth.getAccounts();
-                var defaultAccount = accounts[0];
-                // console.log(defaultAccount);
-                var _transfer = {
-                    from:defaultAccount,
-                    to:account,
-                    value: web3.utils.toWei('1','ether')
-                };
+                // //转入以太以便调用方法
+                // const accounts = await web3.eth.getAccounts();
+                // var defaultAccount = accounts[0];
+                // // console.log(defaultAccount);
+                // var _transfer = {
+                //     from:defaultAccount,
+                //     to:account,
+                //     value: web3.utils.toWei('1','ether')
+                // };
 
                 await web3.eth.sendTransaction(_transfer);
 
@@ -169,7 +150,34 @@ const nftModel = {
 }
 
 const activityModel = {
-    
+    initiateActivity: async function(){
+        const { initiate } = activity.methods;
+
+        //活动名字
+        var name = document.getElementById("").value;
+        //活动描述
+        var message = document.getElementById("").value;
+        //nft奖品数量
+        var amount = document.getElementById("").value;
+        //活动nft的cid
+        var cid = null;
+        //领取nft的密钥
+        var password = null;
+
+        //创建nft
+        nftModel.createForActivity().then(res=>{
+            cid = res;
+        })
+
+        await initiate(name,message,amount,cid,password).send({
+            from:account,
+            gas:1000000
+        }).then(res=>{
+            console.log(res);
+            alert("创建活动成功");
+            //刷新活动页面
+        })
+    },
 }
 
 const pageModel = {
