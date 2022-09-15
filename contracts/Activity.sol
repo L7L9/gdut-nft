@@ -58,4 +58,9 @@ contract Activity{
         return (activity.name,activity.description);
     }
 
+    //获取活动中nft数量
+    function getActivityNFTAmount(uint256 id) external view returns(uint128){
+        return activities[id].amount;
+    }
+
 }
