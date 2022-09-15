@@ -59,17 +59,6 @@ const accountModel = {
 
         web3.eth.personal.newAccount(password).then(function(res){
             prompt("注册成功，请记住账号密码\n你的账号：",res);
-
-            // //转入以太以便使用
-            // const accounts = await web3.eth.getAccounts();
-            // var defaultAccount = accounts[0];
-            // var _transfer = {
-            //     from:defaultAccount,
-            //     to:res,
-            //     value: web3.utils.toWei('5','ether')
-            // };
-
-            // await web3.eth.sendTransaction(_transfer);
         })
     },
 
@@ -103,27 +92,31 @@ const nftModel = {
             // console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
+            nftModel.mint(name,message,cid,tokenId,1);
         }
-        var account = localStorage.getItem("account");
+    },
 
+    mint: async function(name,message,cid,amount){
         //转入以太以便使用
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[0];
         var _transfer = {
             from:defaultAccount,
             to:account,
-            value: web3.utils.toWei('5','ether')
+            value: web3.utils.toWei('1','ether')
         };
 
         await web3.eth.sendTransaction(_transfer);
         //调用合约的铸造方法
         const { mint } = factory.methods;
-        await mint(tokenId,name,cid,message,0).send({
-            from: account,
-            gas: 1000000
-        }).then((res) =>{
-            console.log(res);
-        })
+        for(let i = 0;i < amount;i++){
+            await mint(web3.utils.sha3(cid+i),name,cid,message,0).send({
+                from: account,
+                gas: 1000000
+            }).then((res) =>{
+                console.log(res);
+            })
+        }
     },
 
     give: async function(){
@@ -167,24 +160,37 @@ const activityModel = {
         var message = document.getElementById("").value;
         //nft奖品数量
         var amount = document.getElementById("").value;
-        //活动nft的cid
-        var cid = null;
         //领取nft的密钥
-        var password = null;
+        var password = document.getElementById("").value;
 
         //创建nft
-        nftModel.createForActivity().then(res=>{
-            cid = res;
-        })
+        var nftName = document.getElementById("").value;
+        var file = document.querySelector("#nft").files;
+        var nftMessage = document.getElementById("").value;
+        var cid=null;
 
-        await initiate(name,message,amount,cid,password).send({
-            from:account,
-            gas:1000000
-        }).then(res=>{
-            console.log(res);
-            alert("创建活动成功");
-            //刷新活动页面
-        })
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(file[0]);
+        reader.onloadend = async function(){
+            // console.log(reader.result);
+            var img = Buffer.from(reader.result);
+            // console.log("前："+img);
+            var cids = await ipfs.add(img);
+
+            cid = cids[0].hash;
+            // console.log("cid:" + cid);
+
+            
+            nftModel.mint(nftName,nftMessage,cid,amount);
+            await initiate(name,message,amount,cid,password).send({
+                from:account,
+                gas:1000000
+            }).then(res=>{
+                console.log(res);
+                alert("创建活动成功");
+                //刷新活动页面
+            });
+        }
     },
 }
 
@@ -301,6 +307,7 @@ const pageModel = {
             var tempNum = null;
             while(num < trueNum){
                 tempNum = num;
+                console.log(tempNum);
                 await getProperty(id).call().then(res=>{
                     //将res中数据渲染到前端
                     //获取图片信息
@@ -311,7 +318,9 @@ const pageModel = {
                         content = files[0].content;
                         url = window.URL.createObjectURL(new Blob([content]));
                         var img = document.getElementById("num"+tempNum);
+                        console.log(img);
                         img.src = url;
+                        console.log(url);
                         document.getElementById("name"+tempNum).innerText = "name："+res[2];
                         document.getElementById("tokenId"+tempNum).innerText = "tokenId："+web3.utils.toHex(res[0]);
                         document.getElementById("author"+tempNum).innerText = "author："+res[3];
