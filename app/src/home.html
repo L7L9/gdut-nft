@@ -29,6 +29,7 @@
       <span id="tokenId0"></span><br/>
       <span id="author0"></span><br/>
       <span id="description0"></span>
+      <span id="activityNFTAmount0" hidden></span>
     </div><br>
     <div id="nft1">
       <img id="num1"/><br>
@@ -36,6 +37,7 @@
       <span id="tokenId1"></span><br/>
       <span id="author1"></span><br/>
       <span id="description1"></span>
+      <span id="activityNFTAmount1" hidden></span>
     </div><br>
     <div id="nft2">
       <img id="num2"/><br>
@@ -43,6 +45,7 @@
       <span id="tokenId2"></span><br/>
       <span id="author2"></span><br/>
       <span id="description2"></span>
+      <span id="activityNFTAmount2" hidden></span>
     </div><br>
     <div id="nft3">
       <img id="num3"/><br>
@@ -50,6 +53,7 @@
       <span id="tokenId3"></span><br/>
       <span id="author3"></span><br/>
       <span id="description3"></span>
+      <span id="activityNFTAmount3" hidden></span>
     </div><br>
     <br>第 <label id="page">1</label> 页
     <input type="button" onclick="previous()" value="上一页">
@@ -58,7 +62,14 @@
         // console.log(document.getElementById("page").innerText)；
         var page = document.getElementById("page").innerText;
         if(document.getElementById("page").innerText > 1){
+          var amount = null;
           document.getElementById("page").innerText--;
+          for(let i = 0;i < 4;i++){
+            amount = document.getElementById("activityNFTAmount"+i).innerText;
+            pageModel.indexId -= new Number(amount);
+            console.log(pageModel.indexId);
+          }
+          pageModel.indexId--;
           pageModel.showAllNFT();
           var amount = pageModel.getMaxHomePage().then(res=>{
           var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   

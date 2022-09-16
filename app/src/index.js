@@ -92,11 +92,12 @@ const nftModel = {
             // console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
-            nftModel.mint(name,message,cid,tokenId,1);
+            nftModel.mint(name,message,cid,1);
         }
     },
 
     mint: async function(name,message,cid,amount){
+        console.log(amount);
         //转入以太以便使用
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[0];
@@ -196,6 +197,8 @@ const activityModel = {
 
 const pageModel = {
     showNumber: 4,
+
+    indexId: 0,
 
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
@@ -299,42 +302,30 @@ const pageModel = {
             var cid = null;
             //用于获取url
             var url = null;
-            //用于记录第几个的临时变量
-            var num = 0;
-            //nft的id
-            var id = (page-1) * this.showNumber;
 
-            var tempNum = null;
-            while(num < trueNum){
-                tempNum = num;
-                console.log(tempNum);
-                await getProperty(id).call().then(res=>{
-                    //将res中数据渲染到前端
-                    //获取图片信息
-                    //res: 0=>tokenId  1=>cid  2=>name 3=>author 4=>description 5=> activityId(nft是否为活动发放)
-                    cid = res[1];
-                    ipfs.get(cid,function(err,files){
-                        if(err) throw err;
-                        content = files[0].content;
-                        url = window.URL.createObjectURL(new Blob([content]));
-                        var img = document.getElementById("num"+tempNum);
-                        console.log(img);
-                        img.src = url;
-                        console.log(url);
-                        document.getElementById("name"+tempNum).innerText = "name："+res[2];
-                        document.getElementById("tokenId"+tempNum).innerText = "tokenId："+web3.utils.toHex(res[0]);
-                        document.getElementById("author"+tempNum).innerText = "author："+res[3];
-                        document.getElementById("description"+tempNum).innerText = "nft描述："+res[4];
-                    });
-                    var activityId = res[5];
-                    if(activityId != 0){
-                        var increment = getActivityNFTAmount(activityId).call();
-                        id += increment;
-                    } else {
-                        id++;
-                    }
-                });
-                num++;
+            for(let num = 0;num < trueNum;num++){
+                var res = await getProperty(this.indexId).call();
+                cid = res[1];
+                await ipfs.get(cid,function(err,files){
+                    if(err) throw err;
+                    content = files[0].content;
+                    url = window.URL.createObjectURL(new Blob([content]));
+                    var img = document.getElementById("num"+num);
+                    img.src = url;
+                    document.getElementById("name"+num).innerText = "name："+res[2];
+                    document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
+                    document.getElementById("author"+num).innerText = "author："+res[3];
+                    document.getElementById("description"+num).innerText = "nft描述："+res[4];
+                })      
+                if(res[5] != 0){
+                    var addAmount = getActivityNFTAmount(res[5]).call();
+                    this.indexId += addAmount;
+                    document.getElementById("activityNFTAmount"+num).innerText = addAmount;
+                } else {
+                    this.indexId++;
+                    document.getElementById("activityNFTAmount"+num).innerText = '1';
+                }
+                console.log(this.indexId);
             }
         } else {
             for(let i = 0;i < 4;i++){
