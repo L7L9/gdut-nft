@@ -21,8 +21,8 @@ contract Activity{
         string password;
         //nft数量
         uint256 amount;
-        //标记送出的nft
-        uint256 index;
+        //活动发起人
+        address host;
     }
 
     mapping(uint256 => activityProperty) activities;
@@ -46,7 +46,7 @@ contract Activity{
             description: _description,
             password: _password,
             amount: _amount,
-            index : 0
+            host: msg.sender
         });
 
         amountForCount += (_amount - 1);
@@ -54,6 +54,18 @@ contract Activity{
         activityAmount++;
 
         emit Initiate(msg.sender,_name,_amount,_password);
+    }
+
+    //获取活动中的nft
+    function getActivityNFT(uint256 id,string memory _password) external returns(uint256,uint256,address){
+        activityProperty memory activity = activities[id];
+        require(keccak256(bytes(_password)) == keccak256(bytes(activity.password)),"password is wrong");
+        require(activity.amount > 0,"activity is over");
+        activity.amount--;
+        if(activity.amount == 0){
+            emit End(activity.id, activity.name);
+        }
+        return (activity.nftCid,activity.amount,activity.host);
     }
 
     //获取活动信息的函数
