@@ -94,6 +94,7 @@ const nftModel = {
             tokenId = web3.utils.sha3(cid);
             nftModel.mint(name,message,cid,1);
         }
+        alert("创建成功");
     },
 
     mint: async function(name,message,cid,amount){
@@ -156,19 +157,20 @@ const activityModel = {
         const { initiate } = activity.methods;
 
         //活动名字
-        var name = document.getElementById("").value;
+        var name = document.getElementById("activityName").value;
         //活动描述
-        var message = document.getElementById("").value;
+        var message = document.getElementById("activityMessage").value;
         //nft奖品数量
-        var amount = document.getElementById("").value;
+        var amount = document.getElementById("nftAmount").value;
         //领取nft的密钥
-        var password = document.getElementById("").value;
+        var password = document.getElementById("password").value;
 
         //创建nft
-        var nftName = document.getElementById("").value;
+        var nftName = document.getElementById("nftName").value;
         var file = document.querySelector("#nft").files;
-        var nftMessage = document.getElementById("").value;
-        var cid=null;
+        var nftMessage = document.getElementById("nftMessage").value;
+
+        var cid = null;
 
         var reader = new FileReader();
         reader.readAsArrayBuffer(file[0]);
@@ -180,8 +182,6 @@ const activityModel = {
 
             cid = cids[0].hash;
             // console.log("cid:" + cid);
-
-            
             nftModel.mint(nftName,nftMessage,cid,amount);
             await initiate(name,message,amount,cid,password).send({
                 from:account,
