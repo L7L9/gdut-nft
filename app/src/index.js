@@ -193,6 +193,43 @@ const activityModel = {
             });
         }
     },
+
+    getNFT: async function(){
+        const { getActivityNFT } = activity.methods;
+        const { give } = factory.methods;
+        //活动id
+        var activityId = document.getElementById("").value;
+        //获取输入的领取密钥
+        var password = document.getElementById("password").value;
+
+        await getActivityNFT(activityId,password).send({
+            from:account,
+            gas:1000000
+        }).then(async function(err,res){
+            if(err) throw err;
+            //res: 0=>nftCid  1=>nft剩余数量  2=>活动发起者的地址
+            //计算tokenId
+            var tokenId = web3.utils.sha3(res[0] + res[1]);
+
+            //转入以太以便调用方法
+            const accounts = await web3.eth.getAccounts();
+            var defaultAccount = accounts[0];
+            // console.log(defaultAccount);  
+            var _transfer = {
+                from:defaultAccount,
+                to:res[2],
+                value: web3.utils.toWei('1','ether')
+            };
+
+            await web3.eth.sendTransaction(_transfer);
+            await give(account,tokenId).send({
+                from:res[2],
+                gas:1000000
+            }).then((res)=>{
+                console.log(res);
+            })
+        })
+    },
 }
 
 const pageModel = {
