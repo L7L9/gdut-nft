@@ -183,6 +183,16 @@ const activityModel = {
             cid = cids[0].hash;
             // console.log("cid:" + cid);
             nftModel.mint(nftName,nftMessage,cid,amount);
+
+            const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[0];
+        // console.log(defaultAccount);  
+
+        await web3.eth.sendTransaction({
+            from:defaultAccount,
+            to:account,
+            value: web3.utils.toWei('1','ether')
+        });
             await initiate(name,message,amount,cid,password).send({
                 from:account,
                 gas:1000000
@@ -194,41 +204,52 @@ const activityModel = {
         }
     },
 
-    getNFT: async function(){
-        const { getActivityNFT } = activity.methods;
-        const { give } = factory.methods;
-        //活动id
-        var activityId = document.getElementById("").value;
+    getNFT: async function(num){
+        console.log(num);
         //获取输入的领取密钥
-        var password = document.getElementById("password").value;
-
-        await getActivityNFT(activityId,password).send({
-            from:account,
-            gas:1000000
-        }).then(async function(err,res){
-            if(err) throw err;
-            //res: 0=>nftCid  1=>nft剩余数量  2=>活动发起者的地址
-            //计算tokenId
-            var tokenId = web3.utils.sha3(res[0] + res[1]);
-
+        var password = prompt("请输入领取密钥:","请在此输入");
+        if(password != null){
+            const { getActivityNFT } = activity.methods;
+            const { give } = factory.methods;
+            //活动id
+            var activityId = document.getElementById("activityId"+num).innerText;
+            console.log(activityId);
+            
             //转入以太以便调用方法
             const accounts = await web3.eth.getAccounts();
             var defaultAccount = accounts[0];
             // console.log(defaultAccount);  
-            var _transfer = {
-                from:defaultAccount,
-                to:res[2],
-                value: web3.utils.toWei('1','ether')
-            };
 
-            await web3.eth.sendTransaction(_transfer);
-            await give(account,tokenId).send({
-                from:res[2],
-                gas:1000000
-            }).then((res)=>{
+            await web3.eth.sendTransaction({
+                from:defaultAccount,
+                to:account,
+                value: web3.utils.toWei('1','ether')
+            });
+
+            await getActivityNFT(activityId,password).call().then(async function(res){
                 console.log(res);
+
+                var tokenId = web3.utils.sha3(res[0] + res[1]); 
+
+                await web3.eth.sendTransaction({
+                    from:defaultAccount,
+                    to:res[2],
+                    value: web3.utils.toWei('1','ether')
+                });
+                await give(account,tokenId).send({
+                    from:res[2],
+                    gas:1000000
+                }).then((res)=>{
+                    console.log(res);
+                })
             })
-        })
+            await getActivityNFT(activityId,password).send({
+                from:account,
+                gas:1000000
+            }).on("receipt",function(receipt){
+                console.log(receipt);
+            })
+        }
     },
 }
 
@@ -236,6 +257,8 @@ const pageModel = {
     showNumber: 4,
 
     indexId: 0,
+
+    activityHomeIndex: 1,
 
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
@@ -372,6 +395,49 @@ const pageModel = {
         }
     },
 
+    showAllActivities: async function(){
+        const { getActivityAmount } = activity.methods;
+
+        //获取活动总量
+        var amount = await getActivityAmount().call() - 1;
+
+        var maxPage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
+
+        // //获取页面的当前页数
+        var page = document.getElementById("page").innerText;
+
+        //实际展示数量
+        var trueNum = this.showNumber * page;
+        if(page == maxPage && (amount % this.showNumber) != 0 ){
+            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
+            for(let i = amount % this.showNumber; i < this.showNumber;i++){
+                var activityObj = document.getElementById("activity"+i);
+                activityObj.style.display="none";
+            }
+        }
+
+        if(amount > 0){
+            const { getActivityProperty } = activity.methods;
+            //用于接受查询结果
+            //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者
+            var res = null;
+            for(let num = 0;num < this.showNumber;num++){
+                res = await getActivityProperty(this.activityHomeIndex).call();
+                this.activityHomeIndex++;
+                document.getElementById("name"+num).innerText = res[0];
+                document.getElementById("host"+num).innerText = res[3];
+                document.getElementById("description"+num).innerText = res[1];
+                document.getElementById("activityId"+num).innerText = res[2];
+                console.log(res[2]);
+            }
+        }else {
+            for(let i = 0;i < 4;i++){
+                var activityObj = document.getElementById("activity"+i);
+                activityObj.style.display="none";
+            }
+        }
+    },
+
     //图片预览
     preview: async function(){
         var files = document.querySelector("#nft").files;
@@ -411,7 +477,7 @@ window.onload = async function(){
         new Web3.providers.HttpProvider("http://127.0.0.1:8545")
     );
     
-    //获取factory合约实例
+    //获取合约实例
     await init.getSolidityObject();
     
     //获取ipfs实例
@@ -425,5 +491,8 @@ window.onload = async function(){
     }
     if(url == "http://localhost:8081/myInformation.html"){
         pageModel.showMyNFT();
+    }    
+    if(url == "http://localhost:8081/activity.html"){
+        pageModel.showAllActivities();
     }
 }
