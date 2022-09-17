@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>活动主页</title>
+  </head>
+  <style>
+    input {
+      display: block;
+      margin-bottom: 12px;
+    }
+    img{
+      height: 250px;
+      width: 250px;
+    }
+  </style>
+  <body>
+    <a href="http://localhost:8081/initiateActivity.html">发起活动</a><br/>
+    <a href="http://localhost:8081/home.html">返回</a><br/>
+    <label>当前链上nft：</label>
+    <div id="activity0">
+      <span id="name0"></span><br/>
+      <span id="host0"></span><br/>
+      <span id="description0"></span>
+      <span id="activityId0" hidden></span>
+      <button onclick="activityModel.getNFT(0)">领取NFT</button>
+    </div><br>
+    <div id="activity1">
+      <span id="name1"></span><br/>
+      <span id="host1"></span><br/>
+      <span id="description1"></span><br/>
+      <span id="activityId1" hidden></span>
+      <button onclick="activityModel.getNFT(1)">领取NFT</button>
+    </div><br>
+    <div id="activity2">
+      <span id="name2"></span><br/>
+      <span id="host2"></span><br/>
+      <span id="description2"></span><br/>
+      <span id="activityId2" hidden></span>
+      <button onclick="activityModel.getNFT(2)">领取NFT</button>
+    </div><br>
+    <div id="activity3">
+      <span id="name3"></span><br/>
+      <span id="host3"></span><br/>
+      <span id="description3"></span><br/>
+      <span id="activityId3" hidden></span>
+      <button onclick="activityModel.getNFT(3)">领取NFT</button>
+    </div><br>
+    第 <label id="page">1</label> 页
+    <script src="index.js"></script>
+  </body>
+</html>
