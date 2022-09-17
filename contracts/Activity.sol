@@ -12,7 +12,7 @@ contract Activity{
         //活动id
         uint256 id;
         //nft的cid
-        uint256 nftCid;
+        string nftCid;
         //活动名称
         string name;
         //活动描述
@@ -38,7 +38,7 @@ contract Activity{
     }
 
     //发起抽奖活动的函数
-    function initiate(string memory _name,string memory _description,uint256 _amount,uint256 _nftCid,string memory _password) external{
+    function initiate(string memory _name,string memory _description,uint256 _amount,string memory _nftCid,string memory _password) external{
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
@@ -57,7 +57,7 @@ contract Activity{
     }
 
     //获取活动中的nft
-    function getActivityNFT(uint256 id,string memory _password) external returns(uint256,uint256,address){
+    function getActivityNFT(uint256 id,string memory _password) external returns(string memory,uint256,address){
         activityProperty memory activity = activities[id];
         require(keccak256(bytes(_password)) == keccak256(bytes(activity.password)),"password is wrong");
         require(activity.amount > 0,"activity is over");
@@ -69,9 +69,9 @@ contract Activity{
     }
 
     //获取活动信息的函数
-    function getActivityProperty(uint256 id) external view returns(string memory,string memory){
+    function getActivityProperty(uint256 id) external view returns(string memory,string memory,uint256,address){
         activityProperty memory activity = activities[id];
-        return (activity.name,activity.description);
+        return (activity.name,activity.description,activity.id,activity.host);
     }
 
     //获取活动中nft数量
@@ -82,5 +82,10 @@ contract Activity{
     //获取amountForCount
     function getCountAmount() external view returns(uint256){
         return amountForCount;
+    }
+
+    //获取活动总量
+    function getActivityAmount() external view returns(uint256){
+        return activityAmount;
     }
 }
