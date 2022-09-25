@@ -5,9 +5,11 @@ module.exports = {
   mode: 'development',
   entry: {
     index:"./src/index.js",
+    bundle:"./src/bundle.js",
+    pouchdbFind:"./src/pouchdb.find.js"
   },
   output: {
-    filename: "index.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
   plugins: [

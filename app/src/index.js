@@ -1,5 +1,6 @@
 import Web3 from "web3";
 const ipfsAPI = require('ipfs-api');
+
 import factoryArtifact from "../../build/contracts/Factory.json";
 import activityArtifact from "../../build/contracts/Activity.json";
 
@@ -13,6 +14,10 @@ var activity = null;
 var ipfs = null;
 //当前账户
 var account = null;
+//nft链下数据库
+var nftDB = new PouchDB("nft_db");
+//activty链下数据库
+var activityDB = new PouchDB("activity_db");
 
 const init = {
     getAccount: async function(){
@@ -73,7 +78,6 @@ const nftModel = {
     create: async function(){
         var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
-        //暂时没用
         var message = document.getElementById("nftMessage").value;
         
         //将文件存入ipfs中并获取cid
@@ -112,12 +116,28 @@ const nftModel = {
         //调用合约的铸造方法
         const { mint } = factory.methods;
         for(let i = 0;i < amount;i++){
-            await mint(web3.utils.sha3(cid+i),name,cid,message,0).send({
+            var tokenId = web3.utils.sha3(cid+i);
+            await mint(tokenId,name,cid,message,0).send({
                 from: account,
                 gas: 1000000
             }).then((res) =>{
                 console.log(res);
             })
+            var doc = {
+                _id : tokenId,
+                name : name,
+                cid : cid,
+                message : message,
+                author : account,
+                status : 0
+            }
+            nftDB.put(doc, function(err, response) {
+                if (err) {
+                    return console.log(err);
+                } else {
+                      console.log("Document created Successfully");
+                }
+            });
         }
     },
 
@@ -155,7 +175,6 @@ const nftModel = {
 const activityModel = {
     initiateActivity: async function(){
         const { initiate } = activity.methods;
-
         //活动名字
         var name = document.getElementById("activityName").value;
         //活动描述
@@ -181,7 +200,6 @@ const activityModel = {
             var cids = await ipfs.add(img);
 
             cid = cids[0].hash;
-            // console.log("cid:" + cid);
             nftModel.mint(nftName,nftMessage,cid,amount);
 
             const accounts = await web3.eth.getAccounts();
