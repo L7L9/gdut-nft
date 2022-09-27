@@ -16,7 +16,7 @@
   <body>
     <a href="http://localhost:8081/initiateActivity.html">发起活动</a><br/>
     <a href="http://localhost:8081/home.html">返回</a><br/>
-    <label>当前链上nft：</label>
+    <label>当前链上活动：</label>
     <div id="activity0">
       <span id="name0"></span><br/>
       <span id="host0"></span><br/>
@@ -45,6 +45,8 @@
       <span id="activityId3" hidden></span>
       <button onclick="activityModel.getNFT(3)">领取NFT</button>
     </div><br>
+    <br><input type="text" value="在此输入要查询的活动名字" id="activityNameToSearch">
+    <br><input type="button" onclick="activityModel.search()" value="搜索">
     第 <label id="page">1</label> 页
     <script src="//cdn.jsdelivr.net/npm/pouchdb@7.3.0/dist/pouchdb.min.js"></script>
     <script src="pouchdbFind.js"></script>

@@ -96,12 +96,12 @@ const nftModel = {
             // console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
-            nftModel.mint(name,message,cid,1);
+            nftModel.mint(name,message,cid,1,0);
         }
         alert("创建成功");
     },
 
-    mint: async function(name,message,cid,amount){
+    mint: async function(name,message,cid,amount,status){
         console.log(amount);
         //转入以太以便使用
         const accounts = await web3.eth.getAccounts();
@@ -117,7 +117,7 @@ const nftModel = {
         const { mint } = factory.methods;
         for(let i = 0;i < amount;i++){
             var tokenId = web3.utils.sha3(cid+i);
-            await mint(tokenId,name,cid,message,0).send({
+            await mint(tokenId,name,cid,message,status).send({
                 from: account,
                 gas: 1000000
             }).then((res) =>{
@@ -129,7 +129,7 @@ const nftModel = {
                 cid : cid,
                 message : message,
                 author : account,
-                status : 0
+                status : status
             }
             nftDB.put(doc, function(err, response) {
                 if (err) {
@@ -167,14 +167,27 @@ const nftModel = {
                 //刷新页面
                 pageModel.showMyNFT();
             }
-        }
-        
+        } 
+    },
+    search: async function(){
+        var regExp = new RegExp('.*' + document.getElementById("nftNameToSearch").value + '.*', 'i');
+        nftDB.find({
+            selector: {
+                name:{"$regex": regExp},
+                status:0
+            },
+        }).then(function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                console.log(result.docs[i]._id);
+            }
+        })
     }
 }
 
 const activityModel = {
     initiateActivity: async function(){
         const { initiate } = activity.methods;
+        const { getActivityAmount } = activity.methods;
         //活动名字
         var name = document.getElementById("activityName").value;
         //活动描述
@@ -200,25 +213,41 @@ const activityModel = {
             var cids = await ipfs.add(img);
 
             cid = cids[0].hash;
-            nftModel.mint(nftName,nftMessage,cid,amount);
+            var activityId = await getActivityAmount().call({from:account});
+            nftModel.mint(nftName,nftMessage,cid,amount,activityId);
 
             const accounts = await web3.eth.getAccounts();
-        var defaultAccount = accounts[0];
-        // console.log(defaultAccount);  
+            var defaultAccount = accounts[0];
+            // console.log(defaultAccount);  
 
-        await web3.eth.sendTransaction({
-            from:defaultAccount,
-            to:account,
-            value: web3.utils.toWei('1','ether')
-        });
-            await initiate(name,message,amount,cid,password).send({
+            var doc = {
+                _id:activityId,
+                name:name,
+                message:message,
+                amount:amount,
+                cid:cid,
+                nftName:nftName,
+                nftMessage:nftMessage
+            }
+            activityDB.put(doc, function(err, response) {
+                if (err) {
+                    return console.log(err);
+                } else {
+                      console.log("Document created Successfully");
+                }
+            }).then(
+                await web3.eth.sendTransaction({
+                from:defaultAccount,
+                to:account,
+                value: web3.utils.toWei('1','ether')
+            })).then(await initiate(name,message,amount,cid,password).send({
                 from:account,
                 gas:1000000
             }).then(res=>{
                 console.log(res);
                 alert("创建活动成功");
                 //刷新活动页面
-            });
+            }))
         }
     },
 
@@ -269,6 +298,19 @@ const activityModel = {
             })
         }
     },
+    search: async function(){
+        var regExp = new RegExp('.*' + document.getElementById("activityNameToSearch").value + '.*', 'i');
+        activityDB.find({
+            selector: {
+                name:{"$regex": regExp},
+            },
+        }).then(function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                // _id,name,message,amount,cid,nftName,nftMessage
+                console.log(result.docs[i].name);
+            }
+        })
+    }
 }
 
 const pageModel = {

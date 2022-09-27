@@ -37,7 +37,7 @@ contract Activity{
         activityAmount = 1;
     }
 
-    //发起抽奖活动的函数
+    //发起活动的函数
     function initiate(string memory _name,string memory _description,uint256 _amount,string memory _nftCid,string memory _password) external{
         activityProperty memory activity = activityProperty({
             id: activityAmount,
