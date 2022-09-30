@@ -44,25 +44,30 @@ const accountModel = {
         var tempAccount = document.getElementById("account").value;
         var password = document.getElementById("password").value;
 
-        web3.eth.personal.unlockAccount(tempAccount,password,10).then((res) =>{
-            if(res == true){
-                // sessionStorage.setItem("account",tempAccount);
-                localStorage.setItem("account",tempAccount);
-                account = tempAccount;
-                alert("登陆成功");
-                //跳转到登陆页面
-                window.location.replace("http://localhost:8081/home.html");
-            } else {
-                alert("密码错误，请重新输入密码");
-            }
-        })
+        try {
+            await web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
+                if(err)throw err;
+                if(res == true){
+                    // sessionStorage.setItem("account",tempAccount);
+                    localStorage.setItem("account",tempAccount);
+                    account = tempAccount;
+                    alert("登陆成功");
+                    //TODO 
+                    //跳转到登陆页面
+                    window.location.replace("http://localhost:8081/home.html");
+                }
+            })
+        } catch (err) {
+            alert("密码错误，请重新输入密码");
+        }
     },
 
     register: async function(){
         // var tempAccount = document.getElementById("account").value;
-        var password = document.getElementById("password").value;
+        var password = document.getElementById("password").value;//密码
 
         web3.eth.personal.newAccount(password).then(function(res){
+            //优化交互体验
             prompt("注册成功，请记住账号密码\n你的账号：",res);
         })
     },
@@ -75,6 +80,7 @@ const accountModel = {
 }
 
 const nftModel = {
+    //创建nft
     create: async function(){
         var file = document.querySelector("#nft").files;
         var name = document.getElementById("nftName").value;
@@ -85,6 +91,7 @@ const nftModel = {
         var tokenId = null;
         // console.log(file[0]);
         var reader = new FileReader();
+        //读取文件转为buffer以上传
         reader.readAsArrayBuffer(file[0]);
         reader.onloadend = async function(){
             // console.log(reader.result);
@@ -101,6 +108,7 @@ const nftModel = {
         alert("创建成功");
     },
 
+    //铸造nft
     mint: async function(name,message,cid,amount,status){
         console.log(amount);
         //转入以太以便使用
@@ -141,6 +149,7 @@ const nftModel = {
         }
     },
 
+    //赠送
     give: async function(){
         var tokenId = prompt("请输入要送出nft的tokenId:","请在此输入");
         if(tokenId != null){
@@ -169,6 +178,7 @@ const nftModel = {
             }
         } 
     },
+    //搜索
     search: async function(){
         var regExp = new RegExp('.*' + document.getElementById("nftNameToSearch").value + '.*', 'i');
         nftDB.find({
@@ -185,6 +195,7 @@ const nftModel = {
 }
 
 const activityModel = {
+    //创建活动
     initiateActivity: async function(){
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
@@ -251,6 +262,7 @@ const activityModel = {
         }
     },
 
+    //领取活动nft
     getNFT: async function(num){
         console.log(num);
         //获取输入的领取密钥
@@ -298,6 +310,7 @@ const activityModel = {
             })
         }
     },
+    //搜索活动
     search: async function(){
         var regExp = new RegExp('.*' + document.getElementById("activityNameToSearch").value + '.*', 'i');
         activityDB.find({
