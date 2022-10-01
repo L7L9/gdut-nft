@@ -143,10 +143,11 @@ const nftModel = {
             // console.log("cid:" + cid);
             
             tokenId = web3.utils.sha3(cid);
-            nftModel.mint(name,message,cid,1,0);
+            await nftModel.mint(name,message,cid,1,0);
+            alert("创建成功");
+            window.location.replace("http://localhost:8081/home.html");
         }
-        alert("创建成功");
-        window.location.replace("http://localhost:8081/home.html");
+        
     },
 
     //铸造nft
