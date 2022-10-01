@@ -46,56 +46,72 @@ const accountModel = {
         var userName = document.getElementById("userName").value;
         var password = document.getElementById("password").value;
         var tempAccount = null;
-        try {
+        if((""!=userName)&&(""!=password)){
             userDB.find({
                 selector: {
                     userName : userName
                 },
-            }).then((result,err)=>{
-                if(err)throw err;
-                tempAccount = result.docs[0]._id;
-            }).then(()=>{
-                web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
-                    if(err)throw err;
-                    if(res == true){
-                        sessionStorage.setItem("account",tempAccount);
-                        alert("登陆成功");
-                        //跳转到登陆页面
-                        window.location.replace("http://localhost:8081/home.html");
+            }).then(async (result)=>{
+                if(null!=result.docs[0]){
+                    try{
+                        tempAccount = result.docs[0]._id;
+                        await web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
+                            if(err)throw err;
+                            if(res == true){
+                                sessionStorage.setItem("account",tempAccount);
+                                account = tempAccount;
+                                alert("登陆成功");
+                                //跳转到登陆页面
+                                window.location.replace("http://localhost:8081/home.html");
+                            }
+                        })
+                    } catch (err) {
+                        alert("密码错误");
                     }
-                })
+                }else alert("账号不存在");
             })
-        } catch (err) {
-            alert("用户不存在或密码错误");
-        }
+        }else alert("用户名和密码不能为空")
     },
 
     register: async function(){
         var userName = document.getElementById("userName").value;
         var password = document.getElementById("password").value;//密码
 
-        try {
-            web3.eth.personal.newAccount(password).then(function(res,err){
-                if(err)throw err;
-                //优化交互体验
-                var doc = {
-                    _id : res,//用户链上id
-                    userName : userName//用户名
-                }
-                userDB.put(doc, function(err, response) {
-                    if (err) {
-                        throw err;
-                    } else {
-                        alert("注册成功,即将返回登陆页面");
-                        window.location.replace("http://localhost:8081");
+        if((""!=userName)&&(""!=password)){
+            userDB.find({
+                selector: {
+                    userName : userName
+                },
+            }).then(async (result)=>{
+                if(null!=result.docs[0]){
+                    alert("用户名重复");
+                }else{
+                    try {
+                        web3.eth.personal.newAccount(password).then(function(res,err){
+                            if(err)throw err;
+                            //优化交互体验
+                            var doc = {
+                                _id : res,//用户链上id
+                                userName : userName//用户名
+                            }
+                            userDB.put(doc, function(err, response) {
+                                if (err) {
+                                    throw err;
+                                } else {
+                                    alert("注册成功,即将返回登陆页面");
+                                    window.location.replace("http://localhost:8081");
+                                }
+                            });
+                        })
+                    } catch (err) {
+                        alert("注册失败，再试试？")
                     }
-                });
+                }
             })
-        } catch (err) {
-            alert("注册失败，再试试？")
+        } else {
+            alert("用户名和密码不能为空")
         }
     },
-
     logout: async function(){
         account = null;
         sessionStorage.removeItem("account");
