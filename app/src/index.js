@@ -14,6 +14,8 @@ var activity = null;
 var ipfs = null;
 //当前账户
 var account = null;
+//用户数据库(用于配对用户名和用户链上id)
+var userDB = new PouchDB("user_db");
 //nft链下数据库
 var nftDB = new PouchDB("nft_db");
 //activty链下数据库
@@ -21,7 +23,7 @@ var activityDB = new PouchDB("activity_db");
 
 const init = {
     getAccount: async function(){
-        account = localStorage.getItem("account");
+        account = sessionStorage.getItem("account");
     },
     getSolidityObject: async function(){
         const networkId = await new web3.eth.net.getId();
@@ -41,41 +43,63 @@ const init = {
 
 const accountModel = {
     login: async function(){
-        var tempAccount = document.getElementById("account").value;
+        var userName = document.getElementById("userName").value;
         var password = document.getElementById("password").value;
-
+        var tempAccount = null;
         try {
-            await web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
+            userDB.find({
+                selector: {
+                    userName : userName
+                },
+            }).then((result,err)=>{
                 if(err)throw err;
-                if(res == true){
-                    // sessionStorage.setItem("account",tempAccount);
-                    localStorage.setItem("account",tempAccount);
-                    account = tempAccount;
-                    alert("登陆成功");
-                    //TODO 
-                    //跳转到登陆页面
-                    window.location.replace("http://localhost:8081/home.html");
-                }
+                tempAccount = result.docs[0]._id;
+            }).then(()=>{
+                web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
+                    if(err)throw err;
+                    if(res == true){
+                        sessionStorage.setItem("account",tempAccount);
+                        alert("登陆成功");
+                        //跳转到登陆页面
+                        window.location.replace("http://localhost:8081/home.html");
+                    }
+                })
             })
         } catch (err) {
-            alert("密码错误，请重新输入密码");
+            alert("用户不存在或密码错误");
         }
     },
 
     register: async function(){
-        // var tempAccount = document.getElementById("account").value;
+        var userName = document.getElementById("userName").value;
         var password = document.getElementById("password").value;//密码
 
-        web3.eth.personal.newAccount(password).then(function(res){
-            //优化交互体验
-            prompt("注册成功，请记住账号密码\n你的账号：",res);
-        })
+        try {
+            web3.eth.personal.newAccount(password).then(function(res,err){
+                if(err)throw err;
+                //优化交互体验
+                var doc = {
+                    _id : res,//用户链上id
+                    userName : userName//用户名
+                }
+                userDB.put(doc, function(err, response) {
+                    if (err) {
+                        throw err;
+                    } else {
+                        alert("注册成功,即将返回登陆页面");
+                        window.location.replace("http://localhost:8081");
+                    }
+                });
+            })
+        } catch (err) {
+            alert("注册失败，再试试？")
+        }
     },
 
     logout: async function(){
         account = null;
-        localStorage.removeItem("account");
-        window.location.replace("http://localhost:8081/index.html");
+        sessionStorage.removeItem("account");
+        window.location.replace("http://localhost:8081");
     }
 }
 
@@ -106,6 +130,7 @@ const nftModel = {
             nftModel.mint(name,message,cid,1,0);
         }
         alert("创建成功");
+        window.location.replace("http://localhost:8081/home.html");
     },
 
     //铸造nft
