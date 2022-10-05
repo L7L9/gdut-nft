@@ -93,7 +93,7 @@
     <script src="pouchdbFind.js"></script>
     <script src="index.js"></script>
     <script type="text/babel">
-      const {Input,Divider,message,Button,Form} = antd;
+      const {Input,Divider,message,Button,Form,Modal} = antd;
       const { Search } = Input;
       
       class SearchInput extends React.Component{
@@ -114,9 +114,9 @@
         }
       }
       class Headnav extends React.Component {
-        state={status:'home',create:{}}
+        state={status:'home'}
         home=()=>this.setState({status:'home'})
-        activity=()=>this.setState({status:'activity',create:this.refs})
+        activity=()=>this.setState({status:'activity'})
         mynft=()=>this.setState({status:'mynft'})
         notify=()=>this.setState({status:'notify'})
         personmessage=()=>this.setState({status:'personmessage'})
@@ -128,7 +128,7 @@
                 <li><h1>GDUT-NFT</h1></li>
                 <li id="search"><SearchInput/></li>
                 <li onClick={this.activity}>活动</li>
-                <li  onClick={this.mynft} className='create' ref='create'>铸造我的nft</li>
+                <li  onClick={this.mynft} className='create'>铸造我的nft</li>
                 <li  onClick={this.notify}>公告</li>
                 <li><a href="http://localhost:8081/index.html" onClick={accountModel.logout}>注销</a></li>
                 <li  onClick={this.personmessage}>个人信息</li>
@@ -145,7 +145,7 @@
         render() {
           switch(this.props.status){
             case 'home': return <Home/>
-            case 'activity':return <Activity create={this.props.create}/>
+            case 'activity':return <Activity/>
             case 'mynft':return <Mynft/>
             case 'notify':return <Notify/>
             case 'personmessage':return <PersonMessage/>
@@ -239,8 +239,11 @@
         }
       }
       class Activity extends React.Component{
+        state={isModalOpen:false}
+        showModal = () => this.setState({isModalOpen:true});
+        handleOk = () => this.setState({isModalOpen:false});
+        handleCancel = () => this.setState({isModalOpen:false});
         onSearch=(value)=>activityModel.search(value);
-        create=()=>this.props.create.create.click();
         render(){
           return <div>
             <h1 style={{float:'left'}}>当前链上活动有：</h1>
@@ -254,7 +257,11 @@
             }}
             />
               </div>
-              <Button type='primary' style={{float:'right',marginTop:'10px'}} onClick={this.create}>我也要创建活动</Button>
+              <Modal title="创建活动" open={this.isModalOpen} onOk={this.handleOk} onCancel={this.handleCancel} visible={this.state.isModalOpen}>
+                <span style={{width:'220px',height:'300px',backgroundColor:'red',display:'inline-block'}}>选文件</span>
+                <span style={{width:'220px',height:'300px',backgroundColor:'green',display:'inline-block'}}>填表单</span>
+            </Modal>
+              <Button type='primary' style={{float:'right',marginTop:'10px'}} onClick={this.showModal}>我也要创建活动</Button>
             </div>
         }
       }
