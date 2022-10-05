@@ -93,7 +93,7 @@
     <script src="pouchdbFind.js"></script>
     <script src="index.js"></script>
     <script type="text/babel">
-      const {Input,Divider,message,Button} = antd;
+      const {Input,Divider,message,Button,Form} = antd;
       const { Search } = Input;
       
       class SearchInput extends React.Component{
@@ -259,8 +259,80 @@
         }
       }
       class Mynft extends React.Component{
+        preview=()=>pageModel.preview()
+        onFinish=(values)=>{
+          nftModel.create(values.name,values.des)
+        };
+        onFinishFailed = (errorInfo) => {
+          console.log('Failed:', errorInfo);
+        };
         render(){
-          return <div><h1>Mynft</h1></div>
+          return <div>
+            <h1>铸造我的nft</h1>        
+            <div style={{display:'flex'}}>
+              <div style={{marginRight:'150px'}}>
+                <div><img id="nftShower"/></div>
+                <p>上传一张图片，获得一份独一无二的nft</p>
+                <input type="file" id="nft" onChange={this.preview}/>
+              </div>
+              <div>
+                <Form
+                style={{marginTop:'35px'}}
+                  name="basic"
+                  labelCol={{
+                    span: 8,
+                  }}
+                  wrapperCol={{
+                    span: 16,
+                  }}
+                  initialValues={{
+                    remember: true,
+                  }}
+                  onFinish={this.onFinish}
+                  onFinishFailed={this.onFinishFailed}
+                  autoComplete="off"
+                >
+                  <Form.Item
+                    label="名字 ："
+                    name="name"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input your nftname!',
+                      },
+                    ]}
+                  >
+                    <Input style={{width:'220px'}}/>
+                  </Form.Item>
+
+                  <Form.Item
+                  style={{marginTop:'35px'}}
+                    label="描述 ："
+                    name="des"
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Please input your nftdescription!',
+                      },
+                    ]}
+                  >
+                    <Input style={{width:'220px'}}/>
+                  </Form.Item>
+
+                  <Form.Item
+                    wrapperCol={{
+                      offset: 8,
+                      span: 16,
+                    }}
+                  >
+                    <Button type="primary" htmlType="submit" style={{marginTop:'35px'}}>
+                      确认铸造
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
+            </div>
+          </div>
         }
       }
       class Notify extends React.Component{
@@ -284,7 +356,7 @@
           }
         });
         }else {
-          message.info("已经是第一页了")
+          message.info("已经是第一页了",.5)
         }
         }
         give=()=>nftModel.give()
@@ -333,6 +405,7 @@
       )
       const nav=document.querySelector('.headnav');
       for(let i=3;i<nav.children.length;i++){
+          if(i==6)continue;
           nav.children[i].addEventListener('click',function(){
           for(let j=0;j<nav.children.length;j++){
             nav.children[j].className='';

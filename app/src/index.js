@@ -121,10 +121,10 @@ const accountModel = {
 
 const nftModel = {
     //创建nft
-    create: async function(){
+    create: async function(name0,des0){
         var file = document.querySelector("#nft").files;
-        var name = document.getElementById("nftName").value;
-        var message = document.getElementById("nftMessage").value;
+        var name = name0;
+        var message = des0;
         
         //将文件存入ipfs中并获取cid
         var cid = null;
