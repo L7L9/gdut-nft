@@ -3,6 +3,12 @@
   <head>
     <title>活动主页</title>
   </head>
+  <script src="https://unpkg.com/antd@3.9.3/dist/antd.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.18.2/antd.compact.min.css">
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.18.2/antd.min.js"></script>
   <style>
     input {
       display: block;
@@ -14,6 +20,19 @@
     }
   </style>
   <body>
+
+    <ul class="headnav">
+      <li><a href="http://localhost:8081/home.html">首页</a></li>
+      <li><h1>GDUT-NFT</h1></li>
+      <li id="search"></li>
+      <li class="current"><a href="http://localhost:8081/activity.html">活动</a></li>
+      <li><a href="http://localhost:8081/create.html">铸造我的nft</a></li>
+      <li><a href="">公告</a></li>
+      <li><a href="http://localhost:8081/index.html" onclick="accountModel.logout()">注销</a></li>
+      <li><a href="http://localhost:8081/myInformation.html">个人信息</a></li>
+    </ul>
+    <div class="divider"></div>
+
     <a href="http://localhost:8081/initiateActivity.html">发起活动</a><br/>
     <a href="http://localhost:8081/home.html">返回</a><br/>
     <label>当前链上活动：</label>
@@ -51,5 +70,35 @@
     <script src="//cdn.jsdelivr.net/npm/pouchdb@7.3.0/dist/pouchdb.min.js"></script>
     <script src="pouchdbFind.js"></script>
     <script src="index.js"></script>
+    <script type="text/babel">
+      
+      const {Input,Divider} = antd;
+      const { Search } = Input;
+      class SearchInput extends React.Component{
+        onSearch = () => nftModel.search();
+        render(){
+          return (
+            <>
+            <Search
+            placeholder="在此输入要查询的nft名字"
+            allowClear
+            onSearch={this.onSearch}
+            style={{
+              width: 200,
+            }}
+    />
+            </>
+            )
+        }
+      }
+      ReactDOM.render(
+        <SearchInput/>,
+        document.getElementById("search")
+      )
+      ReactDOM.render(
+        <Divider/>,
+        document.querySelector(".divider")
+      )
+      </script>
   </body>
 </html>

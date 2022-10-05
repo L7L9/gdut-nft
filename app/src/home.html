@@ -3,66 +3,158 @@
   <head>
     <title>首页</title>
   </head>
+    <script src="https://unpkg.com/antd@3.9.3/dist/antd.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.18.2/antd.compact.min.css">
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.18.2/antd.min.js"></script>
   <style>
     input {
       display: block;
       margin-bottom: 12px;
     }
-    a {
-      margin-bottom: 20px;
-    }
     img {
-      height: 200px;
-      width: 200px;
+    height: 200px;
+    width: 200px;
+    }
+    
+    li {
+    list-style: none;
+    }
+
+    a {
+        color: black !important;
+        text-decoration: none;
+        margin-bottom: 20px;
+    }
+
+    .headnav {
+        margin-bottom: -25px;
+        width: 100%;
+        height: 60px;
+        /* background-color: #e6f7ff; */
+    }
+
+    .headnav li {
+        float: left;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: 10px;
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        max-height: 60px;
+        /* background-color: brown; */
+        color: black;
+        transition: .3s;
+    }
+
+    .headnav li:hover  {
+        color: #65b5ff !important;
+        cursor: pointer;
+    }
+
+    .headnav li:last-of-type {
+        float: right;
+        margin-right: 50px;
+    }
+
+    .headnav li:nth-of-type(7) {
+        margin-left: -70px;
+        float: right;
+    }
+
+    .headnav li:nth-of-type(7):hover a {
+        color: red !important;
+    }
+
+    .headnav #search {
+        padding-top: 15px;
+    }
+
+    .current {
+        border-bottom: 2px solid #65b5ff;
+        color: #65b5ff !important;
+    }
+    .current a{
+      color: #65b5ff !important;
+    }
+
+    .all{
+      width: 90%;
+      margin-left: 5%;
     }
   </style>
   <body>
-    <a href="http://localhost:8081/create.html">创建自己的nft</a><br/>
-    <a href="http://localhost:8081/myInformation.html">个人信息</a><br/>
-    <a href="http://localhost:8081/activity.html">活动页面</a><br/>
-    <a href="http://localhost:8081/index.html" onclick="accountModel.logout()">注销</a><br/>
+    <div id="root"></div>
 
-    <label>当前链上nft：</label>
-    <div id="nft0">
-      <img id="num0"/><br>
-      <span id="name0"></span><br/>
-      <span id="tokenId0"></span><br/>
-      <span id="author0"></span><br/>
-      <span id="description0"></span>
-      <span id="activityNFTAmount0" hidden></span>
-    </div><br>
-    <div id="nft1">
-      <img id="num1"/><br>
-      <span id="name1"></span><br/>
-      <span id="tokenId1"></span><br/>
-      <span id="author1"></span><br/>
-      <span id="description1"></span>
-      <span id="activityNFTAmount1" hidden></span>
-    </div><br>
-    <div id="nft2">
-      <img id="num2"/><br>
-      <span id="name2"></span><br/>
-      <span id="tokenId2"></span><br/>
-      <span id="author2"></span><br/>
-      <span id="description2"></span>
-      <span id="activityNFTAmount2" hidden></span>
-    </div><br>
-    <div id="nft3">
-      <img id="num3"/><br>
-      <span id="name3"></span><br/>
-      <span id="tokenId3"></span><br/>
-      <span id="author3"></span><br/>
-      <span id="description3"></span>
-      <span id="activityNFTAmount3" hidden></span>
-    </div><br>
-    <br><input type="text" value="在此输入要查询的nft名字" id="nftNameToSearch">
-    <br><input type="button" onclick="nftModel.search()" value="搜索">
-    <br>第 <label id="page">1</label> 页
-    <input type="button" onclick="previous()" value="上一页">
-    <script>
-      function previous(){
-        // console.log(document.getElementById("page").innerText)；
-        var page = document.getElementById("page").innerText;
+    <script src="//cdn.jsdelivr.net/npm/pouchdb@7.3.0/dist/pouchdb.min.js"></script>
+    <script src="pouchdbFind.js"></script>
+    <script src="index.js"></script>
+    <script type="text/babel">
+      const {Input,Divider,message,Button} = antd;
+      const { Search } = Input;
+      
+      class SearchInput extends React.Component{
+        onSearch = (value) => nftModel.search(value);
+        render(){
+          return (
+            <>
+            <Search
+            placeholder="在此输入要查询的nft名字"
+            allowClear
+            onSearch={this.onSearch}
+            style={{
+              width: 200,
+            }}
+    />
+            </>
+            )
+        }
+      }
+      class Headnav extends React.Component {
+        state={status:'home',create:{}}
+        home=()=>this.setState({status:'home'})
+        activity=()=>this.setState({status:'activity',create:this.refs})
+        mynft=()=>this.setState({status:'mynft'})
+        notify=()=>this.setState({status:'notify'})
+        personmessage=()=>this.setState({status:'personmessage'})
+        render() {
+          return (
+            <>
+              <ul className="headnav">
+                <li className="current"><a href="http://localhost:8081/home.html"  onClick={this.home}>首页</a></li>
+                <li><h1>GDUT-NFT</h1></li>
+                <li id="search"><SearchInput/></li>
+                <li onClick={this.activity}>活动</li>
+                <li  onClick={this.mynft} className='create' ref='create'>铸造我的nft</li>
+                <li  onClick={this.notify}>公告</li>
+                <li><a href="http://localhost:8081/index.html" onClick={accountModel.logout}>注销</a></li>
+                <li  onClick={this.personmessage}>个人信息</li>
+              </ul>
+              <Divider/>
+              <div className="all">
+                <Content  status={this.state.status} create={this.state.create}/>
+              </div>
+            </>
+          )
+        }
+      }
+      class Content extends React.Component {
+        render() {
+          switch(this.props.status){
+            case 'home': return <Home/>
+            case 'activity':return <Activity create={this.props.create}/>
+            case 'mynft':return <Mynft/>
+            case 'notify':return <Notify/>
+            case 'personmessage':return <PersonMessage/>
+          }
+        }
+      }
+      class Home extends React.Component{
+        previous=()=>{
+          var page = document.getElementById("page").innerText;
         if(document.getElementById("page").innerText > 1){
           var amount = null;
           document.getElementById("page").innerText--;
@@ -83,27 +175,173 @@
           }
         });
         } else {
-          console.log("first page!");
+          message.info('first page!',1);
         }
-      }
-    </script>
-    <input type="button" onclick="next()" value="下一页">
-    <script>
-      function next(){
-        var amount = pageModel.getMaxHomePage().then(res=>{
+        }
+        next=()=>{
+          var amount = pageModel.getMaxHomePage().then(res=>{
           var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
           var page = document.getElementById("page").innerText;
           if(new Number(page)< maxPage){
             document.getElementById("page").innerText++;
             pageModel.showAllNFT();
           } else {
-            console.log("final page!");
+            message.info('final page',1);
           }
         });
+        }
+        render(){
+          return (
+            <>
+            <label style={{fontSize:'20px'}}>当前链上nft：</label>
+            <div style={{overflow:'hidden'}}>
+              <div id="nft0" style={{float:'left',marginLeft:'80px'}}>
+              <img id="num0"/>
+              <span id="name0"></span><br/>
+              <span id="tokenId0"></span><br/>
+              <span id="author0"></span><br/>
+              <span id="description0"></span>
+              <span id="activityNFTAmount0" hidden></span>
+            </div>
+              <div id="nft1" style={{float:'left',marginLeft:'80px'}}>
+              <img id="num1"/><br/>
+              <span id="name1"></span><br/>
+              <span id="tokenId1"></span><br/>
+              <span id="author1"></span><br/>
+              <span id="description1"></span>
+              <span id="activityNFTAmount1" hidden></span>
+            </div>
+              <div id="nft2" style={{float:'left',marginLeft:'80px'}}>
+              <img id="num2"/><br/>
+              <span id="name2"></span><br/>
+              <span id="tokenId2"></span><br/>
+              <span id="author2"></span><br/>
+              <span id="description2"></span>
+              <span id="activityNFTAmount2" hidden></span>
+            </div>
+              <div id="nft3" style={{float:'left',marginLeft:'80px'}}>
+              <img id="num3"/><br/>
+              <span id="name3"></span><br/>
+              <span id="tokenId3"></span><br/>
+              <span id="author3"></span><br/>
+              <span id="description3"></span>
+              <span id="activityNFTAmount3" hidden></span>
+              </div>
+            </div>
+            <div style={{textAlign:'center' ,marginTop:'40px'}}>
+              <Button type="dashed" onClick={this.previous} style={{marginRight:'10px'}}>上一页</Button>
+              <Button type="dashed" onClick={this.next} style={{marginRight:'10px'}}>下一页</Button>
+              第 <label id="page">1</label> 页
+            </div>
+            <div className="content"></div>
+            </>
+          )
+        }
       }
-    </script>
-    <script src="//cdn.jsdelivr.net/npm/pouchdb@7.3.0/dist/pouchdb.min.js"></script>
-    <script src="pouchdbFind.js"></script>
-    <script src="index.js"></script>
+      class Activity extends React.Component{
+        onSearch=(value)=>activityModel.search(value);
+        create=()=>this.props.create.create.click();
+        render(){
+          return <div>
+            <h1 style={{float:'left'}}>当前链上活动有：</h1>
+            <div className="search" style={{float:'left',marginTop:'10px'}}>
+              <Search
+            placeholder="查询活动"
+            allowClear
+            onSearch={this.onSearch}
+            style={{
+              width: 150,
+            }}
+            />
+              </div>
+              <Button type='primary' style={{float:'right',marginTop:'10px'}} onClick={this.create}>我也要创建活动</Button>
+            </div>
+        }
+      }
+      class Mynft extends React.Component{
+        render(){
+          return <div><h1>Mynft</h1></div>
+        }
+      }
+      class Notify extends React.Component{
+        render(){
+          return <div><h1>Notify</h1></div>
+        }
+      }
+      class PersonMessage extends React.Component{
+        previous=()=>{
+          var page = document.getElementById("page").innerText;
+        if(document.getElementById("page").innerText > 1){
+          document.getElementById("page").innerText--;
+          pageModel.showMyNFT();
+          pageModel.getMaxPersonalPage().then(res=>{
+          var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
+          if(new Number(page) == maxPage){
+            for(let i = 0;i < 4;i++){
+              var nftShow = document.getElementById("nft"+i);
+                nftShow.style.display="block";
+            } 
+          }
+        });
+        }else {
+          message.info("已经是第一页了")
+        }
+        }
+        give=()=>nftModel.give()
+        render(){
+          return <div>
+            <h1>我拥有的nft:</h1>
+            <div style={{overflow:'hidden'}}>
+              <div id="nft0" style={{float:'left',marginLeft:'80px',marginBottom:'20px'}}>
+            <img id="num0"/>
+            <span id='name0'></span>
+            <span id="id0"></span><br/>
+            <span id="description0"></span>
+          </div>
+              <div id="nft1" style={{float:'left',marginLeft:'80px',marginBottom:'20px'}}>
+            <img id="num1"/>
+            <span id='name1'></span>
+            <span id="id1"></span>
+            <span id="description1"></span>
+          </div>
+              <div id="nft2" style={{float:'left',marginLeft:'80px',marginBottom:'20px'}}>
+            <img id="num2"/>
+            <span id='name2'></span>
+            <span id="id2"></span>
+            <span id="description2"></span>
+          </div>
+              <div id="nft3" style={{float:'left',marginLeft:'80px',marginBottom:'20px'}}>
+              <img id="num3"/>
+              <span id='name3'></span>
+              <span id="id3"></span>
+              <span id="description3"></span>
+            </div>
+          </div>
+            <div style={{textAlign:'center' ,marginTop:'40px'}}>
+              <Button type="dashed" onClick={this.previous} style={{marginRight:'10px'}}>上一页</Button>
+              <Button type="dashed" onClick={this.give} style={{marginRight:'10px'}}>转赠</Button>
+              第 <label id="page">1</label> 页
+            </div>
+        </div>
+        }
+      }
+      
+      
+      ReactDOM.render(
+        <Headnav/>,
+        document.getElementById("root")
+      )
+      const nav=document.querySelector('.headnav');
+      for(let i=3;i<nav.children.length;i++){
+          nav.children[i].addEventListener('click',function(){
+          for(let j=0;j<nav.children.length;j++){
+            nav.children[j].className='';
+          }
+          this.className='current';
+        })
+        
+      }
+      
+      </script>
   </body>
 </html>

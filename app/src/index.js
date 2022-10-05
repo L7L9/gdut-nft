@@ -221,8 +221,8 @@ const nftModel = {
         } 
     },
     //搜索
-    search: async function(){
-        var regExp = new RegExp('.*' + document.getElementById("nftNameToSearch").value + '.*', 'i');
+    search: async function(value){
+        var regExp = new RegExp('.*' + value + '.*', 'i');
         nftDB.find({
             selector: {
                 name:{"$regex": regExp},
@@ -353,8 +353,8 @@ const activityModel = {
         }
     },
     //搜索活动
-    search: async function(){
-        var regExp = new RegExp('.*' + document.getElementById("activityNameToSearch").value + '.*', 'i');
+    search: async function(value){
+        var regExp = new RegExp('.*' + value + '.*', 'i');
         activityDB.find({
             selector: {
                 name:{"$regex": regExp},
