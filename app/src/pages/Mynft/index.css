@@ -1,0 +1,7 @@
+.out{
+    position: relative;
+    left: 50%;
+    width:650px;
+    overflow: hidden;
+    transform: translate(-50%);
+}

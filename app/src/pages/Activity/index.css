@@ -1,0 +1,31 @@
+.itemsparent{
+    position: relative;
+    left: 50%;
+    width: 60%;
+    transform: translate(-50%);
+}
+.items{
+    /* position: relative;
+    left: 50%;
+    top: 50px;
+    display: flex;
+    justify-content: start;
+    flex-wrap: wrap;
+    width: 810px;
+    background-color: aquamarine;
+    transform: translate(-50%); */
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+
+.item{
+    display: inline-block;
+    margin-left: 20px;
+    margin-top: 15px;
+    width: 250px;
+    height: 250px;
+    border: 1px solid black;
+}
