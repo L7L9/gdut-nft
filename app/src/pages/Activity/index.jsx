@@ -1,12 +1,16 @@
 import React, { Component } from 'react'
-import { Input, Modal, Button, Form } from 'antd'
+import { Input, Modal, Button, Form, Divider } from 'antd'
+import Loading from '@/components/Loading';
+import Nodata from '@/components/Nodata';
 import Selectfile from './Selectfile';
+import {nanoid} from 'nanoid'
 const { Search } = Input;
 import './index.css'
 
 
+
 export default class Activity extends Component{
-  state = { isModalOpen: false }
+  state = { isModalOpen: false,data:[123] }
   showModal = () => this.setState({isModalOpen:true});
   handleOk = () => {
     const { submit } = this.refs;
@@ -25,6 +29,20 @@ export default class Activity extends Component{
     return () => {
       activityModel.getNFT(e)
     }
+  }
+  getdata1 = () => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve([{url:'',name:123,person:456},{url:'',name:12,person:45},{url:'',name:13,person:46},{url:'',name:23,person:56},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},])
+      },2000)
+    })
+  }
+  getdata2 = async () => {
+    const alldata = await this.getdata1();
+    this.setState({data:alldata})
+  }
+  componentDidMount() {
+    this.getdata2()
   }
   render(){
     return <div>
@@ -166,7 +184,7 @@ export default class Activity extends Component{
       <div className='itemsparent'>
         <div className="items">
           <div className="item">
-        <div id="activity0">
+          <div id="activity0">
           <span id="name0">名字：</span><br/>
           <span id="host0">举办者：</span><br/>
           <span id="description0"></span>
@@ -204,6 +222,39 @@ export default class Activity extends Component{
         </div>
         <div style={{width:'100%',textAlign:'center',marginTop:'65px'}}>第 <label id="page">1</label> 页</div>
       </div>
+      <Divider />
+      <div style={{overflow:'hidden'}}>
+        <h1 style={{float:'left'}}>当前链上活动有：</h1>
+        <div className="search" style={{float:'left',marginTop:'3px'}}>
+          <Search
+        placeholder="查询活动"
+        allowClear
+        onSearch={this.onSearch}
+        style={{
+          width: 150,
+        }}
+          />
+        </div>
+        <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>我也要创建活动</Button> 
+      </div>
+      {
+              this.state.data[0] == 123 ? <Loading /> : this.state.data.length == 0 ? <Nodata /> :
+              <>
+                <div className="showout1">
+                  <div className="showin1">
+                    {
+                      this.state.data.map(item => {
+                      return <div className="item1" key={nanoid()}>  
+                        <span id="name0">名字：{item.name}</span><br/>
+                        <span id="host0">举办者：{item.person}</span><br/>
+                          <Button type="dashed" onClick={this.getnft(0)}>领取NFT</Button>
+                        </div>
+                      })
+                    }
+                  </div>
+                </div>
+              </>
+            }
     </div>
   }
 }

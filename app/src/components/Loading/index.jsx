@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 
 class Loading extends Component {
     componentDidMount() {
-        this.props.changeloding(false, 1500);
+        this.props.changeloding(false, 500);
     }
     render() {
     return (

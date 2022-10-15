@@ -9,7 +9,7 @@ export const items = [
     {
         key:'首页',
         label: <Link to="/GDUT-nft/home" >首页</Link>,
-        icon:<AppstoreOutlined/>
+        icon: <AppstoreOutlined />
     },
     {
         key:'标题',

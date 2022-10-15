@@ -23,6 +23,10 @@ var nftDB = new PouchDB("nft_db");
 //activty链下数据库
 var activityDB = new PouchDB("activity_db");
 
+// userDB.destroy();
+// nftDB.destroy();
+// activityDB.destroy();
+
 const init = {
     getAccount: async function(){
         account = sessionStorage.getItem("account");
@@ -118,17 +122,26 @@ const accountModel = {
 const nftModel = {
     //创建nft
     create: async function(name0,des0){
-        var file = document.querySelector("#nft").files;
+        var file1 = document.querySelector("#nft").files;
+        const nftfile = file1[0];
+        if (file1) {
+            const temp = file1.length;
+            if (temp == 0) {
+                message.error('未选择文件，铸造失败', 1)
+                return;
+            }
+            
+        }
         var name = name0;
         var des = des0;
-        if (file.length !== 0) {
+        // if (file1.length!=0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
             var tokenId = null;
             // console.log(file[0]);
             var reader = new FileReader();
             //读取文件转为buffer以上传
-            reader.readAsArrayBuffer(file[0]);
+            reader.readAsArrayBuffer(file1[0]);
             reader.onloadend = async function(){
                 // console.log(reader.result);
                 var img = Buffer.from(reader.result);
@@ -143,7 +156,7 @@ const nftModel = {
                 alert("创建成功");
                 window.location.replace("http://localhost:8081/home.html");
             }
-        }else message.error('未选择文件，铸造失败',1)
+        // }else message.error('未选择文件，铸造失败',1)
         
         
     },
@@ -250,7 +263,7 @@ const activityModel = {
 
         //创建nft
         // var nftName = document.getElementById("nftName").value;
-        var file = document.querySelector("#nft").files;
+        var file = document.querySelector("#anft").files;
         // var nftMessage = document.getElementById("nftMessage").value;
 
         var cid = null;
@@ -297,7 +310,7 @@ const activityModel = {
                 gas:1000000
             }).then(res=>{
                 console.log(res);
-                alert("创建活动成功");
+                message.success("创建活动成功",1);
                 //刷新活动页面
             }))
             }
@@ -489,17 +502,17 @@ const pageModel = {
                     url = window.URL.createObjectURL(new Blob([content]));
                     var img = document.getElementById("num"+num);
                     img.src = url;
-                    document.getElementById("name"+num).innerText = "name："+res[2];
+                    document.getElementById("name"+num).innerText = "名字："+res[2];
                     document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
                     document.getElementById("author"+num).innerText = "author："+res[3];
                     document.getElementById("description"+num).innerText = "nft描述："+res[4];
                 })      
                 if(res[5] != 0){
-                    var addAmount = getActivityNFTAmount(res[5]).call();
-                    this.indexId += addAmount;
+                    var addAmount = await getActivityNFTAmount(res[5]).call();
+                    this.indexId += new Number(addAmount);
                     document.getElementById("activityNFTAmount"+num).innerText = addAmount;
                 } else {
-                    this.indexId++;
+                    this.indexId += new Number(1);
                     document.getElementById("activityNFTAmount"+num).innerText = '1';
                 }
                 console.log(this.indexId);
@@ -556,6 +569,21 @@ const pageModel = {
     },
 
     //图片预览
+    apreview: async function(){
+        var files = document.querySelector("#anft").files;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(files[0]);
+        reader.onloadend = async function(){
+            console.log(reader.result);
+            var file = Buffer.from(reader.result);
+
+            var url = window.URL.createObjectURL(new Blob([file]));
+
+            var img = document.getElementById("anftShower");
+            img.src = url;
+        }
+    },
+
     preview: async function(){
         var files = document.querySelector("#nft").files;
         var reader = new FileReader();

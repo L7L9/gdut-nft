@@ -7,6 +7,7 @@ import {loadingaction} from '@/redux/actions/loading'
 import { items } from '@/routes/allmenuitems';
 import { Navigate } from "react-router-dom";
 import Home from '@/pages/Home'
+import Nftdetail from '@/pages/Home/Nftdetail'
 import Search from '@/pages/Search'
 import Activity from '@/pages/Activity'
 import Mynft from '@/pages/Mynft'
@@ -52,6 +53,7 @@ export default function BaseLayout() {
     <Routes>
         <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
+        <Route path="/detail"  element={<Nftdetail/>}  />
         <Route path="/search"  element={loading?<Loading/>:<Search/>}  />
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
         <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />
