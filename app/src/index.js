@@ -23,10 +23,6 @@ var nftDB = new PouchDB("nft_db");
 //activty链下数据库
 var activityDB = new PouchDB("activity_db");
 
-// userDB.destroy();
-// nftDB.destroy();
-// activityDB.destroy();
-
 const init = {
     getAccount: async function(){
         account = sessionStorage.getItem("account");
@@ -122,26 +118,17 @@ const accountModel = {
 const nftModel = {
     //创建nft
     create: async function(name0,des0){
-        var file1 = document.querySelector("#nft").files;
-        const nftfile = file1[0];
-        if (file1) {
-            const temp = file1.length;
-            if (temp == 0) {
-                message.error('未选择文件，铸造失败', 1)
-                return;
-            }
-            
-        }
+        var file = document.querySelector("#nft").files;
         var name = name0;
         var des = des0;
-        // if (file1.length!=0) {
+        if (file.length !== 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
             var tokenId = null;
             // console.log(file[0]);
             var reader = new FileReader();
             //读取文件转为buffer以上传
-            reader.readAsArrayBuffer(file1[0]);
+            reader.readAsArrayBuffer(file[0]);
             reader.onloadend = async function(){
                 // console.log(reader.result);
                 var img = Buffer.from(reader.result);
@@ -156,7 +143,7 @@ const nftModel = {
                 alert("创建成功");
                 window.location.replace("http://localhost:8081/home.html");
             }
-        // }else message.error('未选择文件，铸造失败',1)
+        }else message.error('未选择文件，铸造失败',1)
         
         
     },
@@ -241,7 +228,22 @@ const nftModel = {
             },
         }).then(function(result){
             for(let i=0;result.docs[i]!=null;i++){
-                console.log(result.docs[i]._id);
+                ipfs.get(result.docs[i].cid,function(err,files){
+                    if(err) throw err;
+                    //nft图片
+                    content = files[0].content;
+                    url = window.URL.createObjectURL(new Blob([content]));
+                    var img = document.getElementById("num"+num);
+                    img.src = url;
+
+                    //将res中数据渲染到前端
+                    res[0]//tokenId
+                    res[1]//ipfs中的cid
+                    res[2]//nft名字
+                    res[3]//作者
+                    res[4]//nft描述
+                    res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+                })
             }
         })
     }
@@ -310,7 +312,7 @@ const activityModel = {
                 gas:1000000
             }).then(res=>{
                 console.log(res);
-                message.success("创建活动成功",1);
+                alert("创建活动成功");
                 //刷新活动页面
             }))
             }
@@ -396,21 +398,6 @@ const pageModel = {
 
         //获取个人拥有的nft数量
         var amount = await balanceOf(account).call();
-        //计算出最大页数
-        var maxPage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
-        // console.log(maxPage);
-        //获取页面的当前页数
-        var page = document.getElementById("page").innerText;
-        
-        //实际展示数量
-        var trueNum = this.showNumber * page;
-        if(page == maxPage && (amount % this.showNumber) != 0 ){
-            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
-            for(let i = amount % this.showNumber; i < this.showNumber;i++){
-                var nftShow = document.getElementById("nft"+i);
-                nftShow.style.display="none";
-            }
-        }
 
         //用于接受文件内容
         var content = null;
@@ -418,74 +405,48 @@ const pageModel = {
         var cid = null;
         //用于获取url
         var url = null;
-        //用于记录第几个的临时变量
-        var num = 0;
+        var result = [];
         if(amount > 0){
-            for(let i = (page-1) * this.showNumber;i < trueNum;i++){
+            for(let i = 0; i < amount; i++){
                 await getPersonalNFT(i).call({from:account}).then((res)=>{
-                    //将res中数据渲染到前端
-                    //获取图片信息
-                    //res: 0=>tokenId  1=>cid  2=>name 3=>author 4=>description
-                    // console.log(res);
+
                     cid = res[1];
                     ipfs.get(cid,function(err,files){
                         if(err) throw err;
+                        //nft图片
                         content = files[0].content;
                         url = window.URL.createObjectURL(new Blob([content]));
-                        var img = document.getElementById("num"+num);
-                        img.src = url;
-                        document.getElementById("id"+num).innerText="tokenId："+web3.utils.toHex(res[0]);
-                        document.getElementById("name"+num).innerText="nft名称："+res[2];
-                        document.getElementById("description"+num).innerText="nft描述："+res[4];
-                        num++;
+                        // var img = document.getElementById("num"+num);
+                        // img.src = url;
+
+                        result.push({
+                            a: res[0]
+                        })
+                        //将res中数据渲染到前端
+                        // res[0]//tokenId
+                        // res[1]//ipfs中的cid
+                        // res[2]//nft名字
+                        // res[3]//作者
+                        // res[4]//nft描述
+                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
                     })       
                 })
+                console.log(result);
             }
         } else {
-            for(let i = 0;i < 4;i++){
-                var nftShow = document.getElementById("nft"+i);
-                nftShow.style.display="none";
-            }
+            //没有拥有的nft
         }
     },
 
     showAllNFT: async function(){
         const { getNFTAmount } = factory.methods;
-        const { getCountAmount } = activity.methods;
         const { getActivityNFTAmount } = activity.methods;
-
-        var numberForCountAmount = await getCountAmount().call();
-        console.log("用于计算的数："+numberForCountAmount);
-        //获取nft总量
-        var tempAmount = await getNFTAmount().call();
-        console.log("总量:" + tempAmount);
-        //获取真实显示数量
-        var amount = tempAmount - numberForCountAmount;
-        console.log("真实数量:" + amount);
-        //获取页面的当前页数
-        var page = document.getElementById("page").innerText;
-        
-        var maxHomePage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
-        console.log("maxPage:"+maxHomePage);
         //获取查询信息的方法
         const { getProperty } = factory.methods;
-        
-        //实际展示数量
-        var trueNum = this.showNumber;
-        if(page == maxHomePage && (amount % this.showNumber) != 0 ){
-            trueNum = amount % this.showNumber;
-            for(let i = amount % this.showNumber; i < this.showNumber;i++){
-                var nftShow = document.getElementById("nft"+i);
-                nftShow.style.display="none";
-            }
-            for(let i = 0;i<trueNum;i++){
-                var nftShow = document.getElementById("nft"+i);
-                nftShow.style.display="block";
-            }
-        }
-        console.log("展示数量: "+ trueNum);
+        //获取nft总量
+        var NFTAmount = await getNFTAmount().call();
 
-        if(amount > 0){
+        if(NFTAmount > 0){
             //用于接受文件内容
             var content = null;
             //用于获取ipfs中的cid
@@ -493,37 +454,44 @@ const pageModel = {
             //用于获取url
             var url = null;
 
-            for(let num = 0;num < trueNum;num++){
-                var res = await getProperty(this.indexId).call();
+
+            var result = [];
+            for (let num1 = 0; num1 < NFTAmount; num1++){
+                var res = await getProperty(num1).call();
                 cid = res[1];
                 await ipfs.get(cid,function(err,files){
                     if(err) throw err;
+
+                    //nft图片
                     content = files[0].content;
                     url = window.URL.createObjectURL(new Blob([content]));
-                    var img = document.getElementById("num"+num);
-                    img.src = url;
-                    document.getElementById("name"+num).innerText = "名字："+res[2];
-                    document.getElementById("tokenId"+num).innerText = "tokenId："+web3.utils.toHex(res[0]);
-                    document.getElementById("author"+num).innerText = "author："+res[3];
-                    document.getElementById("description"+num).innerText = "nft描述："+res[4];
+
+                    result.push(
+                        {
+                            url,
+                            tokenId: res[0],
+                            cid: res[1],
+                            nftname: res[2],
+                            author: res[3],
+                            nftdes: res[4],
+                            nft:res[5]
+                        });
+                    // res[0]//tokenId
+                    // res[1]//ipfs中的cid
+                    // res[2]//nft名字
+                    // res[3]//作者
+                    // res[4]//nft描述
+                    // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
                 })      
                 if(res[5] != 0){
-                    var addAmount = await getActivityNFTAmount(res[5]).call();
-                    this.indexId += new Number(addAmount);
-                    document.getElementById("activityNFTAmount"+num).innerText = addAmount;
-                } else {
-                    this.indexId += new Number(1);
-                    document.getElementById("activityNFTAmount"+num).innerText = '1';
-                }
-                console.log(this.indexId);
+                    //因为一个活动可能有多个nft，它们有相同的图片，故需num += addAmount防止展示同一张nft多次
+                    var addAmount = await getActivityNFTAmount(res[5]).call();//一个活动的nft数量
+                    num1 += (addAmount-1);
+                } 
             }
-        } else {
-            for(let i = 0;i < 4;i++){
-                var nftShow = document.getElementById("nft"+i);
-                nftShow.style.display="none";
-            }
+            return result;
         }
-    },
+    }, 
 
     showAllActivities: async function(){
         const { getActivityAmount } = activity.methods;
@@ -531,59 +499,39 @@ const pageModel = {
         //获取活动总量
         var amount = await getActivityAmount().call() - 1;
 
-        var maxPage = (amount % this.showNumber == 0)?(amount / this.showNumber):(Math.ceil(amount / this.showNumber));
-
-        // //获取页面的当前页数
-        var page = document.getElementById("page").innerText;
-
-        //实际展示数量
-        var trueNum = this.showNumber * page;
-        if(page == maxPage && (amount % this.showNumber) != 0 ){
-            trueNum = (page - 1) * this.showNumber + amount % this.showNumber;
-            for(let i = amount % this.showNumber; i < this.showNumber;i++){
-                var activityObj = document.getElementById("activity"+i);
-                activityObj.style.display="none";
-            }
-        }
-
         if(amount > 0){
             const { getActivityProperty } = activity.methods;
-            //用于接受查询结果
-            //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者
+            var result = [];
             var res = null;
-            for(let num = 0;num < this.showNumber;num++){
+            for(let num = 0;num < amount; num++){
                 res = await getActivityProperty(this.activityHomeIndex).call();
-                this.activityHomeIndex++;
-                document.getElementById("name"+num).innerText = res[0];
-                document.getElementById("host"+num).innerText = res[3];
-                document.getElementById("description"+num).innerText = res[1];
-                document.getElementById("activityId"+num).innerText = res[2];
-                console.log(res[2]);
+                await ipfs.get(res[4],function(err,files){
+                    if(err) throw err;
+
+                    //nft图片
+                    content = files[0].content;
+                    url = window.URL.createObjectURL(new Blob([content]));
+                    // var img = document.getElementById("num"+num);
+                    // img.src = url; 
+                })
+                //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者 4=>该活动nft的cid 5=>该活动发行nft数量
+                result.push({
+                    url,
+                    name: res[0],
+                    des: res[1],
+                    id: res[2],
+                    person: res[3],
+                    nftcid: res[4],
+                    number:res[5]
+                })
             }
+            return result;
         }else {
-            for(let i = 0;i < 4;i++){
-                var activityObj = document.getElementById("activity"+i);
-                activityObj.style.display="none";
-            }
+            return [];
         }
     },
 
     //图片预览
-    apreview: async function(){
-        var files = document.querySelector("#anft").files;
-        var reader = new FileReader();
-        reader.readAsArrayBuffer(files[0]);
-        reader.onloadend = async function(){
-            console.log(reader.result);
-            var file = Buffer.from(reader.result);
-
-            var url = window.URL.createObjectURL(new Blob([file]));
-
-            var img = document.getElementById("anftShower");
-            img.src = url;
-        }
-    },
-
     preview: async function(){
         var files = document.querySelector("#nft").files;
         var reader = new FileReader();
@@ -595,6 +543,20 @@ const pageModel = {
             var url = window.URL.createObjectURL(new Blob([file]));
 
             var img = document.getElementById("nftShower");
+            img.src = url;
+        }
+    },
+    apreview: async function(){
+        var files = document.querySelector("#anft").files;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(files[0]);
+        reader.onloadend = async function(){
+            console.log(reader.result);
+            var file = Buffer.from(reader.result);
+
+            var url = window.URL.createObjectURL(new Blob([file]));
+
+            var img = document.getElementById("anftShower");
             img.src = url;
         }
     },

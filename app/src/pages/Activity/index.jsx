@@ -38,8 +38,9 @@ export default class Activity extends Component{
     })
   }
   getdata2 = async () => {
-    const alldata = await this.getdata1();
-    this.setState({data:alldata})
+    const alldata = await pageModel.showAllActivities();
+    // this.setState({data:alldata})
+    console.log(alldata);
   }
   componentDidMount() {
     this.getdata2()

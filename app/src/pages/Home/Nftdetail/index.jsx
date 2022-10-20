@@ -1,6 +1,10 @@
 import { List,Button } from 'antd';
-import React from 'react';
-import {  useLocation,useNavigate } from 'react-router-dom'
+import React,{useEffect} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom'
+//引入connect用于连接UI组件与redux
+import { useSelector, useDispatch } from 'react-redux'
+import {loadingaction} from '@/redux/actions/loading'
+import Loading from '@/components/Loading'
 // const data = Array.from({
 //     length: 1,
 // }).map((_, i) => ({
@@ -13,19 +17,34 @@ import {  useLocation,useNavigate } from 'react-router-dom'
 //     'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
 // }));
 const Nftdetail = () => {
+    // 拿到location
+    const location = useLocation();
+
+    // 修改中央仓库数据
+        const dispatch = useDispatch()
+        
+    // useEffect(effectFunc, []) 类似于 componentDidMount
+    useEffect(() => {
+        dispatch(loadingaction(true))
+    }, [location]);
+    const loading = useSelector(state => state.loading)
+    
     const navigate = useNavigate();
     const back = () => {
         navigate(-1);
     }
-    const {state:{name,des}} =useLocation()
+    const { state: { name, des, src,author,nft,cid } } = useLocation()
+    console.log(name, des, src,author,nft,cid);
     const data = [{
         title: name,
-        url: '',
+        src,
+        description:'链上id: ?'+''+' '+' '+'作者: ?'+""+' '+' '+'拥有者: ?'+"",
         content:des
     }]
     return (
         <>
-        <List
+            {loading?<Loading />:<>
+            <List
         itemLayout="vertical"
         size="large"
         // pagination={{
@@ -44,8 +63,8 @@ const Nftdetail = () => {
             width={350}
             height={300}
             alt="nft"
-            // src={item.url}
-            src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+            src={item.src}
+            // src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
             />
         }
         >
@@ -59,7 +78,9 @@ const Nftdetail = () => {
         )}
             />
         <Button type="dashed" onClick={back} style={{float:'right'}}>返回</Button>
-        </>)
+            </>}
+        </>
+    )
 }
     
 export default Nftdetail;
