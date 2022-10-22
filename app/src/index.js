@@ -409,7 +409,7 @@ const pageModel = {
         var cid = null;
         //用于获取url
         var url = null;
-        var result = [];
+
         if(amount > 0){
             for(let i = 0; i < amount; i++){
                 await getPersonalNFT(i).call({from:account}).then((res)=>{
@@ -419,20 +419,17 @@ const pageModel = {
                         if(err) throw err;
                         //nft图片
                         content = files[0].content;
-                        url = window.URL.createObjectURL(new Blob([content]));
-                        // var img = document.getElementById("num"+num);
-                        // img.src = url;
+                        url = window.URL.createObjectURL(new Blob([content]))
+                        var img = document.getElementById("num"+num);
+                        img.src = url;
 
-                        result.push({
-                            a: res[0]
-                        })
                         //将res中数据渲染到前端
-                        // res[0]//tokenId
-                        // res[1]//ipfs中的cid
-                        // res[2]//nft名字
-                        // res[3]//作者
-                        // res[4]//nft描述
-                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+                        res[0]//tokenId
+                        res[1]//ipfs中的cid
+                        res[2]//nft名字
+                        res[3]//作者
+                        res[4]//nft描述
+                        res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
                     })       
                 })
                 console.log(result);
@@ -459,8 +456,6 @@ const pageModel = {
             //用于获取url
             var url = null;
 
-
-            
             for (let num1 = 0; num1 < NFTAmount; num1++) {
                 var res = await getProperty(num1).call();
                 cid = res[1];
@@ -470,7 +465,6 @@ const pageModel = {
                     //nft图片
                     content = files[0].content;
                     url = window.URL.createObjectURL(new Blob([content]));
-
                     result.push(
                         {
                             url,

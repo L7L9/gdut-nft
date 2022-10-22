@@ -69,9 +69,9 @@ contract Activity{
     }
 
     //获取活动信息的函数
-    function getActivityProperty(uint256 id) external view returns(string memory,string memory,uint256,address){
+    function getActivityProperty(uint256 id) external view returns(string memory,string memory,uint256,address,string memory,uint256){
         activityProperty memory activity = activities[id];
-        return (activity.name,activity.description,activity.id,activity.host);
+        return (activity.name,activity.description,activity.id,activity.host,activity.nftCid,activity.amount);
     }
 
     //获取活动中nft数量
