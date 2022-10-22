@@ -23,6 +23,10 @@ var nftDB = new PouchDB("nft_db");
 //activty链下数据库
 var activityDB = new PouchDB("activity_db");
 
+// userDB.destroy();
+// nftDB.destroy();
+// activityDB.destroy();
+
 const init = {
     getAccount: async function(){
         account = sessionStorage.getItem("account");
@@ -446,7 +450,8 @@ const pageModel = {
         //获取nft总量
         var NFTAmount = await getNFTAmount().call();
 
-        if(NFTAmount > 0){
+        var result = [];
+        if (NFTAmount > 0) {
             //用于接受文件内容
             var content = null;
             //用于获取ipfs中的cid
@@ -455,12 +460,12 @@ const pageModel = {
             var url = null;
 
 
-            var result = [];
-            for (let num1 = 0; num1 < NFTAmount; num1++){
+            
+            for (let num1 = 0; num1 < NFTAmount; num1++) {
                 var res = await getProperty(num1).call();
                 cid = res[1];
-                await ipfs.get(cid,function(err,files){
-                    if(err) throw err;
+                await ipfs.get(cid, function (err, files) {
+                    if (err) throw err;
 
                     //nft图片
                     content = files[0].content;
@@ -474,7 +479,7 @@ const pageModel = {
                             nftname: res[2],
                             author: res[3],
                             nftdes: res[4],
-                            nft:res[5]
+                            nft: res[5]
                         });
                     // res[0]//tokenId
                     // res[1]//ipfs中的cid
@@ -482,15 +487,16 @@ const pageModel = {
                     // res[3]//作者
                     // res[4]//nft描述
                     // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
-                })      
-                if(res[5] != 0){
+                })
+                if (res[5] != 0) {
                     //因为一个活动可能有多个nft，它们有相同的图片，故需num += addAmount防止展示同一张nft多次
                     var addAmount = await getActivityNFTAmount(res[5]).call();//一个活动的nft数量
-                    num1 += (addAmount-1);
-                } 
+                    num1 += (addAmount - 1);
+                }
             }
-            return result;
+            // return result;
         }
+        return result;
     }, 
 
     showAllActivities: async function(){

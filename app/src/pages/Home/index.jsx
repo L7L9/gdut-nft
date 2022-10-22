@@ -50,7 +50,10 @@ export default class Home extends Component {
   state = { data: [123] }
   getdata2 = async () => {
     const alldata = await pageModel.showAllNFT();
-    this.setState({ data: alldata })
+    if (alldata.length == 0) {
+      this.setState({ data: [] })
+    }
+    else this.setState({ data: alldata })
 
   }
   
