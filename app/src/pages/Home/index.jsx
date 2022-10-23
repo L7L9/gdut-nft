@@ -72,7 +72,7 @@ export default class Home extends Component {
                 {
                   this.state.data.map(item => {
                     const { nftname: name, nftdes: des, url:src, author, nft, cid } = item;
-                  return <Link to={`/GDUT-nft/detail`} state={{name,des,src,author,nft,cid}} key={nanoid()}>
+                  return <Link to={`/GDUT-nft/home/detail`} state={{name,des,src,author,nft,cid}} key={nanoid()}>
                       <div className="item" >  
                       <div style={{overflow:'hidden'}}>
                           <img style={{ width: '100%', height: '220px' }} src={item.url}/>

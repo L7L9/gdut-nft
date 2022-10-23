@@ -58,6 +58,28 @@
     margin-left: 20px;
     margin-top: 15px;
     width: 250px;
-    height: 290px;
+    height: 330px;
+    text-align: center;
     border: 1px solid black;
+}
+
+#name0{
+    margin-top: 8px;
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    /* 溢出部分隐藏 */
+    overflow: hidden;
+    /* 文字溢出时用省略号表示 */
+    text-overflow: ellipsis;
+}
+
+#host0{
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    /* 溢出部分隐藏 */
+    overflow: hidden;
+    /* 文字溢出时用省略号表示 */
+    text-overflow: ellipsis;
 }

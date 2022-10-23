@@ -125,7 +125,7 @@ const nftModel = {
         var file = document.querySelector("#nft").files;
         var name = name0;
         var des = des0;
-        if (file.length !== 0) {
+        if (file.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
             var tokenId = null;
@@ -187,7 +187,7 @@ const nftModel = {
                 if (err) {
                     return console.log(err);
                 } else {
-                      console.log("Document created Successfully");
+                    console.log("Document created Successfully");
                 }
             });
         }
@@ -258,19 +258,7 @@ const activityModel = {
     initiateActivity: async function(name,message1,amount,password,nftName,nftMessage){
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
-        //活动名字
-        // var name = document.getElementById("activityName").value;
-        //活动描述
-        // var message = document.getElementById("activityMessage").value;
-        //nft奖品数量
-        // var amount = document.getElementById("nftAmount").value;
-        //领取nft的密钥
-        // var password = document.getElementById("password").value;
-
-        //创建nft
-        // var nftName = document.getElementById("nftName").value;
         var file = document.querySelector("#anft").files;
-        // var nftMessage = document.getElementById("nftMessage").value;
 
         var cid = null;
 
@@ -326,15 +314,15 @@ const activityModel = {
     },
 
     //领取活动nft
-    getNFT: async function(num){
+    getNFT: async function(num,id,password){
         console.log(num);
         //获取输入的领取密钥
-        var password = prompt("请输入领取密钥:","请在此输入");
-        if(password != null){
+        if(password.trim() != ''){
             const { getActivityNFT } = activity.methods;
             const { give } = factory.methods;
             //活动id
-            var activityId = document.getElementById("activityId"+num).innerText;
+            // var activityId = document.getElementById("activityId"+num).innerText;
+            var activityId = id;
             console.log(activityId);
             
             //转入以太以便调用方法
@@ -372,6 +360,7 @@ const activityModel = {
                 console.log(receipt);
             })
         }
+        else message.error('您没有密钥或输入的密钥为空字符串',1)
     },
     //搜索活动
     search: async function(value){
@@ -503,6 +492,8 @@ const pageModel = {
             const { getActivityProperty } = activity.methods;
             var result = [];
             var res = null;
+            var content = null;
+            var url=null;
             for(let num = 0;num < amount; num++){
                 res = await getActivityProperty(this.activityHomeIndex).call();
                 await ipfs.get(res[4],function(err,files){
@@ -517,10 +508,10 @@ const pageModel = {
                 //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者 4=>该活动nft的cid 5=>该活动发行nft数量
                 result.push({
                     url,
-                    name: res[0],
+                    name: res[0],//
                     des: res[1],
                     id: res[2],
-                    person: res[3],
+                    person: res[3],//
                     nftcid: res[4],
                     number:res[5]
                 })

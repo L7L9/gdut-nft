@@ -13,7 +13,7 @@ export const items = [
     },
     {
         key:'标题',
-        label: <h2>GDUT-NFT</h2>,
+        label: <h2>数字藏品</h2>,
         disabled:true
     },
     {
