@@ -6,7 +6,7 @@ import './index.css'
 export default function Mynft() {
   const onFinish = (values) => {
     // console.log('Success:', values);
-    nftModel.create(values.name,values.des)
+    nftModel.create(values.userName,values.des)
   };
   return (
     <div>
@@ -33,7 +33,7 @@ export default function Mynft() {
     >
       <Form.Item
         label="名字："
-        name="username"
+        name="userName"
         rules={[
           {
             required: true,
