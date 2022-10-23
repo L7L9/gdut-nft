@@ -497,14 +497,14 @@ const pageModel = {
         const { getActivityAmount } = activity.methods;
 
         //获取活动总量
-        var amount = await getActivityAmount().call() - 1;
+        var amount = await getActivityAmount().call();
 
-        if(amount > 0){
+        if(amount > 1){
             const { getActivityProperty } = activity.methods;
             var result = [];
             var res = null;
-            for(let num = 0;num < amount; num++){
-                res = await getActivityProperty(this.activityHomeIndex).call();
+            for(let num = 1;num < amount; num++){
+                res = await getActivityProperty(num).call();
                 await ipfs.get(res[4],function(err,files){
                     if(err) throw err;
 
