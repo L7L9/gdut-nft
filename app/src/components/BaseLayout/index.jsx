@@ -9,6 +9,7 @@ import { Navigate } from "react-router-dom";
 import Home from '@/pages/Home'
 import Nftdetail from '@/pages/Home/Nftdetail'
 import Adetail from '@/pages/Activity/Detail'
+import Mydetail from '@/pages/Message/Detail'
 import Search from '@/pages/Search'
 import Activity from '@/pages/Activity'
 import Mynft from '@/pages/Mynft'
@@ -59,6 +60,7 @@ export default function BaseLayout() {
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
         <Route path="/activity/detail"  element={<Adetail/>}/>
         <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />
+        <Route path="/message/detail" element={<Mydetail/>} />
         <Route path="/notify"  element={loading?<Loading/>:<Notify/>} />
         <Route path="/message"  element={loading?<Loading/>:<Message/>} />
       </Routes>

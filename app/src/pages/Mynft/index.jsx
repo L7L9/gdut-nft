@@ -6,7 +6,7 @@ import './index.css'
 export default function Mynft() {
   const onFinish = (values) => {
     // console.log('Success:', values);
-    nftModel.create(values.name,values.des)
+    nftModel.create(values.username,values.des)
   };
   return (
     <div>

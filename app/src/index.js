@@ -399,6 +399,7 @@ const pageModel = {
         //用于获取url
         var url = null;
 
+        var result = [];
         if(amount > 0){
             for(let i = 0; i < amount; i++){
                 await getPersonalNFT(i).call({from:account}).then((res)=>{
@@ -409,23 +410,31 @@ const pageModel = {
                         //nft图片
                         content = files[0].content;
                         url = window.URL.createObjectURL(new Blob([content]))
-                        var img = document.getElementById("num"+num);
-                        img.src = url;
 
+                        result.push({
+                            url,
+                            tokenId: res[0],
+                            cid: res[1],
+                            nftname: res[2],
+                            author: res[3],
+                            des: res[4],
+                            number:res[5]
+                        })
                         //将res中数据渲染到前端
-                        res[0]//tokenId
-                        res[1]//ipfs中的cid
-                        res[2]//nft名字
-                        res[3]//作者
-                        res[4]//nft描述
-                        res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+                        // res[0]//tokenId
+                        // res[1]//ipfs中的cid
+                        // res[2]//nft名字
+                        // res[3]//作者
+                        // res[4]//nft描述
+                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
                     })       
                 })
-                console.log(result);
             }
-        } else {
-            //没有拥有的nft
-        }
+        } 
+
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
     },
 
     showAllNFT: async function(){
@@ -477,9 +486,10 @@ const pageModel = {
                     num1 += (addAmount - 1);
                 }
             }
-            // return result;
         }
-        return result;
+        return new Promise((reslove, reject) => {
+            reslove (result)
+        });
     }, 
 
     showAllActivities: async function(){
@@ -515,10 +525,11 @@ const pageModel = {
                     number:res[5]
                 });
             }
-            return result;
-        }else {
-            return [];
+            
         }
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
     },
 
     //图片预览

@@ -25,8 +25,9 @@ export default class Activity extends Component{
   };
   handleOk1 = () => {
     const { num, id } = this.state
-    const {pass:{input:{value:password}}}=this.refs
-    activityModel.getNFT(num,id,password)
+    const { pass: { input} } = this.refs
+    let password = input.value;
+    activityModel.getNFT(num, id, password)
     this.setState({ isModalOpen1: false })
   };
   handleCancel = () => this.setState({isModalOpen:false});
@@ -39,17 +40,11 @@ export default class Activity extends Component{
     form.resetFields();
     this.setState({ isModalOpen: false })
   };
-  getdata1 = () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve([{url:'',name:123,person:456},{url:'',name:12,person:45},{url:'',name:13,person:46},{url:'',name:23,person:56},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},])
-      },2000)
-    })
-  }
+
   getdata2 = async () => {
-    const alldata = await pageModel.showAllActivities();
-    this.setState({data:alldata})
-    // console.log(alldata);
+    pageModel.showAllActivities().then(res => {
+      this.setState({ data: res })
+    })
   }
   componentDidMount() {
     this.getdata2()
@@ -216,10 +211,11 @@ export default class Activity extends Component{
               </>
       }
       <Modal title="密钥输入框" open={this.state.isModalOpen1} onOk={this.handleOk1} onCancel={this.handleCancel1}>
-      <Input.Password
+      <Input
       placeholder="请输入密钥"
-      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-      ref='pass'
+      // iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+          ref='pass'
+          allowClear={true}
       />
       </Modal>
     </div>
