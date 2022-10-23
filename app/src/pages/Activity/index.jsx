@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { Input, Modal, Button, Form, Divider } from 'antd'
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import Loading from '@/components/Loading';
 import Nodata from '@/components/Nodata';
 import Selectfile from './Selectfile';
@@ -10,13 +12,25 @@ import './index.css'
 
 
 export default class Activity extends Component{
-  state = { isModalOpen: false,data:[123] }
+  state = { isModalOpen: false,data:[123],isModalOpen1:false,num:-1,id:''}
   showModal = () => this.setState({isModalOpen:true});
+  showModal1 = (num, id) => {
+    return () => {
+      this.setState({ isModalOpen1: true,num,id})
+    }
+  };
   handleOk = () => {
     const { submit } = this.refs;
     submit.click();
   };
+  handleOk1 = () => {
+    const { num, id } = this.state
+    const {pass:{input:{value:password}}}=this.refs
+    activityModel.getNFT(num,id,password)
+    this.setState({ isModalOpen1: false })
+  };
   handleCancel = () => this.setState({isModalOpen:false});
+  handleCancel1 = () => this.setState({isModalOpen1:false});
   onSearch = (value) => activityModel.search(value);
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
@@ -25,11 +39,6 @@ export default class Activity extends Component{
     form.resetFields();
     this.setState({ isModalOpen: false })
   };
-  getnft = (e) => {
-    return () => {
-      activityModel.getNFT(e)
-    }
-  }
   getdata1 = () => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -48,18 +57,18 @@ export default class Activity extends Component{
   render(){
     return <div>
       <div style={{overflow:'hidden'}}>
-      <h1 style={{float:'left'}}>当前链上活动有：</h1>
-      <div className="search" style={{float:'left',marginTop:'3px'}}>
-        <Search
-      placeholder="查询活动"
-      allowClear
-      onSearch={this.onSearch}
-      style={{
-        width: 150,
-      }}
-      />
-      </div>
-      <Modal title="创建活动" open={this.state.isModalOpen}  onCancel={this.handleCancel}
+        <h1 style={{float:'left'}}>当前链上活动有：</h1>
+        <div className="search" style={{float:'left',marginTop:'3px'}}>
+          <Search
+        placeholder="查询活动"
+        allowClear
+        onSearch={this.onSearch}
+        style={{
+          width: 150,
+        }}
+          />
+        </div>
+        <Modal title="创建活动" open={this.state.isModalOpen}  onCancel={this.handleCancel}
       footer={[
         <Button key="back" onClick={this.handleCancel}>
           取消
@@ -180,62 +189,6 @@ export default class Activity extends Component{
       </Form.Item>
       </Form>
       </Modal>
-      <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>我也要创建活动</Button>
-      </div>
-      <div className='itemsparent'>
-        <div className="items">
-          <div className="item">
-          <div id="activity0">
-          <span id="name0">名字：</span><br/>
-          <span id="host0">举办者：</span><br/>
-          <span id="description0"></span>
-          <span id="activityId0" hidden></span>
-          <Button type="dashed" onClick={this.getnft(0)}>领取NFT</Button>
-        </div>
-          </div>
-          <div className="item">
-        <div id="activity1">
-          <span id="name1">名字：</span><br/>
-          <span id="host1">举办者：</span><br/>
-          <span id="description1"></span>
-          <span id="activityId1" hidden></span>
-          <Button type="dashed" onClick={this.getnft(1)}>领取NFT</Button>
-        </div>
-          </div>
-          <div className="item">
-        <div id="activity2">
-          <span id="name2">名字：</span><br/>
-          <span id="host2">举办者：</span><br/>
-          <span id="description2"></span>
-          <span id="activityId2" hidden></span>
-          <Button type="dashed" onClick={this.getnft(2)}>领取NFT</Button>
-        </div>
-          </div>
-          <div className="item">
-        <div id="activity3">
-          <span id="name3">名字：</span><br/>
-          <span id="host3">举办者：</span><br/>
-          <span id="description3"></span>
-          <span id="activityId3" hidden></span>
-          <Button type="dashed" onClick={this.getnft(3)}>领取NFT</Button>
-        </div>
-          </div>
-        </div>
-        <div style={{width:'100%',textAlign:'center',marginTop:'65px'}}>第 <label id="page">1</label> 页</div>
-      </div>
-      <Divider />
-      <div style={{overflow:'hidden'}}>
-        <h1 style={{float:'left'}}>当前链上活动有：</h1>
-        <div className="search" style={{float:'left',marginTop:'3px'}}>
-          <Search
-        placeholder="查询活动"
-        allowClear
-        onSearch={this.onSearch}
-        style={{
-          width: 150,
-        }}
-          />
-        </div>
         <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>我也要创建活动</Button> 
       </div>
       {
@@ -244,18 +197,31 @@ export default class Activity extends Component{
                 <div className="showout1">
                   <div className="showin1">
                     {
-                      this.state.data.map(item => {
-                      return <div className="item1" key={nanoid()}>  
-                        <span id="name0">名字：{item.name}</span><br/>
-                        <span id="host0">举办者：{item.person}</span><br/>
-                          <Button type="dashed" onClick={this.getnft(0)}>领取NFT</Button>
-                        </div>
+                  this.state.data.map((item, index) => {
+                        // const {name,des,id,}=item
+                    return <div className="item1" key={nanoid()} >
+                        <Link to={`/GDUT-nft/activity/detail`}  > 
+                            <img style={{ width: '100%', height: '220px' }} src={item.url}/>
+                      </Link>
+                      <span id="name0">名字：{item.name}</span><br/>
+                      <span id="host0">举办者：{item.person}</span><br />
+                        <Button type="dashed" onClick={this.showModal1(index,item.id)}>领取NFT</Button>
+                    </div>
+                        
                       })
+                      
                     }
                   </div>
                 </div>
               </>
-            }
+      }
+      <Modal title="密钥输入框" open={this.state.isModalOpen1} onOk={this.handleOk1} onCancel={this.handleCancel1}>
+      <Input.Password
+      placeholder="请输入密钥"
+      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+      ref='pass'
+      />
+      </Modal>
     </div>
   }
 }
