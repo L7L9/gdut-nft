@@ -304,7 +304,7 @@ const activityModel = {
                 gas:1000000
             }).then(res=>{
                 console.log(res);
-                alert("创建活动成功");
+                message.success("创建活动成功");
                 //刷新活动页面
             }))
             }

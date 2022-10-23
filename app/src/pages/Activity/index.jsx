@@ -198,9 +198,9 @@ export default class Activity extends Component{
                   <div className="showin1">
                     {
                   this.state.data.map((item, index) => {
-                        // const {name,des,id,}=item
+                        const {url,name,des,id,person,nftcid,number}=item
                     return <div className="item1" key={nanoid()} >
-                        <Link to={`/GDUT-nft/activity/detail`}  > 
+                        <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,person,nftcid,number}} > 
                             <img style={{ width: '100%', height: '220px' }} src={item.url}/>
                       </Link>
                       <span id="name0">名字：{item.name}</span><br/>
