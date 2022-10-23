@@ -486,35 +486,34 @@ const pageModel = {
         const { getActivityAmount } = activity.methods;
 
         //获取活动总量
-        var amount = await getActivityAmount().call() - 1;
+        var amount = await getActivityAmount().call();
 
-        if(amount > 0){
+        if(amount > 1){
             const { getActivityProperty } = activity.methods;
             var result = [];
             var res = null;
             var content = null;
-            var url=null;
-            for(let num = 0;num < amount; num++){
-                res = await getActivityProperty(this.activityHomeIndex).call();
-                await ipfs.get(res[4],function(err,files){
-                    if(err) throw err;
-
-                    //nft图片
-                    content = files[0].content;
-                    url = window.URL.createObjectURL(new Blob([content]));
-                    // var img = document.getElementById("num"+num);
-                    // img.src = url; 
-                })
+            var url = null;
+            var getResult = null;
+            for(let num = 1;num < amount; num++){
+                res = await getActivityProperty(num).call();
+                getResult = await ipfs.get(res[4]);
                 //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者 4=>该活动nft的cid 5=>该活动发行nft数量
+                // console.log(getResult);
+                // nft图片
+                content = getResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                // var img = document.getElementById("num"+num);
+                // img.src = url; 
                 result.push({
                     url,
-                    name: res[0],//
+                    name: res[0],
                     des: res[1],
                     id: res[2],
-                    person: res[3],//
+                    person: res[3],
                     nftcid: res[4],
                     number:res[5]
-                })
+                });
             }
             return result;
         }else {
