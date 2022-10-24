@@ -1,12 +1,21 @@
 import React from 'react'
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input,message } from 'antd';
+import { useNavigate } from 'react-router-dom'
 import Selectnft from './Selectnft'
 import './index.css'
 
+
 export default function Mynft() {
+  const navigate = useNavigate();
   const onFinish = (values) => {
-    // console.log('Success:', values);
-    nftModel.create(values.username,values.des)
+    nftModel.create(values.userName, values.des).then(() => {
+      setTimeout(() => {
+        message.success("创建成功", 1);
+        navigate('/GDUT-nft/home')
+      }, 2000)
+    }, () => {
+      message.error('未选择文件，铸造失败', 1)
+    })
   };
   return (
     <div>
@@ -33,7 +42,7 @@ export default function Mynft() {
     >
       <Form.Item
         label="名字："
-        name="username"
+        name="userName"
         rules={[
           {
             required: true,

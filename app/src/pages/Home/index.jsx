@@ -14,7 +14,7 @@ export default class Home extends Component {
   state = { data: [123] }
   getdata2 = async () => {
     pageModel.showAllNFT().then(res => {
-      this.setState({ data: res })
+      setTimeout(()=>{this.setState({ data: res })},100)
     })
 
   }

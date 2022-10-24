@@ -29,7 +29,7 @@ export default class PersonMessage extends Component{
   state = { data: [123] }
   getdata = async () => {
     pageModel.showMyNFT().then(res => {
-      this.setState({ data: res })
+      setTimeout(()=>{this.setState({ data: res })},100)
     })
   }
   componentDidMount() {
@@ -46,15 +46,16 @@ export default class PersonMessage extends Component{
                 this.state.data.map(item => {
                     // console.log(item);
                     const { url,tokenId,cid,nftname,author,des,number } = item;
-                    return <Link to={`/GDUT-nft/message/detail`} state={{url,tokenId,cid,nftname,author,des,number}} key={nanoid()}>
+                  return (
+                    <Link to={`/GDUT-nft/message/detail`} state={{ url, tokenId, cid, nftname, author, des, number }} key={nanoid()}>
                       <div className="item" >  
-                      <div style={{overflow:'hidden'}}>
+                        <div style={{overflow:'hidden'}}>
                           <img style={{ width: '100%', height: '220px' }} src={item.url}/>
                           <h3 style={{ textAlign: 'center' }}>{item.nftname}</h3>
                           <h3 style={{ textAlign: 'center' }}>{item.des}</h3>
+                        </div>
                       </div>
-                      </div>
-                    </Link>
+                    </Link>)
                   })
                 }
                 </div>

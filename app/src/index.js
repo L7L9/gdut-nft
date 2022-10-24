@@ -143,11 +143,18 @@ const nftModel = {
                 // console.log("cid:" + cid);
 
                 tokenId = web3.utils.sha3(cid);
-                await nftModel.mint(name,des,cid,1,0);
-                alert("创建成功");
-                window.location.replace("http://localhost:8081/home.html");
+                await nftModel.mint(name, des, cid, 1, 0).then(() => {
+                    return new Promise((reslove,reject)=> {
+                        reslove(true)
+                    });
+                });
+                
             }
-        }else message.error('未选择文件，铸造失败',1)
+        } else {
+            return new Promise((reslove,reject) => {
+                reject(false)
+            });
+        }
         
         
     },
@@ -235,20 +242,20 @@ const nftModel = {
                 ipfs.get(result.docs[i].cid,function(err,files){
                     if(err) throw err;
                     //nft图片
-                    content = files[0].content;
-                    url = window.URL.createObjectURL(new Blob([content]));
-                    var img = document.getElementById("num"+num);
-                    img.src = url;
+                    // content = files[0].content;
+                    // url = window.URL.createObjectURL(new Blob([content]));
 
                     //将res中数据渲染到前端
-                    res[0]//tokenId
-                    res[1]//ipfs中的cid
-                    res[2]//nft名字
-                    res[3]//作者
-                    res[4]//nft描述
-                    res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+                    // res[0]//tokenId
+                    // res[1]//ipfs中的cid
+                    // res[2]//nft名字
+                    // res[3]//作者
+                    // res[4]//nft描述
+                    // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    // console.log(result);
                 })
             }
+            console.log(result);
         })
     }
 }
@@ -304,18 +311,24 @@ const activityModel = {
                 gas:1000000
             }).then(res=>{
                 console.log(res);
-                message.success("创建活动成功");
+                return new Promise((reslove, reject) => {
+                    message.success("创建活动成功");
+                    reslove(true)
+                })
                 //刷新活动页面
             }))
             }
         } else {
-            message.error('创建失败，你没有选择文件',1)
+            return new Promise((reslove, reject) => {
+                message.error('创建失败，你没有选择文件',1)
+                reject(false)
+            })
         }
     },
 
     //领取活动nft
     getNFT: async function(num,id,password){
-        console.log(num);
+        // console.log(num);
         //获取输入的领取密钥
         if(password.trim() != ''){
             const { getActivityNFT } = activity.methods;
@@ -497,10 +510,9 @@ const pageModel = {
 
         //获取活动总量
         var amount = await getActivityAmount().call();
-
+        var result = [];
         if(amount > 1){
             const { getActivityProperty } = activity.methods;
-            var result = [];
             var res = null;
             var content = null;
             var url = null;

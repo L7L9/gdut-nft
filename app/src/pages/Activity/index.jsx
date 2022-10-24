@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
-import { Input, Modal, Button, Form, Divider } from 'antd'
+import { Input, Modal, Button, Form } from 'antd'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import {loadingactionasync} from '@/redux/actions/loading'
 import Loading from '@/components/Loading';
 import Nodata from '@/components/Nodata';
 import Selectfile from './Selectfile';
@@ -11,7 +13,7 @@ import './index.css'
 
 
 
-export default class Activity extends Component{
+class Activity extends Component{
   state = { isModalOpen: false,data:[123],isModalOpen1:false,num:-1,id:''}
   showModal = () => this.setState({isModalOpen:true});
   showModal1 = (num, id) => {
@@ -35,10 +37,14 @@ export default class Activity extends Component{
   onSearch = (value) => activityModel.search(value);
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
-    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes)
     const { form } = this.refs;
     form.resetFields();
     this.setState({ isModalOpen: false })
+    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
+      this.props.changeloding(true,2000);
+    }, (err) => {
+      console.log(err);
+    })
   };
 
   getdata2 = async () => {
@@ -221,3 +227,10 @@ export default class Activity extends Component{
     </div>
   }
 }
+
+export default connect(
+  state => ({ loading: state.loading}),
+  {
+      changeloding:loadingactionasync
+  }
+)(Activity)
