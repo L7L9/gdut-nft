@@ -10,50 +10,12 @@ import './index.css'
 
 
 export default class Home extends Component {
-  previous=()=>{
-    var page = document.getElementById("page").innerText;
-  if(document.getElementById("page").innerText > 1){
-    var amount = null;
-    document.getElementById("page").innerText--;
-    for(let i = 0;i < 4;i++){
-      amount = document.getElementById("activityNFTAmount"+i).innerText;
-      pageModel.indexId -= new Number(amount);
-      console.log(pageModel.indexId);
-    }
-    pageModel.indexId--;
-    pageModel.showAllNFT();
-    var amount = pageModel.getMaxHomePage().then(res=>{
-    var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
-    if(new Number(page) == maxPage){
-      for(let i = 0;i < 4;i++){
-        var nftShow = document.getElementById("nft"+i);
-          nftShow.style.display="block";
-      } 
-    }
-  });
-  } else {
-    message.info('这是第一页!',1);
-  }
-  }
-  next=()=>{
-    var amount = pageModel.getMaxHomePage().then(res=>{
-    var maxPage = (res % 4 == 0)?(res / 4):(Math.ceil(res / 4));   
-    var page = document.getElementById("page").innerText;
-    if(new Number(page)< maxPage){
-      document.getElementById("page").innerText++;
-      pageModel.showAllNFT();
-    } else {
-      message.info('这是最后一页',1);
-    }
-  });
-  }
+
   state = { data: [123] }
   getdata2 = async () => {
-    const alldata = await pageModel.showAllNFT();
-    if (alldata.length == 0) {
-      this.setState({ data: [] })
-    }
-    else this.setState({ data: alldata })
+    pageModel.showAllNFT().then(res => {
+      setTimeout(()=>{this.setState({ data: res })},100)
+    })
 
   }
   
@@ -68,7 +30,7 @@ export default class Home extends Component {
           
           this.state.data[0] == 123 ? <Loading /> : this.state.data.length == 0 ? <Nodata /> : <>
               <div className="showout">
-              <div className="showin">
+                <div className="showin">
                 {
                   this.state.data.map(item => {
                     const { nftname: name, nftdes: des, url:src, author, nft, cid } = item;
@@ -86,7 +48,7 @@ export default class Home extends Component {
                 </div>
               </div>
               </>
-            }
+        }
       </>
     )
   }

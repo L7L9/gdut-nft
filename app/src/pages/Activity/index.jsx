@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
-import { Input, Modal, Button, Form, Divider } from 'antd'
+import { Input, Modal, Button, Form } from 'antd'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import {loadingactionasync} from '@/redux/actions/loading'
 import Loading from '@/components/Loading';
 import Nodata from '@/components/Nodata';
 import Selectfile from './Selectfile';
@@ -11,7 +13,7 @@ import './index.css'
 
 
 
-export default class Activity extends Component{
+class Activity extends Component{
   state = { isModalOpen: false,data:[123],isModalOpen1:false,num:-1,id:''}
   showModal = () => this.setState({isModalOpen:true});
   showModal1 = (num, id) => {
@@ -25,8 +27,9 @@ export default class Activity extends Component{
   };
   handleOk1 = () => {
     const { num, id } = this.state
-    const {pass:{input:{value:password}}}=this.refs
-    activityModel.getNFT(num,id,password)
+    const { pass: { input} } = this.refs
+    let password = input.value;
+    activityModel.getNFT(num, id, password)
     this.setState({ isModalOpen1: false })
   };
   handleCancel = () => this.setState({isModalOpen:false});
@@ -34,22 +37,20 @@ export default class Activity extends Component{
   onSearch = (value) => activityModel.search(value);
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
-    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes)
     const { form } = this.refs;
     form.resetFields();
     this.setState({ isModalOpen: false })
-  };
-  getdata1 = () => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve([{url:'',name:123,person:456},{url:'',name:12,person:45},{url:'',name:13,person:46},{url:'',name:23,person:56},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},{url:'',name:123,person:456},])
-      },2000)
+    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
+      this.props.changeloding(true,2000);
+    }, (err) => {
+      console.log(err);
     })
-  }
+  };
+
   getdata2 = async () => {
-    const alldata = await pageModel.showAllActivities();
-    this.setState({data:alldata})
-    // console.log(alldata);
+    pageModel.showAllActivities().then(res => {
+      this.setState({ data: res })
+    })
   }
   componentDidMount() {
     this.getdata2()
@@ -198,9 +199,9 @@ export default class Activity extends Component{
                   <div className="showin1">
                     {
                   this.state.data.map((item, index) => {
-                        // const {name,des,id,}=item
+                        const {url,name,des,id,person,nftcid,number}=item
                     return <div className="item1" key={nanoid()} >
-                        <Link to={`/GDUT-nft/activity/detail`}  > 
+                        <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,person,nftcid,number}} > 
                             <img style={{ width: '100%', height: '220px' }} src={item.url}/>
                       </Link>
                       <span id="name0">名字：{item.name}</span><br/>
@@ -216,12 +217,20 @@ export default class Activity extends Component{
               </>
       }
       <Modal title="密钥输入框" open={this.state.isModalOpen1} onOk={this.handleOk1} onCancel={this.handleCancel1}>
-      <Input.Password
+      <Input
       placeholder="请输入密钥"
-      iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-      ref='pass'
+      // iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+          ref='pass'
+          allowClear={true}
       />
       </Modal>
     </div>
   }
 }
+
+export default connect(
+  state => ({ loading: state.loading}),
+  {
+      changeloding:loadingactionasync
+  }
+)(Activity)

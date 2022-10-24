@@ -6,36 +6,29 @@ import { useSelector, useDispatch } from 'react-redux'
 import {loadingaction} from '@/redux/actions/loading'
 import Loading from '@/components/Loading'
 
-
-const Adetail = () => {
-    // 拿到location
+const Mydetail = () => {
     const location = useLocation();
-
-    // 修改中央仓库数据
-        const dispatch = useDispatch()
-        
-    // useEffect(effectFunc, []) 类似于 componentDidMount
+    const dispatch = useDispatch()
     useEffect(() => {
         dispatch(loadingaction(true))
     }, [location]);
     const loading = useSelector(state => state.loading)
-    
     const navigate = useNavigate();
     const back = () => {
         navigate(-1);
     }
-    const { state: { url:src,name,des,id,person,nftcid,number } } = useLocation()
-    console.log(src,name,des,id,person,nftcid,number);
+    const { state: { url:src, tokenId, cid, nftname, author, des, number } } = useLocation()
+    // console.log(url, tokenId, cid, nftname, author, des, number);
     const data = [{
-        title: name,
+        title: nftname,
         src,
         description:'链上id: ?'+''+' '+' '+'作者: ?'+""+' '+' '+'拥有者: ?'+"",
         content:des
     }]
     return (
         <>
-        {loading?<Loading />:<>
-        <List
+            {loading?<Loading />:<>
+            <List
         itemLayout="vertical"
         size="large"
         dataSource={data}
@@ -47,13 +40,12 @@ const Adetail = () => {
             <img
             width={350}
             height={300}
-            alt="activity"
+            alt="nft"
             src={item.src}
             />
         }
         >
         <List.Item.Meta
-            // avatar={<Avatar src={item.avatar} />}
             title={item.title}
             description={item.description}
         />
@@ -67,4 +59,4 @@ const Adetail = () => {
     )
 }
     
-export default Adetail;
+export default Mydetail;

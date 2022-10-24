@@ -123,11 +123,21 @@ const nftModel = {
                 var cids = await ipfs.add(img);
                 cid = cids[0].hash;
                 // console.log("cid:" + cid);
-                await nftModel.mint(name,des,cid,1,0);
-                alert("创建成功");
-                window.location.replace("http://localhost:8081/home.html");
+
+
+                tokenId = web3.utils.sha3(cid);
+                await nftModel.mint(name, des, cid, 1, 0).then(() => {
+                    return new Promise((reslove,reject)=> {
+                        reslove(true)
+                    });
+                });
+                
             }
-        }else message.error('未选择文件，铸造失败',1)
+        } else {
+            return new Promise((reslove,reject) => {
+                reject(false)
+            });
+        }
     },
 
     //铸造nft
@@ -204,32 +214,38 @@ const nftModel = {
     //搜索
     search: async function(value){
         var regExp = new RegExp('.*' + value + '.*', 'i');
-        nftDB.find({
+        var content;
+        var url;
+        var res = [];
+        var ipfsResult;
+        const res1=await nftDB.find({
             selector: {
                 name:{"$regex": regExp},
                 status:0
             },
-        }).then(function(result){
-            
-            for(let i=0;result.docs[i]!=null;i++){
-                ipfs.get(result.docs[i].cid,function(err,files){
-                    if(err) throw err;
-                    //nft图片
-                    content = files[0].content;
-                    url = window.URL.createObjectURL(new Blob([content]));
-                    var img = document.getElementById("num"+num);
-                    img.src = url;
 
-                    //将res中数据渲染到前端
-                    res[0]//tokenId
-                    res[1]//ipfs中的cid
-                    res[2]//nft名字
-                    res[3]//作者
-                    res[4]//nft描述
-                    res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                console.log(result.docs[i])
+                ipfsResult = await ipfs.get(result.docs[i].cid);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                res.push({
+                    url,
+                    tokenId: result.docs[i]._id,// res[0]//tokenId
+                    cid: result.docs[i].cid,// res[1]//ipfs中的cid
+                    nftname: result.docs[i].name, // res[2]//nft名字
+                    author: result.docs[i].author,// res[3]//作者
+                    des: result.docs[i].message,// res[4]//nft描述
+                    number:result.docs[i].status// res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                 })
             }
+            console.log(res);
+            return new Promise(reslove => {
+                reslove(res)
+            })
         })
+        return res1;
     }
 }
 
@@ -285,18 +301,24 @@ const activityModel = {
                 gas:1000000
             }).then(res=>{
                 console.log(res);
-                alert("创建活动成功");
+                return new Promise((reslove, reject) => {
+                    message.success("创建活动成功");
+                    reslove(true)
+                })
                 //刷新活动页面
             }))
             }
         } else {
-            message.error('创建失败，你没有选择文件',1)
+            return new Promise((reslove, reject) => {
+                message.error('创建失败，你没有选择文件',1)
+                reject(false)
+            })
         }
     },
 
     //领取活动nft
     getNFT: async function(num,id,password){
-        console.log(num);
+        // console.log(num);
         //获取输入的领取密钥
         if(password.trim() != ''){
             const { getActivityNFT } = activity.methods;
@@ -380,6 +402,7 @@ const pageModel = {
         //用于获取url
         var url = null;
 
+        var result = [];
         if(amount > 0){
             for(let i = 0; i < amount; i++){
                 await getPersonalNFT(i).call({from:account}).then((res)=>{
@@ -390,23 +413,31 @@ const pageModel = {
                         //nft图片
                         content = files[0].content;
                         url = window.URL.createObjectURL(new Blob([content]))
-                        var img = document.getElementById("num"+num);
-                        img.src = url;
 
+                        result.push({
+                            url,
+                            tokenId: res[0],
+                            cid: res[1],
+                            nftname: res[2],
+                            author: res[3],
+                            des: res[4],
+                            number:res[5]
+                        })
                         //将res中数据渲染到前端
-                        res[0]//tokenId
-                        res[1]//ipfs中的cid
-                        res[2]//nft名字
-                        res[3]//作者
-                        res[4]//nft描述
-                        res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+                        // res[0]//tokenId
+                        // res[1]//ipfs中的cid
+                        // res[2]//nft名字
+                        // res[3]//作者
+                        // res[4]//nft描述
+                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
                     })       
                 })
-                console.log(result);
             }
-        } else {
-            //没有拥有的nft
-        }
+        } 
+
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
     },
 
     showAllNFT: async function(){
@@ -458,9 +489,10 @@ const pageModel = {
                     num1 += (addAmount - 1);
                 }
             }
-            // return result;
         }
-        return result;
+        return new Promise((reslove, reject) => {
+            reslove (result)
+        });
     }, 
 
     showAllActivities: async function(){
@@ -468,10 +500,9 @@ const pageModel = {
 
         //获取活动总量
         var amount = await getActivityAmount().call();
-
+        var result = [];
         if(amount > 1){
             const { getActivityProperty } = activity.methods;
-            var result = [];
             var res = null;
             var content = null;
             var url = null;
@@ -496,10 +527,11 @@ const pageModel = {
                     number:res[5]
                 });
             }
-            return result;
-        }else {
-            return [];
+            
         }
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
     },
 
     //图片预览
