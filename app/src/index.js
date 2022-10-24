@@ -3,6 +3,7 @@ const ipfsAPI = require('ipfs-api');
 
 import factoryArtifact from "../../build/contracts/Factory.json";
 import activityArtifact from "../../build/contracts/Activity.json";
+import userArtifact from "../../build/contracts/User.json";
 
 import {message} from 'antd'
 
@@ -12,6 +13,8 @@ var web3 = null;
 var factory = null;
 //artivity合约实例
 var activity = null;
+//user合约实例
+var userSolidity = null;
 //ipfs实例
 var ipfs = null;
 //当前账户
@@ -40,7 +43,11 @@ const init = {
         activity = new web3.eth.Contract(
             activityArtifact.abi,
             activityArtifact.networks[networkId].address
-        )
+        );
+        userSolidity = new web3.eth.Contract(
+            userArtifact.abi,
+            userArtifact.networks[networkId].address
+        );
     },
     getIpfs: async function(){
         ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
@@ -49,67 +56,44 @@ const init = {
 
 const accountModel = {
     login: async function (userName, password) {
-        var tempAccount = null;
-        userDB.find({
-            selector: {
-                userName : userName
-            },
-        }).then(async (result)=>{
-            if(null!=result.docs[0]){
-                try{
-                    tempAccount = result.docs[0]._id;
-                    await web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
-                        if(err)throw err;
-                        if (res == true) {
-                            sessionStorage.setItem("account",tempAccount);
-                            account = tempAccount;
-                            message.success("登陆成功", 1);
-                            sessionStorage.setItem('islogin',true)
-                        }
-                    })
-                } catch (err) {
+        const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[0];
+        const { signIn } = userSolidity.methods;
+        var address = await signIn(userName).call({from:defaultAccount});
+
+        await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
+                if(err){
                     message.error("密码错误", 1);
                     sessionStorage.setItem('islogin',false)
+                    throw err;
                 }
-            } else {
-                message.error("账号不存在", 1);
-                sessionStorage.setItem('islogin',false)
-            }
+                if (res == true) {
+                    sessionStorage.setItem("account",address);
+                    account = address;
+                    message.success("登陆成功", 1);
+                    sessionStorage.setItem('islogin',true)
+                }
         })
     },
-
     register: async function(userName,password){
-        userDB.find({
-            selector: {
-                userName : userName
-            },
-        }).then(async (result)=>{
-            if(null!=result.docs[0]){
+        const { signUp } = userSolidity.methods;
+        const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[0];
+        web3.eth.personal.newAccount(password).then(async function(res,err){
+            if(err) throw err;
+            
+            await signUp(userName,res).send({
+                from: defaultAccount,
+                gas: 1000000
+            }).on('error',function(error,receipt){
                 message.info("用户名重复",1);
-            }else{
-                try {
-                    web3.eth.personal.newAccount(password).then(function(res,err){
-                        if(err)throw err;
-                        //优化交互体验
-                        var doc = {
-                            _id : res,//用户链上id
-                            userName : userName//用户名
-                        }
-                        userDB.put(doc, function(err, response) {
-                            if (err) {
-                                throw err;
-                            } else {
-                                message.success("注册成功,返回登陆页面",1);
-                                setTimeout(() => {
-                                    window.location.replace("http://localhost:8081");
-                                },1000)
-                            }
-                        });
-                    })
-                } catch (err) {
-                    message.error("注册失败，再试试？",1)
-                }
-            }
+                throw error;
+            })
+        }).then(res=>{
+            message.success("注册成功,返回登陆页面",1);
+            setTimeout(() => {
+                window.location.replace("http://localhost:8081");
+            },1000)
         })
     },
     logout: async function(){
@@ -128,7 +112,6 @@ const nftModel = {
         if (file.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
-            var tokenId = null;
             // console.log(file[0]);
             var reader = new FileReader();
             //读取文件转为buffer以上传
@@ -138,18 +121,13 @@ const nftModel = {
                 var img = Buffer.from(reader.result);
                 // console.log("前："+img);
                 var cids = await ipfs.add(img);
-
                 cid = cids[0].hash;
                 // console.log("cid:" + cid);
-
-                tokenId = web3.utils.sha3(cid);
                 await nftModel.mint(name,des,cid,1,0);
                 alert("创建成功");
                 window.location.replace("http://localhost:8081/home.html");
             }
         }else message.error('未选择文件，铸造失败',1)
-        
-        
     },
 
     //铸造nft
@@ -169,6 +147,7 @@ const nftModel = {
         const { mint } = factory.methods;
         for(let i = 0;i < amount;i++){
             var tokenId = web3.utils.sha3(cid+i);
+            console.log(name)
             await mint(tokenId,name,cid,message,status).send({
                 from: account,
                 gas: 1000000
@@ -231,6 +210,7 @@ const nftModel = {
                 status:0
             },
         }).then(function(result){
+            
             for(let i=0;result.docs[i]!=null;i++){
                 ipfs.get(result.docs[i].cid,function(err,files){
                     if(err) throw err;
@@ -299,7 +279,8 @@ const activityModel = {
                 from:defaultAccount,
                 to:account,
                 value: web3.utils.toWei('1','ether')
-            })).then(await initiate(name,message1,amount,cid,password).send({
+            })).then(
+                await initiate(name,message1,amount,cid,password).send({
                 from:account,
                 gas:1000000
             }).then(res=>{
