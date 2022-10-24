@@ -1,21 +1,27 @@
 import React, { Component } from 'react'
-import { Input,message } from 'antd';
+import PubSub from 'pubsub-js';
+import { Input, message } from 'antd';
 const { Search } = Input;      
 
 
 
 class SearchInput extends Component{
-    onSearch = (value) => {
-        // console.log(event);
-        nftModel.search(value)
-        // else message.warn('请输入搜索内容',1)
+    onSearch = async (value) => {
+        PubSub.publish("serchloading",true)
+        PubSub.publish("first",false)
+        nftModel.search(value).then(res => {
+            setTimeout(() => {
+                PubSub.publish("searchcontent", res)
+                PubSub.publish("serchloading",false)
+            }, 1000)
+        })
     };
     render(){
         return (
             <>
                 <Search
                 placeholder="在此输入要查询的nft名字"
-                allowClear
+                // allowClear
                 onSearch={this.onSearch}
                 style={{ width: 240, marginTop: '18px' }}
                 // loading
@@ -24,4 +30,5 @@ class SearchInput extends Component{
         )
     }
 }
+
 export default SearchInput

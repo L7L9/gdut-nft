@@ -232,31 +232,37 @@ const nftModel = {
     //搜索
     search: async function(value){
         var regExp = new RegExp('.*' + value + '.*', 'i');
-        nftDB.find({
+        var content;
+        var url;
+        var res = [];
+        var ipfsResult;
+        const res1=await nftDB.find({
             selector: {
                 name:{"$regex": regExp},
                 status:0
             },
-        }).then(function(result){
-            for(let i=0;result.docs[i]!=null;i++){
-                ipfs.get(result.docs[i].cid,function(err,files){
-                    if(err) throw err;
-                    //nft图片
-                    // content = files[0].content;
-                    // url = window.URL.createObjectURL(new Blob([content]));
-
-                    //将res中数据渲染到前端
-                    // res[0]//tokenId
-                    // res[1]//ipfs中的cid
-                    // res[2]//nft名字
-                    // res[3]//作者
-                    // res[4]//nft描述
-                    // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
-                    // console.log(result);
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                console.log(result.docs[i])
+                ipfsResult = await ipfs.get(result.docs[i].cid);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                res.push({
+                    url,
+                    tokenId: result.docs[i]._id,// res[0]//tokenId
+                    cid: result.docs[i].cid,// res[1]//ipfs中的cid
+                    nftname: result.docs[i].name, // res[2]//nft名字
+                    author: result.docs[i].author,// res[3]//作者
+                    des: result.docs[i].message,// res[4]//nft描述
+                    number:result.docs[i].status// res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                 })
             }
-            console.log(result);
+            console.log(res);
+            return new Promise(reslove => {
+                reslove(res)
+            })
         })
+        return res1;
     }
 }
 

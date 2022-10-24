@@ -67,6 +67,18 @@ export default function Mynft() {
       </Form.Item>
 
       <Form.Item
+        label="发行价格："
+        name="paice"
+        rules={[
+          {
+            required: true,
+            message: '请输入发行价格!',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
         wrapperCol={{
           offset: 8,
           span: 16,

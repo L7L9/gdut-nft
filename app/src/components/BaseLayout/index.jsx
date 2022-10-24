@@ -10,6 +10,7 @@ import Home from '@/pages/Home'
 import Nftdetail from '@/pages/Home/Nftdetail'
 import Adetail from '@/pages/Activity/Detail'
 import Mydetail from '@/pages/Message/Detail'
+import Searchdetail from '@/pages/Search/Detail'
 import Search from '@/pages/Search'
 import Activity from '@/pages/Activity'
 import Mynft from '@/pages/Mynft'
@@ -35,6 +36,7 @@ export default function BaseLayout() {
     switch (location.pathname) {
       case '/GDUT-nft/home/detail':
       case '/GDUT-nft/home': setcurrentpath(['首页']); break;
+      case '/GDUT-nft/search/detail':
       case '/GDUT-nft/search': setcurrentpath(['搜索']); break;
       case '/GDUT-nft/activity/detail':
       case '/GDUT-nft/activity': setcurrentpath(['活动']); break;
@@ -69,7 +71,8 @@ export default function BaseLayout() {
         <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
         <Route path="/home/detail"  element={<Nftdetail/>}  />
-        <Route path="/search"  element={<Search/>}  />
+        <Route path="/search" element={<Search />} />
+        <Route path='/GDUT-nft/search/detail' element={<Searchdetail />} />
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
         <Route path="/activity/detail"  element={<Adetail/>}/>
         <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />

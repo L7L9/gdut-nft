@@ -30,7 +30,7 @@ export default class Home extends Component {
           
           this.state.data[0] == 123 ? <Loading /> : this.state.data.length == 0 ? <Nodata /> : <>
               <div className="showout">
-              <div className="showin">
+                <div className="showin">
                 {
                   this.state.data.map(item => {
                     const { nftname: name, nftdes: des, url:src, author, nft, cid } = item;
