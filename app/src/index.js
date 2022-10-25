@@ -284,7 +284,12 @@ const activityModel = {
                 //获取cid
                 cid = cids[0].hash;
 
-                await initiate(name,message1,amount,cid,password,nftName,nftMessage).on('error',function(error,receipt){
+                await initiate(name,message1,amount,cid,password,nftName,nftMessage)
+                .send({
+                    from:account,
+                    gas: 1000000
+                    })
+                .on('error',function(error,receipt){
                     console.log("创建失败");
                     throw error;
                 }).then(function(res){
@@ -699,20 +704,10 @@ window.onload = async function(){
     await init.getSolidityObject();
     
     //获取ipfs实例
-    init.getIpfs();
-
-    init.getAccount();
-
-    var url = window.location.href;
-    if(url == "http://localhost:8081/home.html"){
-        pageModel.showAllNFT();
-    }
-    if(url == "http://localhost:8081/myInformation.html"){
-        pageModel.showMyNFT();
-    }    
-    if(url == "http://localhost:8081/activity.html"){
-        pageModel.showAllActivities();
-    }
+    await init.getIpfs();
+    
+    //获取当前账号address
+    await init.getAccount();
 }
 
 import React from 'react';
