@@ -49,4 +49,8 @@ contract User{
     function getAddressByName(string memory _name) external view returns(address){
         return userMap[_name].userAddress;
     }
+
+    function getUserInfoByAddress(address _userAddress) external view returns(string memory, uint256){
+        return (userMap[addressToName[_userAddress]].userName, userMap[addressToName[_userAddress]].money);
+    }
 }

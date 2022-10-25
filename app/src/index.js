@@ -17,7 +17,7 @@ var activity = null;
 var userSolidity = null;
 //ipfs实例
 var ipfs = null;
-//当前账户
+//当前账户address
 var account = null;
 //nft链下数据库
 var nftDB = new PouchDB("nft_db");
@@ -510,6 +510,19 @@ const pageModel = {
     indexId: 0,
 
     activityHomeIndex: 1,
+
+    /**
+     * 返回用户个人信息
+     */
+    showMe: async function(){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var result = await getUserInfoByAddress(account).call();
+        var info = [];
+        info.push(result[0]);//用户名
+        info.push(account);//用户链上id
+        info.push(result[1]);//拥有的money
+        return info;
+    },
 
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
