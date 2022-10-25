@@ -14,6 +14,8 @@ contract User{
 
     mapping(string => userProperty) userMap;
 
+    mapping(address => string) addressToName;
+
     modifier userIsExist(string memory name){
         require(userMap[name].isExist,"user does not exist");
         _;
@@ -29,10 +31,22 @@ contract User{
         });
 
         userMap[_userName] = user;
+        addressToName[_address] = _userName;
     }
 
     function signIn(string memory _userName) external view userIsExist(_userName) returns(address){
         userProperty memory user = userMap[_userName];
         return user.userAddress;
+    }
+
+    function buy(uint256 price,address owner) external{
+        require(userMap[addressToName[msg.sender]].money >= price,"you dont have enough money");
+
+        userMap[addressToName[msg.sender]].money -= price;
+        userMap[addressToName[owner]].money += price;
+    }
+
+    function getAddressByName(string memory _name) external view returns(address){
+        return userMap[_name].userAddress;
     }
 }

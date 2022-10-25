@@ -23,9 +23,20 @@ contract Activity{
         uint256 amount;
         //活动发起人
         address host;
+        //活动是否存在
+        bool isExist;
     }
+    
+    struct nft{
+        string name;
 
+        string des;
+
+        uint256 amount;
+    }
     mapping(uint256 => activityProperty) activities;
+
+    mapping(uint256 => nft) nftMap;
 
     //活动的总数量（从1开始）
     uint256 activityAmount;
@@ -38,7 +49,14 @@ contract Activity{
     }
 
     //发起活动的函数
-    function initiate(string memory _name,string memory _description,uint256 _amount,string memory _nftCid,string memory _password) external{
+    function initiate(
+        string memory _name,
+        string memory _description,
+        uint256 _amount,
+        string memory _nftCid,
+        string memory _password,
+        string memory nftName,
+        string memory nftDes) external{
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
@@ -46,26 +64,41 @@ contract Activity{
             description: _description,
             password: _password,
             amount: _amount,
-            host: msg.sender
+            host: msg.sender,
+            isExist: true
         });
 
+        nft memory newNft = nft({
+            name: nftName,
+            des: nftDes,
+            amount: _amount
+        });
         amountForCount += (_amount - 1);
         activities[activityAmount] = activity;
         activityAmount++;
+
+        nftMap[activityAmount] = newNft;
 
         emit Initiate(msg.sender,_name,_amount,_password);
     }
 
     //获取活动中的nft
-    function getActivityNFT(uint256 id,string memory _password) external returns(string memory,uint256,address){
+    function getActivityNFT(uint256 id,string memory _password) external 
+    returns(
+        string memory,
+        uint256,
+        string memory,
+        string memory){
         activityProperty memory activity = activities[id];
         require(keccak256(bytes(_password)) == keccak256(bytes(activity.password)),"password is wrong");
-        require(activity.amount > 0,"activity is over");
-        activity.amount--;
-        if(activity.amount == 0){
+
+        nft memory nftObj = nftMap[id];
+        require(nftObj.amount > 0,"nft is not enough");
+        if(nftObj.amount == 0){
+            activity.isExist = false;
             emit End(activity.id, activity.name);
         }
-        return (activity.nftCid,activity.amount,activity.host);
+        return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des);
     }
 
     //获取活动信息的函数
