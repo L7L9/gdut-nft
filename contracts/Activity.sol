@@ -90,7 +90,7 @@ contract Activity{
         string memory,
         string memory){
         activityProperty memory activity = activities[id];
-        require(keccak256(abi.encodePacked(_password)) == activity.password),"password is wrong");
+        require(keccak256(abi.encodePacked(_password)) == activity.password,"password is wrong");
 
         nft memory nftObj = nftMap[id];
         require(nftObj.amount > 0,"nft is not enough");
