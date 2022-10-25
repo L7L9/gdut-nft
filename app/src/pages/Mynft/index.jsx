@@ -1,5 +1,5 @@
-import React from 'react'
-import { Button, Form, Input,message } from 'antd';
+import React, { useState } from 'react'
+import { Button, Form, Input,message,Radio } from 'antd';
 import { useNavigate } from 'react-router-dom'
 import Selectnft from './Selectnft'
 import './index.css'
@@ -7,6 +7,7 @@ import './index.css'
 
 export default function Mynft() {
   const navigate = useNavigate();
+  const [value,setValue]=useState(false)
   const onFinish = (values) => {
     nftModel.create(values.userName, values.des).then(() => {
       setTimeout(() => {
@@ -17,6 +18,10 @@ export default function Mynft() {
       message.error('未选择文件，铸造失败', 1)
     })
   };
+  const onChange = (e) => {
+    // console.log('radio checked', e.target.value);
+    setValue(e.target.value);
+  };
   return (
     <div>
       <h1>铸造我的NFT</h1>
@@ -24,7 +29,7 @@ export default function Mynft() {
         <div style={{ float: 'left', width: '300px', height: '300px'}}>
           <Selectnft/>
         </div>
-        <div style={{ float: 'right', width: '300px', height: '300px'}}>
+        <div style={{ float: 'right', width: '300px', height: '320px'}}>
         <Form
       name="basic"
       labelCol={{
@@ -67,17 +72,35 @@ export default function Mynft() {
       </Form.Item>
 
       <Form.Item
+        label="是否发行："
+        name="status"
+        rules={[
+          {
+            required: true,
+            message: '请选择是否发行!',
+          },
+          ]}
+      >
+        <Radio.Group onChange={onChange} value={value}>
+          <Radio value={true}>是</Radio>
+          <Radio value={false}>否</Radio>
+        </Radio.Group>
+      </Form.Item>
+            
+      <Form.Item
         label="发行价格："
         name="paice"
         rules={[
           {
-            required: true,
+            required: value,
             message: '请输入发行价格!',
           },
-        ]}
+              ]}
+          style={{display:value?'block':'none'}}
       >
         <Input />
       </Form.Item>
+      
       <Form.Item
         wrapperCol={{
           offset: 8,

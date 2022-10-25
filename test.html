@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        const getdata=()=>{
+                return new Promise (reslove=>{
+                    setTimeout(()=>{
+                        reslove(123465)
+                    },1000) 
+                })
+        }
+        const all=async ()=>{
+            const data= getdata()
+            data.then((res)=>{
+                return new Promise(reslove=>{
+                    console.log(res);
+                    setTimeout(()=>{
+                        reslove(123)
+                    },2000)
+                })
+            }).then((res)=>{
+                console.log(res);
+            })
+            
+        }
+        all()
+    </script>
+</body>
+</html>

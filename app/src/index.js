@@ -63,8 +63,8 @@ const accountModel = {
                         if (res == true) {
                             sessionStorage.setItem("account",tempAccount);
                             account = tempAccount;
+                            sessionStorage.setItem('islogin', true)
                             message.success("登陆成功", 1);
-                            sessionStorage.setItem('islogin',true)
                         }
                     })
                 } catch (err) {
@@ -230,7 +230,8 @@ const nftModel = {
         } 
     },
     //搜索
-    search: async function(value){
+    search: async function (value) {
+        // console.log(value);
         var regExp = new RegExp('.*' + value + '.*', 'i');
         var content;
         var url;
@@ -384,15 +385,30 @@ const activityModel = {
     //搜索活动
     search: async function(value){
         var regExp = new RegExp('.*' + value + '.*', 'i');
-        activityDB.find({
+        var res = [];
+        var res1=await activityDB.find({
             selector: {
                 name:{"$regex": regExp},
             },
         }).then(function(result){
             for(let i=0;result.docs[i]!=null;i++){
                 // _id,name,message,amount,cid,nftName,nftMessage
-                console.log(result.docs[i].name);
+                res.push({
+                    id:result.docs[i]._id,
+                    name:result.docs[i].name,
+                    message:result.docs[i].message,
+                    number:result.docs[i].amount,
+                    cid:result.docs[i].cid,
+                    nftname:result.docs[i].nftName,
+                    des:result.docs[i].nftMessage,
+                })
             }
+            return new Promise(reslove => {
+                reslove(res)
+            })
+        })
+        return new Promise((reslove) => {
+            reslove(res1)
         })
     }
 }
