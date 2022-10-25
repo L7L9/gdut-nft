@@ -29,7 +29,7 @@ class Activity extends Component{
     const { num, id } = this.state
     const { pass: { input} } = this.refs
     let password = input.value;
-    activityModel.getNFT(num, id, password)
+    activityModel.getNFT(id, password)
     this.setState({ isModalOpen1: false })
   };
   handleCancel = () => this.setState({isModalOpen:false});

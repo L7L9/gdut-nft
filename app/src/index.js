@@ -55,14 +55,14 @@ const accountModel = {
     defaultAccountNum: 1,
     getEth: async function(name){
         const { getAddressByName } = userSolidity.methods;
-        var address = await getAddressByName(name).call({})
 
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[this.defaultAccountNum];
+        var address = await getAddressByName(name).call({from:defaultAccount});
         if(this.defaultAccountNum == 10){
             this.defaultAccountNum = 1;
         } else {
-            this.defaultAccountNum++;
+            this.defaultAccountNum += 1;
         }
         var _transfer = {
             from:defaultAccount,
@@ -166,6 +166,8 @@ const nftModel = {
                 if(!status){
                     price = 0;
                 }
+                console.log(price);
+                console.log(status);
                 await mint(tokenId,name,cid,des,0,price,status).send({
                     from: account,
                     gas: 1000000
@@ -265,6 +267,7 @@ const nftModel = {
 const activityModel = {
     //创建活动
     initiateActivity: async function(name,message1,amount,password,nftName,nftMessage){
+        console.log(amount);
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
         var file = document.querySelector("#anft").files;
@@ -387,40 +390,43 @@ const activityModel = {
             const { getActivityNFT } = activity.methods;
             // const { give } = factory.methods;
             const { mint } = factory.methods;
-            
+            var tokenId = null;
             //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
-            var activityResult = await getActivityNFT(id,password).send({
-                from:account,
-                gas:1000000
-            })
-
-            var tokenId = tokenId = web3.utils.sha3(activityResult[2] + activityResult[1] + activityResult[0]);
-            await mint(tokenId,activityResult[2],activityResult[0],activityResult[3],id,0,false).send({
-                from:account,
-                gas:1000000
-            }).on('error',function(error,receipt){
-                console.log("nft可能被领完,查看error");
-                throw error;
-            }).then(res=>{
-                console.log(res);
-            });
-            var doc = {
-                _id : tokenId,
-                name : activityResult[2],
-                cid : activityResult[0],
-                message : activityResult[3],
-                author : account,
-                activityId : id
-            }
-            nftDB.put(doc, function(err, response) {
-                if (err) {
-                    return console.log(err);
-                } else {
-                    console.log("Document created Successfully");
-                    return new Promise((reslove,reject)=> {
-                        reslove(true)
-                    });
-                }
+            await getActivityNFT(id,password).call({from:account}).then(async function(res){
+                console.log(res[1]);
+                await getActivityNFT(id,password).send({
+                    from:account,
+                    gas:1000000
+                }).on('error',function(error,receipt){
+                    console.log("nft可能被领完,查看error");
+                    throw error;
+                }).then(async function(){
+                    console.log(res);
+                    tokenId = web3.utils.sha3(res[2] + res[1] + res[0]);
+                    await mint(tokenId,res[2],res[0],res[3],id,0,false).send({
+                        from:account,
+                        gas:1000000
+                    })
+                }).then(()=>{
+                    var doc = {
+                        _id : tokenId,
+                        name : res[2],
+                        cid : res[0],
+                        message : res[3],
+                        author : account,
+                        activityId : id
+                    }
+                    nftDB.put(doc, function(err, response) {
+                        if (err) {
+                            return console.log(err);
+                        } else {
+                            console.log("Document created Successfully");
+                            return new Promise((reslove,reject)=> {
+                                reslove(true)
+                            });
+                        }
+                    })
+                })  
             })
         }
         else message.error('您没有密钥或输入的密钥为空字符串',1)
