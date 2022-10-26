@@ -3,6 +3,7 @@ const ipfsAPI = require('ipfs-api');
 
 import factoryArtifact from "../../build/contracts/Factory.json";
 import activityArtifact from "../../build/contracts/Activity.json";
+import userArtifact from "../../build/contracts/User.json";
 
 import {message} from 'antd'
 
@@ -12,18 +13,17 @@ var web3 = null;
 var factory = null;
 //artivity合约实例
 var activity = null;
+//user合约实例
+var userSolidity = null;
 //ipfs实例
 var ipfs = null;
-//当前账户
+//当前账户address
 var account = null;
-//用户数据库(用于配对用户名和用户链上id)
-var userDB = new PouchDB("user_db");
 //nft链下数据库
 var nftDB = new PouchDB("nft_db");
 //activty链下数据库
 var activityDB = new PouchDB("activity_db");
 
-// userDB.destroy();
 // nftDB.destroy();
 // activityDB.destroy();
 
@@ -40,7 +40,11 @@ const init = {
         activity = new web3.eth.Contract(
             activityArtifact.abi,
             activityArtifact.networks[networkId].address
-        )
+        );
+        userSolidity = new web3.eth.Contract(
+            userArtifact.abi,
+            userArtifact.networks[networkId].address
+        );
     },
     getIpfs: async function(){
         ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001')
@@ -48,68 +52,65 @@ const init = {
 }
 
 const accountModel = {
+    defaultAccountNum: 1,
+    getEth: async function(name){
+        const { getAddressByName } = userSolidity.methods;
+        var address = await getAddressByName(name).call({})
+
+        const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[this.defaultAccountNum];
+        if(this.defaultAccountNum == 10){
+            this.defaultAccountNum = 1;
+        } else {
+            this.defaultAccountNum++;
+        }
+        var _transfer = {
+            from:defaultAccount,
+            to:address,
+            value: web3.utils.toWei('1','ether')
+        };
+        await web3.eth.sendTransaction(_transfer);
+    },
     login: async function (userName, password) {
-        var tempAccount = null;
-        userDB.find({
-            selector: {
-                userName : userName
-            },
-        }).then(async (result)=>{
-            if(null!=result.docs[0]){
-                try{
-                    tempAccount = result.docs[0]._id;
-                    await web3.eth.personal.unlockAccount(tempAccount,password,10).then((res,err) =>{
-                        if(err)throw err;
-                        if (res == true) {
-                            sessionStorage.setItem("account",tempAccount);
-                            account = tempAccount;
-                            sessionStorage.setItem('islogin', true)
-                            message.success("登陆成功", 1);
-                        }
-                    })
-                } catch (err) {
+        const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[0];
+        const { signIn } = userSolidity.methods;
+        var address = await signIn(userName).call({from:defaultAccount});
+
+        await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
+                if(err){
                     message.error("密码错误", 1);
                     sessionStorage.setItem('islogin',false)
+                    throw err;
                 }
-            } else {
-                message.error("账号不存在", 1);
-                sessionStorage.setItem('islogin',false)
-            }
+                if (res == true) {
+                    sessionStorage.setItem("account",address);
+                    account = address;
+                    message.success("登陆成功", 1);
+                    sessionStorage.setItem('islogin',true)
+                }
         })
     },
-
     register: async function(userName,password){
-        userDB.find({
-            selector: {
-                userName : userName
-            },
-        }).then(async (result)=>{
-            if(null!=result.docs[0]){
+        const { signUp } = userSolidity.methods;
+        const accounts = await web3.eth.getAccounts();
+        var defaultAccount = accounts[0];
+        web3.eth.personal.newAccount(password).then(async function(res,err){
+            if(err) throw err;
+            
+            await signUp(userName,res).send({
+                from: defaultAccount,
+                gas: 1000000
+            }).on('error',function(error,receipt){
                 message.info("用户名重复",1);
-            }else{
-                try {
-                    web3.eth.personal.newAccount(password).then(function(res,err){
-                        if(err)throw err;
-                        //优化交互体验
-                        var doc = {
-                            _id : res,//用户链上id
-                            userName : userName//用户名
-                        }
-                        userDB.put(doc, function(err, response) {
-                            if (err) {
-                                throw err;
-                            } else {
-                                message.success("注册成功,返回登陆页面",1);
-                                setTimeout(() => {
-                                    window.location.replace("http://localhost:8081");
-                                },1000)
-                            }
-                        });
-                    })
-                } catch (err) {
-                    message.error("注册失败，再试试？",1)
-                }
-            }
+                throw error;
+            })
+        }).then(res=>{
+            this.getEth(userName);
+            message.success("注册成功,返回登陆页面",1);
+            setTimeout(() => {
+                window.location.replace("http://localhost:8081");
+            },1000)
         })
     },
     logout: async function(){
@@ -121,14 +122,17 @@ const accountModel = {
 
 const nftModel = {
     //创建nft
-    create: async function(name0,des0){
+    create: async function(name0,des0,price,status){
+        const { mint } = factory.methods;
+
         var file = document.querySelector("#nft").files;
         var name = name0;
         var des = des0;
+
+        var tokenId = null;
         if (file.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
-            var tokenId = null;
             // console.log(file[0]);
             var reader = new FileReader();
             //读取文件转为buffer以上传
@@ -138,25 +142,48 @@ const nftModel = {
                 var img = Buffer.from(reader.result);
                 // console.log("前："+img);
                 var cids = await ipfs.add(img);
-
+                //返回的cid
                 cid = cids[0].hash;
                 // console.log("cid:" + cid);
-
-                tokenId = web3.utils.sha3(cid);
-                await nftModel.mint(name, des, cid, 1, 0).then(() => {
-                    return new Promise((reslove,reject)=> {
-                        reslove(true)
-                    });
+                tokenId = web3.utils.sha3(name + cid);
+                if(!status){
+                    price = 0;
+                }
+                await mint(tokenId,name,cid,des,0,price,status).send({
+                    from: account,
+                    gas: 1000000
+                }).on('error',function(error,receipt){
+                    throw error;
                 });
-                
+                var doc = {
+                    _id : tokenId,
+                    name : name,
+                    cid : cid,
+                    message : des,
+                    author : account,
+                    activityId : 0
+                }
+                nftDB.put(doc, function(err, response) {
+                    if (err) {
+                        return console.log(err);
+                    } else {
+                        console.log("Document created Successfully");
+                        return new Promise((reslove,reject)=> {
+                            reslove(true)
+                        });
+                    }
+                })
+                // await nftModel.mint(name, des, cid, 1, 0).then(() => {
+                //     return new Promise((reslove,reject)=> {
+                //         reslove(true)
+                //     });
+                // });
             }
         } else {
             return new Promise((reslove,reject) => {
                 reject(false)
             });
         }
-        
-        
     },
 
     //铸造nft
@@ -176,6 +203,7 @@ const nftModel = {
         const { mint } = factory.methods;
         for(let i = 0;i < amount;i++){
             var tokenId = web3.utils.sha3(cid+i);
+            console.log(name)
             await mint(tokenId,name,cid,message,status).send({
                 from: account,
                 gas: 1000000
@@ -209,17 +237,6 @@ const nftModel = {
                 // console.log(tokenId);
                 // console.log(to);
                 const { give } = factory.methods;
-                //转入以太以便调用方法
-                const accounts = await web3.eth.getAccounts();
-                var defaultAccount = accounts[0];
-                // console.log(defaultAccount);  
-                var _transfer = {
-                    from:defaultAccount,
-                    to:account,
-                    value: web3.utils.toWei('1','ether')
-                };
-
-                await web3.eth.sendTransaction(_transfer);
 
                 await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
                     console.log(res);
@@ -242,6 +259,7 @@ const nftModel = {
                 name:{"$regex": regExp},
                 status:0
             },
+
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
                 console.log(result.docs[i])
@@ -276,54 +294,45 @@ const activityModel = {
 
         var cid = null;
 
+        var activityId = await getActivityAmount().call({from:account});
+
         if (file.length !== 0) {
             var reader = new FileReader();
             reader.readAsArrayBuffer(file[0]);
             reader.onloadend = async function(){
-            // console.log(reader.result);
-            var img = Buffer.from(reader.result);
-            // console.log("前："+img);
-            var cids = await ipfs.add(img);
+                // console.log(reader.result);
+                var img = Buffer.from(reader.result);
+                // console.log("前："+img);
+                var cids = await ipfs.add(img);
+                //获取cid
+                cid = cids[0].hash;
 
-            cid = cids[0].hash;
-            var activityId = await getActivityAmount().call({from:account});
-            nftModel.mint(nftName,nftMessage,cid,amount,activityId);
-
-            const accounts = await web3.eth.getAccounts();
-            var defaultAccount = accounts[0];
-            // console.log(defaultAccount);  
-
-            var doc = {
-                _id:activityId,
-                name:name,
-                message:message1,
-                amount:amount,
-                cid:cid,
-                nftName:nftName,
-                nftMessage:nftMessage
-            }
-            activityDB.put(doc, function(err, response) {
-                if (err) {
-                    return console.log(err);
-                } else {
-                    console.log("Document created Successfully");
-                }
-            }).then(
-                await web3.eth.sendTransaction({
-                from:defaultAccount,
-                to:account,
-                value: web3.utils.toWei('1','ether')
-            })).then(await initiate(name,message1,amount,cid,password).send({
-                from:account,
-                gas:1000000
-            }).then(res=>{
-                console.log(res);
-                return new Promise((reslove, reject) => {
-                    message.success("创建活动成功");
-                    reslove(true)
+                await initiate(name,message1,amount,cid,password,nftName,nftMessage).on('error',function(error,receipt){
+                    console.log("创建失败");
+                    throw error;
+                }).then(function(res){
+                    console.log(res);
+                    var doc = {
+                        _id:activityId,
+                        name:name,
+                        message:message1,
+                        amount:amount,
+                        cid:cid,
+                        nftName:nftName,
+                        nftMessage:nftMessage
+                    }
+                    activityDB.put(doc, function(err, response) {
+                        if (err) {
+                            return console.log(err);
+                        } else {
+                            console.log("Document created Successfully");
+                            return new Promise((reslove, reject) => {
+                                message.success("创建活动成功");
+                                reslove(true)
+                            })
+                        }
+                    })
                 })
-                //刷新活动页面
-            }))
             }
         } else {
             return new Promise((reslove, reject) => {
@@ -331,56 +340,154 @@ const activityModel = {
                 reject(false)
             })
         }
+
+        // if (file.length !== 0) {
+        //     var reader = new FileReader();
+        //     reader.readAsArrayBuffer(file[0]);
+        //     reader.onloadend = async function(){
+        //     // console.log(reader.result);
+        //     var img = Buffer.from(reader.result);
+        //     // console.log("前："+img);
+        //     var cids = await ipfs.add(img);
+        //     //获取cid
+        //     cid = cids[0].hash;
+        //     // var activityId = await getActivityAmount().call({from:account});
+        //     // nftModel.mint(nftName,nftMessage,cid,amount,activityId);
+
+        //     const accounts = await web3.eth.getAccounts();
+        //     var defaultAccount = accounts[0];
+        //     // console.log(defaultAccount);  
+
+        //     var doc = {
+        //         _id:activityId,
+        //         name:name,
+        //         message:message1,
+        //         amount:amount,
+        //         cid:cid,
+        //         nftName:nftName,
+        //         nftMessage:nftMessage
+        //     }
+        //     activityDB.put(doc, function(err, response) {
+        //         if (err) {
+        //             return console.log(err);
+        //         } else {
+        //             console.log("Document created Successfully");
+        //         }
+        //     }).then(
+        //         await web3.eth.sendTransaction({
+        //         from:defaultAccount,
+        //         to:account,
+        //         value: web3.utils.toWei('1','ether')
+        //     })).then(
+        //         await initiate(name,message1,amount,cid,password).send({
+        //         from:account,
+        //         gas:1000000
+        //     }).then(res=>{
+        //         console.log(res);
+        //         return new Promise((reslove, reject) => {
+        //             message.success("创建活动成功");
+        //             reslove(true)
+        //         })
+        //         //刷新活动页面
+        //     }))
+        //     }
+        // } else {
+        //     return new Promise((reslove, reject) => {
+        //         message.error('创建失败，你没有选择文件',1)
+        //         reject(false)
+        //     })
+        // }
     },
 
     //领取活动nft
-    getNFT: async function(num,id,password){
-        // console.log(num);
-        //获取输入的领取密钥
+    getNFT: async function(id,password){
         if(password.trim() != ''){
             const { getActivityNFT } = activity.methods;
-            const { give } = factory.methods;
-            //活动id
-            // var activityId = document.getElementById("activityId"+num).innerText;
-            var activityId = id;
-            console.log(activityId);
+            // const { give } = factory.methods;
+            const { mint } = factory.methods;
             
-            //转入以太以便调用方法
-            const accounts = await web3.eth.getAccounts();
-            var defaultAccount = accounts[0];
-            // console.log(defaultAccount);  
-
-            await web3.eth.sendTransaction({
-                from:defaultAccount,
-                to:account,
-                value: web3.utils.toWei('1','ether')
-            });
-
-            await getActivityNFT(activityId,password).call().then(async function(res){
-                console.log(res);
-
-                var tokenId = web3.utils.sha3(res[0] + res[1]); 
-
-                await web3.eth.sendTransaction({
-                    from:defaultAccount,
-                    to:res[2],
-                    value: web3.utils.toWei('1','ether')
-                });
-                await give(account,tokenId).send({
-                    from:res[2],
-                    gas:1000000
-                }).then((res)=>{
-                    console.log(res);
-                })
-            })
-            await getActivityNFT(activityId,password).send({
+            //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
+            var activityResult = await getActivityNFT(id,password).send({
                 from:account,
                 gas:1000000
-            }).on("receipt",function(receipt){
-                console.log(receipt);
+            })
+
+            var tokenId = tokenId = web3.utils.sha3(activityResult[2] + activityResult[1] + activityResult[0]);
+            await mint(tokenId,activityResult[2],activityResult[0],activityResult[3],id,0,false).send({
+                from:account,
+                gas:1000000
+            }).on('error',function(error,receipt){
+                console.log("nft可能被领完,查看error");
+                throw error;
+            }).then(res=>{
+                console.log(res);
+            });
+            var doc = {
+                _id : tokenId,
+                name : activityResult[2],
+                cid : activityResult[0],
+                message : activityResult[3],
+                author : account,
+                activityId : id
+            }
+            nftDB.put(doc, function(err, response) {
+                if (err) {
+                    return console.log(err);
+                } else {
+                    console.log("Document created Successfully");
+                    return new Promise((reslove,reject)=> {
+                        reslove(true)
+                    });
+                }
             })
         }
         else message.error('您没有密钥或输入的密钥为空字符串',1)
+        // // console.log(num);
+        // //获取输入的领取密钥
+        // if(password.trim() != ''){
+        //     const { getActivityNFT } = activity.methods;
+        //     const { give } = factory.methods;
+        //     //活动id
+        //     // var activityId = document.getElementById("activityId"+num).innerText;
+        //     var activityId = id;
+        //     console.log(activityId);
+            
+        //     //转入以太以便调用方法
+        //     const accounts = await web3.eth.getAccounts();
+        //     var defaultAccount = accounts[0];
+        //     // console.log(defaultAccount);  
+
+        //     await web3.eth.sendTransaction({
+        //         from:defaultAccount,
+        //         to:account,
+        //         value: web3.utils.toWei('1','ether')
+        //     });
+
+        //     await getActivityNFT(activityId,password).call().then(async function(res){
+        //         console.log(res);
+
+        //         var tokenId = web3.utils.sha3(res[0] + res[1]); 
+
+        //         await web3.eth.sendTransaction({
+        //             from:defaultAccount,
+        //             to:res[2],
+        //             value: web3.utils.toWei('1','ether')
+        //         });
+        //         await give(account,tokenId).send({
+        //             from:res[2],
+        //             gas:1000000
+        //         }).then((res)=>{
+        //             console.log(res);
+        //         })
+        //     })
+        //     await getActivityNFT(activityId,password).send({
+        //         from:account,
+        //         gas:1000000
+        //     }).on("receipt",function(receipt){
+        //         console.log(receipt);
+        //     })
+        // }
+        // else message.error('您没有密钥或输入的密钥为空字符串',1)
     },
     //搜索活动
     search: async function(value){
@@ -419,6 +526,19 @@ const pageModel = {
     indexId: 0,
 
     activityHomeIndex: 1,
+
+    /**
+     * 返回用户个人信息
+     */
+    showMe: async function(){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var result = await getUserInfoByAddress(account).call();
+        var info = [];
+        info.push(result[0]);//用户名
+        info.push(account);//用户链上id
+        info.push(result[1]);//拥有的money
+        return info;
+    },
 
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;

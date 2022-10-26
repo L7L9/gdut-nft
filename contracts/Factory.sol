@@ -25,6 +25,10 @@ contract Factory is ERC721{
         string description;
         //是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
         uint256 activityId;
+        //价格
+        uint256 price;
+        //是否卖(true卖，false不卖)
+        bool status;
     }
 
     //nft集合
@@ -47,7 +51,7 @@ contract Factory is ERC721{
     }
 
     //铸造
-    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description,uint256 status) external{
+    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description,uint256 _activityId,uint256 _price,bool _status) external{
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
@@ -55,7 +59,9 @@ contract Factory is ERC721{
             name: _name,
             author: msg.sender,
             description: _description,
-            activityId: status
+            activityId: _activityId,
+            price:_price,
+            status: _status
         });
         nfts[nftAmount] = nft;
 
@@ -104,5 +110,13 @@ contract Factory is ERC721{
 
         _transfer(msg.sender, to, tokenId);
         emit Give(msg.sender, to, tokenId);
+    }
+
+    function setStatus(uint256 _tokenId,bool _status,uint256 _price) external{
+        require(_status == !nfts[_tokenId].status,"already this status");
+        if(_status){
+            nfts[_tokenId].price = _price;
+        }
+        nfts[_tokenId].status = _status;
     }
 }

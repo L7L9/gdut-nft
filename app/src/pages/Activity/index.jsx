@@ -45,7 +45,7 @@ class Activity extends Component{
     form.resetFields();
     this.setState({ isModalOpen: false })
     activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
-      this.props.changeloding(true,2000);
+      this.props.changeloding(true,3000);
     }, (err) => {
       console.log(err);
     })
