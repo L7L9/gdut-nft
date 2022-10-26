@@ -18,7 +18,7 @@ contract Activity{
         //活动描述
         string description;
         //密码
-        string password;
+        bytes32 password;
         //nft数量
         uint256 amount;
         //活动发起人
@@ -62,7 +62,7 @@ contract Activity{
             nftCid: _nftCid,
             name: _name,
             description: _description,
-            password: _password,
+            password: keccak256(abi.encode(_password)),
             amount: _amount,
             host: msg.sender,
             isExist: true
@@ -90,7 +90,7 @@ contract Activity{
         string memory,
         string memory){
         activityProperty memory activity = activities[id];
-        require(keccak256(bytes(_password)) == keccak256(bytes(activity.password)),"password is wrong");
+        require(keccak256(abi.encode(_password)) == activity.password,"password is wrong");
 
         nft memory nftObj = nftMap[id];
         require(nftObj.amount > 0,"nft is not enough");
@@ -98,6 +98,7 @@ contract Activity{
             activity.isExist = false;
             emit End(activity.id, activity.name);
         }
+        nftObj.amount--;
         return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des);
     }
 
