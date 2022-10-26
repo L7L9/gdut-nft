@@ -228,7 +228,6 @@ const nftModel = {
     // },
     //搜索
     search: async function (value) {
-        // console.log(value);
         var regExp = new RegExp('.*' + value + '.*', 'i');
         var content;
         var url;
@@ -237,9 +236,7 @@ const nftModel = {
         const res1=await nftDB.find({
             selector: {
                 name:{"$regex": regExp},
-                status:0
             },
-
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
                 console.log(result.docs[i])
