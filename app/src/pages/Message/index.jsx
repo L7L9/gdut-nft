@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { message, Button } from 'antd'
+import { message, Button,Descriptions  } from 'antd'
 import { nanoid } from 'nanoid'
 import { Link } from 'react-router-dom';
 import Loading from '@/components/Loading';
@@ -26,8 +26,10 @@ export default class PersonMessage extends Component{
   }
   }
   give = () => nftModel.give()
-  state = { data: [123] }
+  state = { data: [123],person:[] }
   getdata = async () => {
+    const person = await pageModel.showMe();
+    this.setState({person})
     pageModel.showMyNFT().then(res => {
       setTimeout(()=>{this.setState({ data: res })},100)
     })
@@ -37,6 +39,11 @@ export default class PersonMessage extends Component{
   }
   render(){
     return <div>
+      <Descriptions title="用户信息" >
+        <Descriptions.Item label="UserName">{this.state.person[0]}</Descriptions.Item>
+        <Descriptions.Item label="Id">{this.state.person[1]}</Descriptions.Item>
+        <Descriptions.Item label="Price">{this.state.person[2]}</Descriptions.Item>
+      </Descriptions>
       <h1>我拥有的nft:</h1>
       {
           this.state.data[0] == 123 ? <Loading /> : this.state.data.length == 0 ? <Nodata /> : <>

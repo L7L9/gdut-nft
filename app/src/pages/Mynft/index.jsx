@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { Button, Form, Input,message,Radio } from 'antd';
 import { useNavigate } from 'react-router-dom'
 import Selectnft from './Selectnft'
@@ -7,9 +7,18 @@ import './index.css'
 
 export default function Mynft() {
   const navigate = useNavigate();
-  const [value,setValue]=useState(false)
+  const [value, setValue] = useState(false)
+  const [nftfile, setNftfile] = useState([])
+  useEffect(() => {
+    PubSub.subscribe("nftfile", (msg, data) => {
+      setNftfile([data])
+    })
+  })
   const onFinish = (values) => {
-    nftModel.create(values.userName, values.des).then(() => {
+    const { userName, des, price, status } = values;
+    console.log(nftfile);
+    nftModel.create(userName, des,price?price:0,status,nftfile).then(() => {
+      message.loading('正在创建，请等待', 2)
       setTimeout(() => {
         message.success("创建成功", 1);
         navigate('/GDUT-nft/home')
@@ -19,15 +28,17 @@ export default function Mynft() {
     })
   };
   const onChange = (e) => {
-    // console.log('radio checked', e.target.value);
     setValue(e.target.value);
   };
   return (
     <div>
       <h1>铸造我的NFT</h1>
       <div className='out'>
-        <div style={{ float: 'left', width: '300px', height: '300px'}}>
-          <Selectnft/>
+        <div style={{ float: 'left', width: '300px', height: '300px',position:'relative'}}>
+          <div style={{position:'absolute',left:'50%',top:'35%',transform:'translate(-50%,-50%)'}}>
+            <Selectnft />
+          </div>
+          <p style={{width:'100%',marginTop:'185px',marginLeft:'35px'}}>上传一张图片，获得一份独一无二的nft</p>
         </div>
         <div style={{ float: 'right', width: '300px', height: '320px'}}>
         <Form
@@ -95,7 +106,7 @@ export default function Mynft() {
             required: value,
             message: '请输入发行价格!',
           },
-              ]}
+          ]}
           style={{display:value?'block':'none'}}
       >
         <Input />

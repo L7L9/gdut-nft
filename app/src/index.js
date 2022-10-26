@@ -139,10 +139,10 @@ const nftModel = {
         })
     },
     //创建nft
-    create: async function(name0,des0,price,status){
+    create: async function(name0,des0,price,status,file0){
         const { mint } = factory.methods;
 
-        var file = document.querySelector("#nft").files;
+        var file = file0;
         var name = name0;
         var des = des0;
 
@@ -150,7 +150,6 @@ const nftModel = {
         if (file.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
-            // console.log(file[0]);
             var reader = new FileReader();
             //读取文件转为buffer以上传
             reader.readAsArrayBuffer(file[0]);
@@ -171,7 +170,7 @@ const nftModel = {
                 await mint(tokenId,name,cid,des,0,price,status).send({
                     from: account,
                     gas: 1000000
-                }).on('error',function(error,receipt){
+                }).on('error', function (error, receipt) {
                     throw error;
                 });
                 var doc = {
@@ -199,6 +198,7 @@ const nftModel = {
                 // });
             }
         } else {
+            // console.log(file.length);
             return new Promise((reslove,reject) => {
                 reject(false)
             });
@@ -650,8 +650,7 @@ const pageModel = {
                 // nft图片
                 content = getResult[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
-                // var img = document.getElementById("num"+num);
-                // img.src = url; 
+                
                 result.push({
                     url,
                     name: res[0],
