@@ -1,8 +1,8 @@
 import React, { useEffect,useState } from 'react'
 import {} from 'react-redux'
-import { Menu, Layout } from 'antd';
+import { Menu, Layout, message } from 'antd';
 const { Header, Content, Footer } = Layout;
-import { Routes, Route,useLocation } from 'react-router-dom';
+import { Routes, Route,useLocation,useNavigate } from 'react-router-dom';
 import {loadingaction} from '@/redux/actions/loading'
 import { items } from '@/routes/allmenuitems';
 import { Navigate } from "react-router-dom";
@@ -31,8 +31,13 @@ export default function BaseLayout() {
   // 修改中央仓库数据
 	const dispatch = useDispatch()
 	
+  const navigate = useNavigate();
   // useEffect(effectFunc, []) 类似于 componentDidMount
   useEffect(() => {
+    if (sessionStorage.getItem('islogin') != 'true') {
+      message.info('请先登陆账号',2)
+      navigate('/login')
+    }
     switch (location.pathname) {
       case '/GDUT-nft/home/detail':
       case '/GDUT-nft/home': setcurrentpath(['首页']); break;
@@ -72,7 +77,7 @@ export default function BaseLayout() {
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
         <Route path="/home/detail"  element={<Nftdetail/>}  />
         <Route path="/search" element={<Search />} />
-        <Route path='/GDUT-nft/search/detail' element={<Searchdetail />} />
+        <Route path='/search/detail' element={<Searchdetail />} />
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
         <Route path="/activity/detail"  element={<Adetail/>}/>
         <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />

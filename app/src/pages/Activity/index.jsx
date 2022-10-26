@@ -29,19 +29,23 @@ class Activity extends Component{
     const { num, id } = this.state
     const { pass: { input} } = this.refs
     let password = input.value;
-    activityModel.getNFT(num, id, password)
+    activityModel.getNFT(id, password)
     this.setState({ isModalOpen1: false })
   };
   handleCancel = () => this.setState({isModalOpen:false});
   handleCancel1 = () => this.setState({isModalOpen1:false});
-  onSearch = (value) => activityModel.search(value);
+  onSearch = async (value) => {
+    this.setState({ data:[123] })
+    const data = await activityModel.search(value);
+    this.setState({ data })
+  }
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
     const { form } = this.refs;
     form.resetFields();
     this.setState({ isModalOpen: false })
     activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
-      this.props.changeloding(true,2000);
+      this.props.changeloding(true,3000);
     }, (err) => {
       console.log(err);
     })
@@ -199,7 +203,7 @@ class Activity extends Component{
                   <div className="showin1">
                     {
                   this.state.data.map((item, index) => {
-                        const {url,name,des,id,person,nftcid,number}=item
+                    const {url,name,des,id,person,nftcid,number}=item
                     return <div className="item1" key={nanoid()} >
                         <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,person,nftcid,number}} > 
                             <img style={{ width: '100%', height: '220px' }} src={item.url}/>

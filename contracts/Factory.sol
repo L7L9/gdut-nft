@@ -45,8 +45,8 @@ contract Factory is ERC721{
 
     constructor() ERC721("nft","NFT"){}
 
-    modifier Owner(uint256 _tokenId){
-        require(msg.sender == ownerOf(_tokenId));
+    modifier Owner(uint256 _tokenId,address owner){
+        require(owner == ownerOf(_tokenId));
         _;
     }
 
@@ -94,7 +94,7 @@ contract Factory is ERC721{
     }
 
     //转赠
-    function give(address to,uint256 tokenId) external Owner(tokenId) {
+    function give(address to,uint256 tokenId) external Owner(tokenId,msg.sender) {
         //获赠者
         nftOwner[to][balanceOf(to)] = nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
         personalNftOrder[to][tokenId] = balanceOf(to);
@@ -110,6 +110,14 @@ contract Factory is ERC721{
 
         _transfer(msg.sender, to, tokenId);
         emit Give(msg.sender, to, tokenId);
+    }
+
+    function transferFromOwner(address from,address to,uint256 tokenId) external Owner(tokenId,from){
+        
+    }
+
+    function transfer() private{
+        
     }
 
     function setStatus(uint256 _tokenId,bool _status,uint256 _price) external{

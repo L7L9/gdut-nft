@@ -7,13 +7,14 @@ import './index.css'
 const Login = () => {
     const navigate = useNavigate();
     const onFinish = (values) => {
-        accountModel.login(values.username, values.password).then
-        setTimeout(function () {
-            if (sessionStorage.getItem('islogin') == 'true') {
-                navigate('/GDUT-nft')
-                console.log(123);
-            }
-        },100)
+        accountModel.login(values.username, values.password).then(()=>{
+            setTimeout(function () {
+                if (sessionStorage.getItem('islogin') == 'true') {
+                    navigate('/GDUT-nft')
+                    console.log(123);
+                }
+            },100)
+        })
     };
     const register = () => {
         navigate('/register');
