@@ -16,7 +16,6 @@ export default function Mynft() {
   })
   const onFinish = (values) => {
     const { userName, des, price, status } = values;
-    console.log(nftfile);
     nftModel.create(userName, des,price?price:0,status,nftfile).then(() => {
       message.loading('正在创建，请等待', 2)
       setTimeout(() => {

@@ -26,6 +26,7 @@ const Selectnft = () => {
   const onChange = ({ fileList: newFileList,file }) => {
     if (file.status === 'removed') {
       setFileList([]);
+      PubSub.publish("nftfile", fileList)
     }
     else {
       newFileList[0].status = 'uploading'
@@ -34,9 +35,8 @@ const Selectnft = () => {
         setFileList(newFileList);
         message.success('上传成功',.5)
       }, 1000)
+      PubSub.publish("nftfile", newFileList[0].originFileObj)
     }
-    // console.log(newFileList);
-    PubSub.publish("nftfile", newFileList[0].originFileObj)
     // PubSub.publish("nftfile", window.URL.createObjectURL(new Blob(newFileList)))
   };
   const beforeUpload = (file) => {
