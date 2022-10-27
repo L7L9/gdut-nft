@@ -40,6 +40,8 @@ contract Factory is ERC721{
     //tokenId在个人所有拥有nft的序号
     mapping(address => mapping(uint256 => uint256)) personalNftOrder;
 
+    mapping(string => bool) cidStatus;
+
     //nft的总数量
     uint256 nftAmount;
 
@@ -52,6 +54,7 @@ contract Factory is ERC721{
 
     //铸造
     function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description,uint256 _activityId,uint256 _price,bool _status) external{
+        require(!cidStatus[_cid],"this picture already ");
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
@@ -126,5 +129,13 @@ contract Factory is ERC721{
             nfts[_tokenId].price = _price;
         }
         nfts[_tokenId].status = _status;
+    }
+
+    function setCidStatus(string memory cid) external{
+        cidStatus[cid] = true;
+    }
+
+    function getCidStatus(string memory cid) external view returns(bool){
+        return cidStatus[cid];
     }
 }
