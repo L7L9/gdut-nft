@@ -142,6 +142,7 @@ const nftModel = {
     create: async function(name0,des0,price,status,file0){
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
+        const { getActivityCidStatus } = activity.methods;
 
         var file = file0;
         var name = name0;
@@ -161,48 +162,52 @@ const nftModel = {
                 var cids = await ipfs.add(img);
                 //返回的cid
                 cid = cids[0].hash;
-                // console.log("cid:" + cid);
-                tokenId = web3.utils.sha3(name + cid);
-                if(!status){
-                    price = 0;
-                }
-                console.log(price);
-                console.log(status);
-                await mint(tokenId,name,cid,des,0,price,status).send({
-                    from: account,
-                    gas: 1000000
-                }).on('error', function (error, receipt) {
-                    message.error("该图片已经使用过",1);
-
-                    return new Promise((reslove,reject) => {
-                        reject(false)
-                    });
-                }).then(async ()=>{
-                    await setCidStatus(cid).send({
+                var cidStatus = await getActivityCidStatus(cid).call({}); 
+                if(!cidStatus){
+                    tokenId = web3.utils.sha3(name + cid);
+                    if(!status){
+                        price = 0;
+                    }
+                    console.log(price);
+                    console.log(status);
+                    await mint(tokenId,name,cid,des,0,price,status).send({
                         from: account,
                         gas: 1000000
-                    }).on('error',function(error){
-                        throw error;
-                    })
-                });
-                var doc = {
-                    _id : tokenId,
-                    name : name,
-                    cid : cid,
-                    message : des,
-                    author : account,
-                    activityId : 0
-                }
-                nftDB.put(doc, function(err, response) {
-                    if (err) {
-                        return console.log(err);
-                    } else {
-                        console.log("Document created Successfully");
-                        return new Promise((reslove,reject)=> {
-                            reslove(true)
+                    }).on('error', function (error, receipt) {
+                        message.error("该图片已经使用过",1);
+    
+                        return new Promise((reslove,reject) => {
+                            reject(false)
                         });
+                    }).then(async ()=>{
+                        await setCidStatus(cid).send({
+                            from: account,
+                            gas: 1000000
+                        }).on('error',function(error){
+                            throw error;
+                        })
+                    });
+                    var doc = {
+                        _id : tokenId,
+                        name : name,
+                        cid : cid,
+                        message : des,
+                        author : account,
+                        activityId : 0
                     }
-                })
+                    nftDB.put(doc, function(err, response) {
+                        if (err) {
+                            return console.log(err);
+                        } else {
+                            console.log("Document created Successfully");
+                            return new Promise((reslove,reject)=> {
+                                reslove(true)
+                            });
+                        }
+                    })
+                } else {
+                    message.error("该图片已经使用过",1);
+                }
             }
         } else {
             return new Promise((reslove,reject) => {
@@ -228,10 +233,33 @@ const nftModel = {
             }
         } 
     },
-    // buyNft: async function(){
-    //     const { buy } = User.methods;
-    //     const { give } = factory.methods;
-    // },
+    buyNft: async function(owner,tokenId){
+        const { buy } = userSolidity.methods;
+        const { transferFromOwner } = factory.methods;
+        const { getNftPrice } = factory.methods;
+        const { getMoney } = userSolidity.methods;
+        var money = await getMoney().call({from:account});
+        var price = await getNftPrice(tokenId).call();
+        if(money >= price){
+            await buy(price,owner).send({
+                from:account,
+                gas: 1000000
+            }).on('error',function(error){
+                throw error;
+            }).then(async function(){
+                await transferFromOwner(owner,account,tokenId).send({
+                    from:account,
+                    gas: 1000000
+                }).on('error',function(error){
+                    throw error;
+                });
+            }).then(()=>{
+                message.success("购买成功");
+            });
+        } else{
+            message.error("您的余额不足",1);
+        }
+    },
     //搜索
     search: async function (value) {
         var regExp = new RegExp('.*' + value + '.*', 'i');
@@ -271,7 +299,6 @@ const nftModel = {
 const activityModel = {
     //创建活动
     initiateActivity: async function(name,message1,amount,password,nftName,nftMessage){
-        console.log(amount);
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
 
@@ -297,7 +324,7 @@ const activityModel = {
                     .send({
                         from:account,
                         gas: 1000000
-                        })
+                    })
                     .on('error',function(error,receipt){
                         console.log("创建失败");
                         throw error;
@@ -338,50 +365,54 @@ const activityModel = {
             })
         }
     },
-
+    //TODO
     //领取活动nft
     getNFT: async function(id,password){
         if(password.trim() != ''){
+            const { getIndex } = activity.methods;
+
             const { getActivityNFT } = activity.methods;
             // const { give } = factory.methods;
             const { mint } = factory.methods;
             var tokenId = null;
             //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
-            await getActivityNFT(id,password).call({from:account}).then(async function(res){
-                console.log(res[1]);
-                await getActivityNFT(id,password).send({
+            var result = await getActivityNFT(id,password).call({from:account});
+            
+            var trueIndex = await getIndex(id).call({});
+            console.log(trueIndex);
+            console.log(result);
+            await getActivityNFT(id,password).send({
+                from:account,
+                gas:1000000
+            }).on('error',function(error,receipt){
+                console.log("nft可能被领完,查看error");
+                throw error;
+            }).then(async function(){
+                console.log(result[1]);
+                tokenId = web3.utils.sha3(result[2] + result[1] + result[0]);
+                await mint(tokenId,result[2],result[0],result[3],id,0,false).send({
                     from:account,
                     gas:1000000
-                }).on('error',function(error,receipt){
-                    console.log("nft可能被领完,查看error");
-                    throw error;
-                }).then(async function(){
-                    console.log(res);
-                    tokenId = web3.utils.sha3(res[2] + res[1] + res[0]);
-                    await mint(tokenId,res[2],res[0],res[3],id,0,false).send({
-                        from:account,
-                        gas:1000000
-                    })
-                }).then(()=>{
-                    var doc = {
-                        _id : tokenId,
-                        name : res[2],
-                        cid : res[0],
-                        message : res[3],
-                        author : account,
-                        activityId : id
+                })
+            }).then(()=>{
+                var doc = {
+                    _id : tokenId,
+                    name : result[2],
+                    cid : result[0],
+                    message : result[3],
+                    author : account,
+                    activityId : id
+                }
+                nftDB.put(doc, function(err, response) {
+                    if (err) {
+                        return console.log(err);
+                    } else {
+                        console.log("Document created Successfully");
+                        return new Promise((reslove,reject)=> {
+                            reslove(true)
+                        });
                     }
-                    nftDB.put(doc, function(err, response) {
-                        if (err) {
-                            return console.log(err);
-                        } else {
-                            console.log("Document created Successfully");
-                            return new Promise((reslove,reject)=> {
-                                reslove(true)
-                            });
-                        }
-                    })
-                })  
+                })
             })
         }
         else message.error('您没有密钥或输入的密钥为空字符串',1)
