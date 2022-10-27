@@ -132,8 +132,4 @@ contract Activity{
     function getActivityCidStatus(string memory cid) external view returns(bool){
         return activityCidStatus[cid];
     }
-
-    function getIndex(uint256 id) external view returns(uint256){
-        return nftMap[id].amount;
-    }
 }

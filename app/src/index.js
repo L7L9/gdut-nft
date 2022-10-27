@@ -369,18 +369,12 @@ const activityModel = {
     //领取活动nft
     getNFT: async function(id,password){
         if(password.trim() != ''){
-            const { getIndex } = activity.methods;
-
             const { getActivityNFT } = activity.methods;
             // const { give } = factory.methods;
             const { mint } = factory.methods;
             var tokenId = null;
             //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
             var result = await getActivityNFT(id,password).call({from:account});
-            
-            var trueIndex = await getIndex(id).call({});
-            console.log(trueIndex);
-            console.log(result);
             await getActivityNFT(id,password).send({
                 from:account,
                 gas:1000000
