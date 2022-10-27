@@ -173,6 +173,7 @@ const nftModel = {
                     gas: 1000000
                 }).on('error', function (error, receipt) {
                     message.error("该图片已经使用过",1);
+
                     return new Promise((reslove,reject) => {
                         reject(false)
                     });
@@ -536,7 +537,7 @@ const pageModel = {
             reslove (result)
         });
     }, 
-    //TODO
+
     showAllActivities: async function(){
         const { getActivityAmount } = activity.methods;
 
