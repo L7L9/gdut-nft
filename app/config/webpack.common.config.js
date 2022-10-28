@@ -4,7 +4,6 @@ const path = require('path');
 module.exports = {
     entry: {
     index:"./src/index.js",
-    bundle:"./src/bundle.js",
     pouchdbFind:"./src/pouchdb.find.js"
     },
     output: {
