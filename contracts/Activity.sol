@@ -38,11 +38,10 @@ contract Activity{
 
     mapping(uint256 => nft) nftMap;
 
+    mapping(string => bool) activityCidStatus;
+
     //活动的总数量（从1开始）
     uint256 activityAmount;
-
-    //活动nft的总量-活动量：用于主页计算真实的展示nft个数
-    uint256 amountForCount;
 
     constructor() {
         activityAmount = 1;
@@ -57,6 +56,7 @@ contract Activity{
         string memory _password,
         string memory nftName,
         string memory nftDes) external{
+        require(!activityCidStatus[_nftCid],"this picture already used");
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
@@ -73,11 +73,11 @@ contract Activity{
             des: nftDes,
             amount: _amount
         });
-        amountForCount += (_amount - 1);
+        nftMap[activityAmount] = newNft;
         activities[activityAmount] = activity;
         activityAmount++;
 
-        nftMap[activityAmount] = newNft;
+        activityCidStatus[_nftCid] = true;
 
         emit Initiate(msg.sender,_name,_amount,_password);
     }
@@ -99,6 +99,7 @@ contract Activity{
             emit End(activity.id, activity.name);
         }
         nftObj.amount--;
+        nftMap[id] = nftObj;
         return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des);
     }
 
@@ -113,13 +114,12 @@ contract Activity{
         return activities[id].amount;
     }
 
-    //获取amountForCount
-    function getCountAmount() external view returns(uint256){
-        return amountForCount;
-    }
-
     //获取活动总量
     function getActivityAmount() external view returns(uint256){
         return activityAmount;
+    }
+
+    function getActivityCidStatus(string memory cid) external view returns(bool){
+        return activityCidStatus[cid];
     }
 }

@@ -34,11 +34,15 @@ contract Factory is ERC721{
     //nft集合
     mapping(uint256 => nftProperty) nfts;
 
+    mapping(uint256 => nftProperty) nftMap;
+
     //个人的nft集合
     mapping(address => mapping(uint256 => nftProperty)) nftOwner;
 
     //tokenId在个人所有拥有nft的序号
     mapping(address => mapping(uint256 => uint256)) personalNftOrder;
+
+    mapping(string => bool) cidStatus;
 
     //nft的总数量
     uint256 nftAmount;
@@ -51,7 +55,15 @@ contract Factory is ERC721{
     }
 
     //铸造
-    function mint(uint256 _tokenId,string memory _name,string memory _cid,string memory _description,uint256 _activityId,uint256 _price,bool _status) external{
+    function mint(
+        uint256 _tokenId,
+        string memory _name,
+        string memory _cid,
+        string memory _description,
+        uint256 _activityId,
+        uint256 _price,
+        bool _status) external{
+        require(!cidStatus[_cid],"this picture already used");
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,
@@ -64,6 +76,8 @@ contract Factory is ERC721{
             status: _status
         });
         nfts[nftAmount] = nft;
+
+        nftMap[_tokenId] = nft;
 
         nftOwner[msg.sender][balanceOf(msg.sender)] = nft;
 
@@ -95,29 +109,30 @@ contract Factory is ERC721{
 
     //转赠
     function give(address to,uint256 tokenId) external Owner(tokenId,msg.sender) {
+        transfer(msg.sender, to, tokenId);
+    }
+    //购买
+    function transferFromOwner(address from,address to,uint256 tokenId) external Owner(tokenId,from){
+        transfer(from, to, tokenId);
+    }
+
+    function transfer(address from,address to,uint256 tokenId) private{
+        require(from != to,"do not allow give yourself");
         //获赠者
-        nftOwner[to][balanceOf(to)] = nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]];
+        nftOwner[to][balanceOf(to)] = nftOwner[from][personalNftOrder[from][tokenId]];
         personalNftOrder[to][tokenId] = balanceOf(to);
 
         //转赠者
-        nftProperty memory nft = nftOwner[msg.sender][balanceOf(msg.sender)-1];
+        nftProperty memory nft = nftOwner[from][balanceOf(from)-1];
 
-        nftOwner[msg.sender][personalNftOrder[msg.sender][tokenId]] = nft;
-        personalNftOrder[msg.sender][nft.tokenId] = personalNftOrder[msg.sender][tokenId];
+        nftOwner[from][personalNftOrder[from][tokenId]] = nft;
+        personalNftOrder[from][nft.tokenId] = personalNftOrder[from][tokenId];
 
-        delete nftOwner[msg.sender][balanceOf(msg.sender)-1];
-        delete personalNftOrder[msg.sender][tokenId];
+        delete nftOwner[from][balanceOf(from)-1];
+        delete personalNftOrder[from][tokenId];
 
-        _transfer(msg.sender, to, tokenId);
-        emit Give(msg.sender, to, tokenId);
-    }
-
-    function transferFromOwner(address from,address to,uint256 tokenId) external Owner(tokenId,from){
-        
-    }
-
-    function transfer() private{
-        
+        _transfer(from, to, tokenId);
+        emit Give(from, to, tokenId);
     }
 
     function setStatus(uint256 _tokenId,bool _status,uint256 _price) external{
@@ -126,5 +141,18 @@ contract Factory is ERC721{
             nfts[_tokenId].price = _price;
         }
         nfts[_tokenId].status = _status;
+    }
+
+    function setCidStatus(string memory cid) external{
+        cidStatus[cid] = true;
+    }
+
+    function getCidStatus(string memory cid) external view returns(bool){
+        return cidStatus[cid];
+    }
+
+    function getNftPrice(uint256 tokenId) external view returns(uint256){
+        require(ownerOf(tokenId) != address(0),"this token does not exist");
+        return nftMap[tokenId].price;
     }
 }
