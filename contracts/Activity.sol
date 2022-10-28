@@ -43,9 +43,6 @@ contract Activity{
     //活动的总数量（从1开始）
     uint256 activityAmount;
 
-    //活动nft的总量-活动量：用于主页计算真实的展示nft个数
-    uint256 amountForCount;
-
     constructor() {
         activityAmount = 1;
     }
@@ -76,11 +73,9 @@ contract Activity{
             des: nftDes,
             amount: _amount
         });
-        amountForCount += (_amount - 1);
+        nftMap[activityAmount] = newNft;
         activities[activityAmount] = activity;
         activityAmount++;
-
-        nftMap[activityAmount] = newNft;
 
         activityCidStatus[_nftCid] = true;
 
@@ -117,11 +112,6 @@ contract Activity{
     //获取活动中nft数量
     function getActivityNFTAmount(uint256 id) external view returns(uint256){
         return activities[id].amount;
-    }
-
-    //获取amountForCount
-    function getCountAmount() external view returns(uint256){
-        return amountForCount;
     }
 
     //获取活动总量

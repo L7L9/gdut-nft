@@ -369,9 +369,13 @@ const activityModel = {
     //领取活动nft
     getNFT: async function(id,password){
         if(password.trim() != ''){
+            console.log("id:" + id);
+            const { getActivityNFTAmount } = activity.methods;
             const { getActivityNFT } = activity.methods;
             // const { give } = factory.methods;
             const { mint } = factory.methods;
+            var nftAmount = await getActivityNFTAmount(id).call({});
+            console.log("nft数量:" + nftAmount);
             var tokenId = null;
             //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
             var result = await getActivityNFT(id,password).call({from:account});
