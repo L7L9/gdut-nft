@@ -168,8 +168,6 @@ const nftModel = {
                     if(!status){
                         price = 0;
                     }
-                    console.log(price);
-                    console.log(status);
                     await mint(tokenId,name,cid,des,0,price,status).send({
                         from: account,
                         gas: 1000000
@@ -287,7 +285,7 @@ const nftModel = {
                     number:result.docs[i].status// res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                 })
             }
-            console.log(res);
+            
             return new Promise(reslove => {
                 reslove(res)
             })
@@ -479,45 +477,38 @@ const pageModel = {
         var cid = null;
         //用于获取url
         var url = null;
-
+        var res = null;
+        var ipfsReturn = null;
         var result = [];
+        // res[0]//tokenId
+        // res[1]//ipfs中的cid
+        // res[2]//nft名字
+        // res[3]//作者
+        // res[4]//nft描述
+        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
         if(amount > 0){
             for(let i = 0; i < amount; i++){
-                await getPersonalNFT(i).call({from:account}).then((res)=>{
-
-                    cid = res[1];
-                    ipfs.get(cid,function(err,files){
-                        if(err) throw err;
-                        //nft图片
-                        content = files[0].content;
-                        url = window.URL.createObjectURL(new Blob([content]))
-
-                        result.push({
-                            url,
-                            tokenId: res[0],
-                            cid: res[1],
-                            nftname: res[2],
-                            author: res[3],
-                            des: res[4],
-                            number:res[5]
-                        })
-                        //将res中数据渲染到前端
-                        // res[0]//tokenId
-                        // res[1]//ipfs中的cid
-                        // res[2]//nft名字
-                        // res[3]//作者
-                        // res[4]//nft描述
-                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
-                    })       
-                })
+                res = await getPersonalNFT(i).call({from:account})
+                cid = res[1];
+                ipfsReturn = await ipfs.get(cid);
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]))
+                result.push({
+                    url,
+                    tokenId: res[0],
+                    cid: res[1],
+                    nftname: res[2],
+                    author: res[3],
+                    des: res[4],
+                    number:res[5]
+                })     
             }
-        } 
-
+        }
         return new Promise((reslove, reject) => {
             reslove(result)
         })
     },
-    //TODO
+    
     showAllNFT: async function(){
         const { getNFTAmount } = factory.methods;
         //获取查询信息的方法
@@ -526,6 +517,12 @@ const pageModel = {
         var NFTAmount = await getNFTAmount().call();
 
         var result = [];
+        // res[0]//tokenId
+        // res[1]//ipfs中的cid
+        // res[2]//nft名字
+        // res[3]//作者
+        // res[4]//nft描述
+        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
         if (NFTAmount > 0) {
             //用于接受文件内容
             var content = null;
@@ -533,33 +530,24 @@ const pageModel = {
             var cid = null;
             //用于获取url
             var url = null;
-
+            var res = null;
+            var ipfsReturn = null;
             for (let num1 = 0; num1 < NFTAmount; num1++) {
-                var res = await getProperty(num1).call();
+                res = await getProperty(num1).call();
                 cid = res[1];
-                await ipfs.get(cid, function (err, files) {
-                    if (err) throw err;
-
-                    //nft图片
-                    content = files[0].content;
-                    url = window.URL.createObjectURL(new Blob([content]));
-                    result.push(
-                        {
-                            url,
-                            tokenId: res[0],
-                            cid: res[1],
-                            nftname: res[2],
-                            author: res[3],
-                            nftdes: res[4],
-                            nft: res[5]
-                        });
-                    // res[0]//tokenId
-                    // res[1]//ipfs中的cid
-                    // res[2]//nft名字
-                    // res[3]//作者
-                    // res[4]//nft描述
-                    // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
-                })
+                ipfsReturn = await ipfs.get(cid)
+                //nft图片
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                result.push({
+                    url,
+                    tokenId: res[0],
+                    cid: res[1],
+                    nftname: res[2],
+                    author: res[3],
+                    nftdes: res[4],
+                    nft: res[5]
+                });
             }
         }
         return new Promise((reslove, reject) => {
