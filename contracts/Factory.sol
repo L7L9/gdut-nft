@@ -31,9 +31,10 @@ contract Factory is ERC721{
         bool status;
     }
 
-    //nft集合
+    //id -> nft
     mapping(uint256 => nftProperty) nfts;
 
+    //tokenId -> nft
     mapping(uint256 => nftProperty) nftMap;
 
     //个人的nft集合
@@ -91,15 +92,15 @@ contract Factory is ERC721{
     }
 
     //获取单个nft的信息
-    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,uint256){
+    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
         nftProperty memory nft = nfts[id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.activityId);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
     }
 
     //获取个人nft的信息
-    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory){
+    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,bool,uint256){
         nftProperty memory nft = nftOwner[msg.sender][id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.status,nft.price);
     }
 
     //查询nft的总量

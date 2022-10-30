@@ -480,27 +480,25 @@ const pageModel = {
         var res = null;
         var ipfsReturn = null;
         var result = [];
-        // res[0]//tokenId
-        // res[1]//ipfs中的cid
-        // res[2]//nft名字
-        // res[3]//作者
-        // res[4]//nft描述
-        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
         if(amount > 0){
             for(let i = 0; i < amount; i++){
                 res = await getPersonalNFT(i).call({from:account})
                 cid = res[1];
                 ipfsReturn = await ipfs.get(cid);
                 content = ipfsReturn[0].content;
-                url = window.URL.createObjectURL(new Blob([content]))
+                url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[3]).call();
+                var authorName = authorInfo[0];
                 result.push({
                     url,
-                    tokenId: res[0],
-                    cid: res[1],
-                    nftname: res[2],
-                    author: res[3],
-                    des: res[4],
-                    number:res[5]
+                    tokenId: res[0],//tokenId
+                    nftName: res[2],//nft名字
+                    authorAddress: res[3],//作者链上id
+                    authorName:authorName,//作者用户名
+                    nftDes: res[4],//nft描述
+                    activityId:res[5],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: res[6],//是否能被购买
+                    price: res[7]//价格(若不能被购买则为0)
                 })     
             }
         }
@@ -517,12 +515,7 @@ const pageModel = {
         var NFTAmount = await getNFTAmount().call();
 
         var result = [];
-        // res[0]//tokenId
-        // res[1]//ipfs中的cid
-        // res[2]//nft名字
-        // res[3]//作者
-        // res[4]//nft描述
-        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
+        
         if (NFTAmount > 0) {
             //用于接受文件内容
             var content = null;
@@ -539,14 +532,22 @@ const pageModel = {
                 //nft图片
                 content = ipfsReturn[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[3]).call();
+                var authorName = authorInfo[0];
+                var ownerInfo = await getUserInfoByAddress(res[4]).call();
+                var ownerName = ownerInfo[0];
                 result.push({
                     url,
-                    tokenId: res[0],
-                    cid: res[1],
-                    nftname: res[2],
-                    author: res[3],
-                    nftdes: res[4],
-                    nft: res[5]
+                    tokenId: res[0],//tokenId
+                    nftName: res[2],//nft名字
+                    authorAddress: res[3],//作者链上id
+                    authorName: authorName,//作者用户名
+                    ownerAddress: res[4],//拥有者链上id
+                    ownerName: ownerName,//拥有者名字
+                    nftDes: res[5],//nft描述
+                    activityId:res[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: res[7],//是否能被购买
+                    price: res[8]//价格(若不能被购买则为0)
                 });
             }
         }
