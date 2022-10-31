@@ -38,8 +38,6 @@ contract Activity{
 
     mapping(uint256 => nft) nftMap;
 
-    mapping(string => bool) activityCidStatus;
-
     //活动的总数量（从1开始）
     uint256 activityAmount;
 
@@ -56,7 +54,6 @@ contract Activity{
         string memory _password,
         string memory nftName,
         string memory nftDes) external{
-        require(!activityCidStatus[_nftCid],"this picture already used");
         activityProperty memory activity = activityProperty({
             id: activityAmount,
             nftCid: _nftCid,
@@ -76,8 +73,6 @@ contract Activity{
         nftMap[activityAmount] = newNft;
         activities[activityAmount] = activity;
         activityAmount++;
-
-        activityCidStatus[_nftCid] = true;
 
         emit Initiate(msg.sender,_name,_amount,_password);
     }
@@ -122,9 +117,5 @@ contract Activity{
     //获取活动总量
     function getActivityAmount() external view returns(uint256){
         return activityAmount;
-    }
-
-    function getActivityCidStatus(string memory cid) external view returns(bool){
-        return activityCidStatus[cid];
     }
 }

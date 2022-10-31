@@ -142,7 +142,7 @@ const nftModel = {
     create: async function(name0,des0,price,status,file0){
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
-        const { getActivityCidStatus } = activity.methods;
+        const { getCidStatus } = factory.methods;
 
         var file = file0;
         var name = name0;
@@ -162,7 +162,7 @@ const nftModel = {
                 var cids = await ipfs.add(img);
                 //返回的cid
                 cid = cids[0].hash;
-                var cidStatus = await getActivityCidStatus(cid).call({}); 
+                var cidStatus = await getCidStatus(cid).call({}); 
                 if(!cidStatus){
                     tokenId = web3.utils.sha3(name + cid);
                     if(!status){
@@ -313,6 +313,7 @@ const activityModel = {
         var activityId = await getActivityAmount().call({from:account});
 
         if (file.length != 0) {
+            const { setCidStatus } = factory.methods;
             const { getCidStatus } = factory.methods;
             var reader = new FileReader();
             reader.readAsArrayBuffer(file[0]);
@@ -332,8 +333,13 @@ const activityModel = {
                     .on('error',function(error,receipt){
                         console.log("创建失败");
                         throw error;
-                    }).then(function(res){
-                        console.log(res);
+                    }).then(async function(res){
+                        await setCidStatus(cid).send({
+                            from: account,
+                            gas: 1000000
+                        }).on('error',function(error){
+                            throw error;
+                        })
                         var doc = {
                             _id:activityId,
                             name:name,
