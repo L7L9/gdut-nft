@@ -64,7 +64,6 @@ const Nftdetail = () => {
             height={300}
             alt="nft"
             src={item.src}
-            // src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
             />
         }
         >
