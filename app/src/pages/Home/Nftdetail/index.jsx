@@ -33,12 +33,12 @@ const Nftdetail = () => {
     const back = () => {
         navigate(-1);
     }
-    const { state: { name, des, src,author,nft,cid } } = useLocation()
-    console.log(name, des, src,author,nft,cid);
+    const { state: { name,des,src,authorName,nft,cid,tokenId,authorAddress,ownerAddress,ownerName,activityId,status,price } } = useLocation()
+    console.log(name,des,src,authorName,nft,cid,tokenId,authorAddress,ownerAddress,ownerName,activityId,status,price);
     const data = [{
         title: name,
         src,
-        description:'链上id: ?'+''+' '+' '+'作者: ?'+""+' '+' '+'拥有者: ?'+"",
+        description:'链上id: '+authorAddress+' '+' '+'作者: '+authorName+' '+' '+'拥有者: '+ownerName,
         content:des
     }]
     return (

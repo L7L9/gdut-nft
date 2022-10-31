@@ -33,13 +33,13 @@ export default class Home extends Component {
                 <div className="showin">
                 {
                   this.state.data.map(item => {
-                    const { nftname: name, nftdes: des, url:src, author, nft, cid } = item;
-                  return <Link to={`/GDUT-nft/home/detail`} state={{name,des,src,author,nft,cid}} key={nanoid()}>
+                    const { nftName: name, nftDes: des, url:src, authorName, nft, cid,tokenId,authorAddress,ownerAddress,ownerName,activityId,status,price } = item;
+                  return <Link to={`/GDUT-nft/home/detail`} state={{name,des,src,authorName,nft,cid,tokenId,authorAddress,ownerAddress,ownerName,activityId,status,price}} key={nanoid()}>
                       <div className="item" >  
                       <div style={{overflow:'hidden'}}>
                           <img style={{ width: '100%', height: '220px' }} src={item.url}/>
-                          <h3 style={{ textAlign: 'center' }}>{item.nftname}</h3>
-                          <h3 style={{ textAlign: 'center' }}>{item.nftdes}</h3>
+                          <h3 style={{ textAlign: 'center' }}>{name}</h3>
+                          <h3 style={{ textAlign: 'center' }}>{des}</h3>
                       </div>
                       </div>
                     </Link>
