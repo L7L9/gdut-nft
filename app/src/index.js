@@ -168,8 +168,6 @@ const nftModel = {
                     if(!status){
                         price = 0;
                     }
-                    console.log(price);
-                    console.log(status);
                     await mint(tokenId,name,cid,des,0,price,status).send({
                         from: account,
                         gas: 1000000
@@ -191,9 +189,6 @@ const nftModel = {
                         _id : tokenId,
                         name : name,
                         cid : cid,
-                        message : des,
-                        author : account,
-                        activityId : 0
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
@@ -267,7 +262,7 @@ const nftModel = {
         var url;
         var res = [];
         var ipfsResult;
-        const res1=await nftDB.find({
+        await nftDB.find({
             selector: {
                 name:{"$regex": regExp},
             },
@@ -277,28 +272,36 @@ const nftModel = {
                 ipfsResult = await ipfs.get(result.docs[i].cid);
                 content = ipfsResult[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
+                const { getPropertyByTokenId } = factory.methods;
+                var temp = await getPropertyByTokenId(result.docs[i]._id).call();
+                var authorInfo = await getUserInfoByAddress(temp[3]).call();
+                var authorName = authorInfo[0];
+                var ownerInfo = await getUserInfoByAddress(temp[4]).call();
+                var ownerName = ownerInfo[0];
                 res.push({
                     url,
-                    tokenId: result.docs[i]._id,// res[0]//tokenId
-                    cid: result.docs[i].cid,// res[1]//ipfs中的cid
-                    nftname: result.docs[i].name, // res[2]//nft名字
-                    author: result.docs[i].author,// res[3]//作者
-                    des: result.docs[i].message,// res[4]//nft描述
-                    number:result.docs[i].status// res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    tokenId: temp[0],//tokenId
+                    nftName: temp[2],//nft名字
+                    authorAddress: temp[3],//作者链上id
+                    authorName: authorName,//作者用户名
+                    ownerAddress: temp[4],//拥有者链上id
+                    ownerName: ownerName,//拥有者名字
+                    nftDes: temp[5],//nft描述
+                    activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: temp[7],//是否能被购买
+                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
                 })
             }
-            console.log(res);
             return new Promise(reslove => {
                 reslove(res)
             })
         })
-        return res1;
     }
 }
 
 const activityModel = {
     //创建活动
-    initiateActivity: async function(name,message1,amount,password,nftName,nftMessage){
+    initiateActivity: async function(name,message,amount,password,nftName,nftMessage){
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
 
@@ -320,7 +323,7 @@ const activityModel = {
                 //获取cid
                 cid = cids[0].hash;
                 if(!await getCidStatus(cid).call({})){
-                    await initiate(name,message1,amount,cid,password,nftName,nftMessage)
+                    await initiate(name,message,amount,cid,password,nftName,nftMessage)
                     .send({
                         from:account,
                         gas: 1000000
@@ -333,11 +336,6 @@ const activityModel = {
                         var doc = {
                             _id:activityId,
                             name:name,
-                            message:message1,
-                            amount:amount,
-                            cid:cid,
-                            nftName:nftName,
-                            nftMessage:nftMessage
                         }
                         activityDB.put(doc, function(err, response) {
                             if (err) {
@@ -396,10 +394,6 @@ const activityModel = {
                 var doc = {
                     _id : tokenId,
                     name : result[2],
-                    cid : result[0],
-                    message : result[3],
-                    author : account,
-                    activityId : id
                 }
                 nftDB.put(doc, function(err, response) {
                     if (err) {
@@ -418,30 +412,43 @@ const activityModel = {
     //搜索活动
     search: async function(value){
         var regExp = new RegExp('.*' + value + '.*', 'i');
-        var res = [];
-        var res1=await activityDB.find({
+        var searchRes = [];
+        var res = null;
+        var content = null;
+        var url = null;
+        var getResult = null;
+        await activityDB.find({
             selector: {
                 name:{"$regex": regExp},
             },
-        }).then(function(result){
+        }).then(async function(result){
             for(let i=0;result.docs[i]!=null;i++){
-                // _id,name,message,amount,cid,nftName,nftMessage
-                res.push({
-                    id:result.docs[i]._id,
-                    name:result.docs[i].name,
-                    message:result.docs[i].message,
-                    number:result.docs[i].amount,
-                    cid:result.docs[i].cid,
-                    nftname:result.docs[i].nftName,
-                    des:result.docs[i].nftMessage,
-                })
+                res = await getActivityProperty(result.docs[i]._id).call();
+                getResult = await ipfs.get(res[4]);
+                nftRes = await showActivityNFT(num).call();
+                // nft图片
+                content = getResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+
+                var hostInfo = await getUserInfoByAddress(res[3]).call();
+                var hostName = hostInfo[0];
+
+                searchRes.push({
+                    url,
+                    name: res[0],//活动名字
+                    des: res[1],//活动描述
+                    id: res[2],//活动id
+                    hostAddress: res[3],//活动举办者链上id
+                    hostName: hostName,//活动举办者名字
+                    amount:res[5],//发行nft数量
+                    nftName:nftRes[0],//nft名字
+                    nftDes: nftRes[1],//nft描述
+                    nftRest: nftRes[2]//该活动还剩余可被领取的nft数量
+                });
             }
             return new Promise(reslove => {
-                reslove(res)
+                reslove(searchRes)
             })
-        })
-        return new Promise((reslove) => {
-            reslove(res1)
         })
     }
 }
@@ -479,45 +486,36 @@ const pageModel = {
         var cid = null;
         //用于获取url
         var url = null;
-
+        var res = null;
+        var ipfsReturn = null;
         var result = [];
         if(amount > 0){
             for(let i = 0; i < amount; i++){
-                await getPersonalNFT(i).call({from:account}).then((res)=>{
-
-                    cid = res[1];
-                    ipfs.get(cid,function(err,files){
-                        if(err) throw err;
-                        //nft图片
-                        content = files[0].content;
-                        url = window.URL.createObjectURL(new Blob([content]))
-
-                        result.push({
-                            url,
-                            tokenId: res[0],
-                            cid: res[1],
-                            nftname: res[2],
-                            author: res[3],
-                            des: res[4],
-                            number:res[5]
-                        })
-                        //将res中数据渲染到前端
-                        // res[0]//tokenId
-                        // res[1]//ipfs中的cid
-                        // res[2]//nft名字
-                        // res[3]//作者
-                        // res[4]//nft描述
-                        // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
-                    })       
-                })
+                res = await getPersonalNFT(i).call({from:account})
+                cid = res[1];
+                ipfsReturn = await ipfs.get(cid);
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[3]).call();
+                var authorName = authorInfo[0];
+                result.push({
+                    url,
+                    tokenId: res[0],//tokenId
+                    nftName: res[2],//nft名字
+                    authorAddress: res[3],//作者链上id
+                    authorName:authorName,//作者用户名
+                    nftDes: res[4],//nft描述
+                    activityId:res[5],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: res[6],//是否能被购买
+                    price: res[7]//价格(若不能被购买则为0)
+                })     
             }
-        } 
-
+        }
         return new Promise((reslove, reject) => {
             reslove(result)
         })
     },
-    //TODO
+    
     showAllNFT: async function(){
         const { getNFTAmount } = factory.methods;
         //获取查询信息的方法
@@ -526,6 +524,7 @@ const pageModel = {
         var NFTAmount = await getNFTAmount().call();
 
         var result = [];
+        
         if (NFTAmount > 0) {
             //用于接受文件内容
             var content = null;
@@ -533,33 +532,32 @@ const pageModel = {
             var cid = null;
             //用于获取url
             var url = null;
-
+            var res = null;
+            var ipfsReturn = null;
             for (let num1 = 0; num1 < NFTAmount; num1++) {
-                var res = await getProperty(num1).call();
+                res = await getProperty(num1).call();
                 cid = res[1];
-                await ipfs.get(cid, function (err, files) {
-                    if (err) throw err;
-
-                    //nft图片
-                    content = files[0].content;
-                    url = window.URL.createObjectURL(new Blob([content]));
-                    result.push(
-                        {
-                            url,
-                            tokenId: res[0],
-                            cid: res[1],
-                            nftname: res[2],
-                            author: res[3],
-                            nftdes: res[4],
-                            nft: res[5]
-                        });
-                    // res[0]//tokenId
-                    // res[1]//ipfs中的cid
-                    // res[2]//nft名字
-                    // res[3]//作者
-                    // res[4]//nft描述
-                    // res[5]//是否是活动的nft: 0=>不是活动发行  其他=>活动发行 
-                })
+                ipfsReturn = await ipfs.get(cid)
+                //nft图片
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[3]).call();
+                var authorName = authorInfo[0];
+                var ownerInfo = await getUserInfoByAddress(res[4]).call();
+                var ownerName = ownerInfo[0];
+                result.push({
+                    url,
+                    tokenId: res[0],//tokenId
+                    nftName: res[2],//nft名字
+                    authorAddress: res[3],//作者链上id
+                    authorName: authorName,//作者用户名
+                    ownerAddress: res[4],//拥有者链上id
+                    ownerName: ownerName,//拥有者名字
+                    nftDes: res[5],//nft描述
+                    activityId:res[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: res[7],//是否能被购买
+                    price: res[8]//价格(若不能被购买则为0)
+                });
             }
         }
         return new Promise((reslove, reject) => {
@@ -575,6 +573,7 @@ const pageModel = {
         var result = [];
         if(amount > 1){
             const { getActivityProperty } = activity.methods;
+            const { showActivityNFT } = activity.methods;
             var res = null;
             var content = null;
             var url = null;
@@ -582,20 +581,25 @@ const pageModel = {
             for(let num = 1;num < amount; num++){
                 res = await getActivityProperty(num).call();
                 getResult = await ipfs.get(res[4]);
-                //res: 0=>活动名  1=>活动描述  2=>活动id  3=>活动发起者 4=>该活动nft的cid 5=>该活动发行nft数量
-                // console.log(getResult);
+                nftRes = await showActivityNFT(num).call();
                 // nft图片
                 content = getResult[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
-                
+
+                var hostInfo = await getUserInfoByAddress(res[3]).call();
+                var hostName = hostInfo[0];
+
                 result.push({
                     url,
-                    name: res[0],
-                    des: res[1],
-                    id: res[2],
-                    person: res[3],
-                    nftcid: res[4],
-                    number:res[5]
+                    name: res[0],//活动名字
+                    des: res[1],//活动描述
+                    id: res[2],//活动id
+                    hostAddress: res[3],//活动举办者链上id
+                    hostName: hostName,//活动举办者名字
+                    amount:res[5],//发行nft数量
+                    nftName:nftRes[0],//nft名字
+                    nftDes: nftRes[1],//nft描述
+                    nftRest: nftRes[2]//该活动还剩余可被领取的nft数量
                 });
             }
             
