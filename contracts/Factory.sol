@@ -97,6 +97,11 @@ contract Factory is ERC721{
         return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
     }
 
+    function getPropertyByTokenId(uint256 _tokenId) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
+        nftProperty memory nft = nftMap[_tokenId];
+        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
+    }
+
     //获取个人nft的信息
     function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,bool,uint256){
         nftProperty memory nft = nftOwner[msg.sender][id];

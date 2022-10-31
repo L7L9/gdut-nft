@@ -94,19 +94,24 @@ contract Activity{
 
         nft memory nftObj = nftMap[id];
         require(nftObj.amount > 0,"nft is not enough");
+        nftObj.amount--;
         if(nftObj.amount == 0){
             activity.isExist = false;
             emit End(activity.id, activity.name);
         }
-        nftObj.amount--;
         nftMap[id] = nftObj;
         return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des);
     }
 
+    function showActivityNFT(uint256 id) external view returns(string memory,string memory,uint256){
+        nft memory nftObj = nftMap[id];
+        return (nftObj.name,nftObj.des,nftObj.amount);
+    }
+
     //获取活动信息的函数
-    function getActivityProperty(uint256 id) external view returns(string memory,string memory,uint256,address,string memory,uint256){
+    function getActivityProperty(uint256 id) external view returns(string memory,string memory,uint256,address,string memory,uint256,bool){
         activityProperty memory activity = activities[id];
-        return (activity.name,activity.description,activity.id,activity.host,activity.nftCid,activity.amount);
+        return (activity.name,activity.description,activity.id,activity.host,activity.nftCid,activity.amount,activity.isExist);
     }
 
     //获取活动中nft数量
