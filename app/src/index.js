@@ -257,6 +257,7 @@ const nftModel = {
     },
     //搜索
     search: async function (value) {
+        const { getUserInfoByAddress } = userSolidity.methods;
         var regExp = new RegExp('.*' + value + '.*', 'i');
         var content;
         var url;
@@ -411,6 +412,7 @@ const activityModel = {
     },
     //搜索活动
     search: async function(value){
+        const { getUserInfoByAddress } = userSolidity.methods;
         var regExp = new RegExp('.*' + value + '.*', 'i');
         var searchRes = [];
         var res = null;
@@ -476,6 +478,7 @@ const pageModel = {
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
         const { balanceOf } = factory.methods;
+        const { getUserInfoByAddress } = userSolidity.methods;
 
         //获取个人拥有的nft数量
         var amount = await balanceOf(account).call();
@@ -520,6 +523,7 @@ const pageModel = {
         const { getNFTAmount } = factory.methods;
         //获取查询信息的方法
         const { getProperty } = factory.methods;
+        const { getUserInfoByAddress } = userSolidity.methods;
         //获取nft总量
         var NFTAmount = await getNFTAmount().call();
 
@@ -567,7 +571,7 @@ const pageModel = {
 
     showAllActivities: async function(){
         const { getActivityAmount } = activity.methods;
-
+        const { getUserInfoByAddress } = userSolidity.methods;
         //获取活动总量
         var amount = await getActivityAmount().call();
         var result = [];
@@ -578,6 +582,7 @@ const pageModel = {
             var content = null;
             var url = null;
             var getResult = null;
+            var nftRes = null;
             for(let num = 1;num < amount; num++){
                 res = await getActivityProperty(num).call();
                 getResult = await ipfs.get(res[4]);
