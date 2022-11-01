@@ -78,9 +78,9 @@ const accountModel = {
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[0];
         const { signIn } = userSolidity.methods;
-        var address = await signIn(userName).call({from:defaultAccount});
-
-        await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
+        try {
+            var address = await signIn(userName).call({from:defaultAccount});
+            await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
                 if(err){
                     message.error("密码错误", 1);
                     sessionStorage.setItem('islogin',false)
@@ -92,7 +92,12 @@ const accountModel = {
                     message.success("登陆成功", 1);
                     sessionStorage.setItem('islogin',true)
                 }
-        })
+            })
+        } catch (error) {
+            message.error("用户不存在或密码错误", 1);
+            sessionStorage.setItem('islogin',false)
+        }
+        
     },
     register: async function(userName,password){
         const { signUp } = userSolidity.methods;
