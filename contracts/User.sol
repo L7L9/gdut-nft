@@ -16,6 +16,8 @@ contract User{
 
     mapping(address => string) addressToName;
 
+    uint256 notice;
+
     modifier userIsExist(string memory name){
         require(userMap[name].isExist,"user does not exist");
         _;
@@ -56,5 +58,11 @@ contract User{
 
     function getMoney() external view returns(uint256){
         return userMap[addressToName[msg.sender]].money;
+    }
+
+    function addNotice() external returns(uint256){
+        uint256 nowNoticeId = notice;
+        notice++;
+        return nowNoticeId;
     }
 }

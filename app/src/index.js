@@ -23,9 +23,12 @@ var account = null;
 var nftDB = new PouchDB("nft_db");
 //activty链下数据库c
 var activityDB = new PouchDB("activity_db");
+//公告数据库
+var noticeDB = new PouchDB("notice_db");
 
 // nftDB.destroy();
 // activityDB.destroy();
+// noticeDB.destroy();
 
 const init = {
     getAccount: async function(){
@@ -143,6 +146,7 @@ const nftModel = {
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
         const { getCidStatus } = factory.methods;
+        const { addNotice } = userSolidity.methods;
 
         var file = file0;
         var name = name0;
@@ -195,11 +199,30 @@ const nftModel = {
                             return console.log(err);
                         } else {
                             console.log("Document created Successfully");
-                            return new Promise((reslove,reject)=> {
-                                reslove(true)
-                            });
                         }
                     })
+                    var noticeId = await addNotice().call();
+                        await addNotice().send({
+                            from: account,
+                            gas: 1000000
+                        })
+                        var notice = {
+                            _id: noticeId,
+                            type: 0,
+                            title: "铸造个人藏品",
+                            user: account,
+                            des: account + "铸造了个人藏品: " + name 
+                        }
+                        noticeDB.put(notice,function(err,response){
+                            if (err) {
+                                return console.log(err);
+                            } else {
+                                console.log("插入公告成功");
+                                return new Promise((reslove, reject) => {
+                                    reslove(true)
+                                })
+                            }
+                        })
                 } else {
                     message.error("该图片已经使用过",1);
                 }
@@ -306,6 +329,8 @@ const activityModel = {
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
 
+        const { addNotice } = userSolidity.methods;
+
         var file = document.querySelector("#anft").files;
 
         var cid = null;
@@ -334,6 +359,7 @@ const activityModel = {
                         console.log("创建失败");
                         throw error;
                     }).then(async function(res){
+                        console.log(res)
                         await setCidStatus(cid).send({
                             from: account,
                             gas: 1000000
@@ -349,6 +375,25 @@ const activityModel = {
                                 return console.log(err);
                             } else {
                                 console.log("Document created Successfully");
+                            }
+                        })
+                        var noticeId = await addNotice().call();
+                        await addNotice().send({
+                            from: account,
+                            gas: 1000000
+                        })
+                        var notice = {
+                            _id: noticeId,
+                            type: 2,
+                            title: "创建活动",
+                            user: account,
+                            des: account + "创建了" + name + "活动"
+                        }
+                        noticeDB.put(notice,function(err,response){
+                            if (err) {
+                                return console.log(err);
+                            } else {
+                                console.log("插入公告成功");
                                 return new Promise((reslove, reject) => {
                                     message.success("创建活动成功");
                                     reslove(true)
@@ -377,6 +422,7 @@ const activityModel = {
             console.log("id:" + id);
             const { getActivityNFTAmount } = activity.methods;
             const { getActivityNFT } = activity.methods;
+            const { addNotice } = userSolidity.methods;
             // const { give } = factory.methods;
             const { mint } = factory.methods;
             var nftAmount = await getActivityNFTAmount(id).call({});
@@ -391,13 +437,12 @@ const activityModel = {
                 console.log("nft可能被领完,查看error");
                 throw error;
             }).then(async function(){
-                console.log(result[1]);
                 tokenId = web3.utils.sha3(result[2] + result[1] + result[0]);
                 await mint(tokenId,result[2],result[0],result[3],id,0,false).send({
                     from:account,
                     gas:1000000
                 })
-            }).then(()=>{
+            }).then(async ()=>{
                 var doc = {
                     _id : tokenId,
                     name : result[2],
@@ -407,11 +452,31 @@ const activityModel = {
                         return console.log(err);
                     } else {
                         console.log("Document created Successfully");
-                        return new Promise((reslove,reject)=> {
-                            reslove(true)
-                        });
                     }
                 })
+                var noticeId = await addNotice().call();
+                await addNotice().send({
+                    from: account,
+                    gas: 1000000
+                })
+                var notice = {
+                    _id: noticeId,
+                    type: 1,
+                    title: "领取活动nft",
+                    user: account,
+                    des: account + "领取了" + result[4] + "活动"
+                }
+                noticeDB.put(notice,function(err,response){
+                    if (err) {
+                        return console.log(err);
+                    } else {
+                        console.log("插入公告成功");
+                        return new Promise((reslove, reject) => {
+                            message.success("领取nft成功");
+                            reslove(true)
+                        })
+                    }
+                }) 
             })
         }
         else message.error('您没有密钥或输入的密钥为空字符串',1)
@@ -664,10 +729,100 @@ const pageModel = {
     }
 }
 
+const noticeModel = {
+    getNotice: async function(){
+        const { addNotice } = userSolidity.methods;
+        var amount = await addNotice().call();
+        if(amount > 0){
+            var result = [];
+            var selectRes = null;
+            for(var i = 0;i < amount;i++){
+                selectRes = noticeDB.get(i);
+                result.push({
+                    id: selectRes._id,
+                    title: selectRes.title,
+                    user: selectRes.user,
+                    des: selectRes.des
+                })
+            }
+        }
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
+    },
+
+    creatNotice: async function(){
+        var regExp = new RegExp("铸造个人藏品");
+        var returnRes = [];
+        noticeDB.find({
+            selector: {
+                title:{"$regex": regExp},
+            }
+        }).then(function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                returnRes.push({
+                    id: result.docs[i]._id,
+                    title: result.docs[i].title,
+                    user: result.docs[i].user,
+                    des: result.docs[i].des
+                })
+            }
+        })
+        return new Promise((reslove, reject) => {
+            reslove(returnRes)
+        })
+    },
+
+    activityNotice: async function(){
+        var regExp = new RegExp("创建活动");
+        var returnRes = [];
+        noticeDB.find({
+            selector: {
+                title:{"$regex": regExp},
+            }
+        }).then(function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                returnRes.push({
+                    id: result.docs[i]._id,
+                    title: result.docs[i].title,
+                    user: result.docs[i].user,
+                    des: result.docs[i].des
+                })
+            }
+        })
+        return new Promise((reslove, reject) => {
+            reslove(returnRes)
+        })
+    },
+
+    getNFTNotice: async function(){
+        var regExp = new RegExp("领取活动nft");
+        var returnRes = [];
+        noticeDB.find({
+            selector: {
+                title:{"$regex": regExp},
+            }
+        }).then(function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                returnRes.push({
+                    id: result.docs[i]._id,
+                    title: result.docs[i].title,
+                    user: result.docs[i].user,
+                    des: result.docs[i].des
+                })
+            }
+        })
+        return new Promise((reslove, reject) => {
+            reslove(returnRes)
+        })
+    }
+}
+
 window.accountModel = accountModel;
 window.nftModel = nftModel;
 window.pageModel = pageModel;
 window.activityModel = activityModel;
+window.noticeModel = noticeModel;
 
 window.onload = async function(){
     web3 = new Web3(

@@ -83,6 +83,7 @@ contract Activity{
         string memory,
         uint256,
         string memory,
+        string memory,
         string memory){
         activityProperty memory activity = activities[id];
         require(keccak256(abi.encode(_password)) == activity.password,"password is wrong");
@@ -95,7 +96,7 @@ contract Activity{
             emit End(activity.id, activity.name);
         }
         nftMap[id] = nftObj;
-        return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des);
+        return (activity.nftCid,nftObj.amount,nftObj.name,nftObj.des,activity.name);
     }
 
     function showActivityNFT(uint256 id) external view returns(string memory,string memory,uint256){
