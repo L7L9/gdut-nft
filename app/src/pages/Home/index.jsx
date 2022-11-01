@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {Button,Divider,message} from 'antd'
 import { nanoid } from 'nanoid'
 import { Link } from 'react-router-dom';
 import Loading from '@/components/Loading';
@@ -38,8 +37,8 @@ export default class Home extends Component {
                       <div className="item" >  
                       <div style={{overflow:'hidden'}}>
                           <img style={{ width: '100%', height: '220px' }} src={item.url}/>
-                          <h3 style={{ textAlign: 'center' }}>{name}</h3>
-                          <h3 style={{ textAlign: 'center' }}>{des}</h3>
+                          <h3 style={{ textAlign: 'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{name}</h3>
+                          <h3 style={{ textAlign: 'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{des}</h3>
                       </div>
                       </div>
                     </Link>

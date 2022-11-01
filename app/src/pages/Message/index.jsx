@@ -52,14 +52,14 @@ export default class PersonMessage extends Component{
                 {
                 this.state.data.map(item => {
                     // console.log(item);
-                    const { url,tokenId,cid,nftname,author,des,number } = item;
+                    const { url,tokenId,nftName,nftDes,authorAddress,authorName,activityId,status,price } = item;
                   return (
-                    <Link to={`/GDUT-nft/message/detail`} state={{ url, tokenId, cid, nftname, author, des, number }} key={nanoid()}>
+                    <Link to={`/GDUT-nft/message/detail`} state={{ url,tokenId,nftName,nftDes,authorAddress,authorName,activityId,status,price }} key={nanoid()}>
                       <div className="item" >  
                         <div style={{overflow:'hidden'}}>
                           <img style={{ width: '100%', height: '220px' }} src={item.url}/>
-                          <h3 style={{ textAlign: 'center' }}>{item.nftname}</h3>
-                          <h3 style={{ textAlign: 'center' }}>{item.des}</h3>
+                          <h3 style={{ textAlign: 'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{nftName}</h3>
+                          <h3 style={{ textAlign: 'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{nftDes}</h3>
                         </div>
                       </div>
                     </Link>)

@@ -30,13 +30,13 @@ class Search extends Component {
                 <div className="showin">
                 {
                     this.state.data.map(item => {
-                    const { nftname, des, url, author,number, cid,tokenId } = item;
-                    return <Link to={`/GDUT-nft/search/detail`} state={{nftname, des, url, author,number, cid,tokenId}} key={nanoid()}>
+                    const { nftName, nftDes, url,tokenId,authorAddress,authorName,ownerAddress,ownerName,activityId,status,price } = item;
+                    return <Link to={`/GDUT-nft/search/detail`} state={{nftName, nftDes, url,tokenId,authorAddress,authorName,ownerAddress,ownerName,activityId,status,price}} key={nanoid()}>
                         <div className="item" >  
                         <div style={{overflow:'hidden'}}>
-                            <img style={{ width: '100%', height: '220px' }} src={item.url}/>
-                            <h3 style={{ textAlign: 'center' }}>{item.nftname}</h3>
-                            <h3 style={{ textAlign: 'center' }}>{item.des}</h3>
+                            <img style={{ width: '100%', height: '220px' }} src={url}/>
+                            <h3 style={{ textAlign: 'center' }}>{nftName}</h3>
+                            <h3 style={{ textAlign: 'center' }}>{nftDes}</h3>
                         </div>
                         </div>
                     </Link>

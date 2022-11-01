@@ -15,16 +15,14 @@ export default function Mynft() {
     })
   })
   const onFinish = (values) => {
-    const { userName, des, price, status } = values;
+    let { userName, des, price, status } = values;
     nftModel.create(userName, des,price?price:0,status,nftfile).then(() => {
       message.loading('正在创建，请等待', 2)
       setTimeout(() => {
         message.success("创建成功", 1);
         navigate('/GDUT-nft/home')
       }, 2000)
-    }, () => {
-      message.error('未选择文件，铸造失败', 1)
-    })
+    },()=>{})
   };
   const onChange = (e) => {
     setValue(e.target.value);
@@ -99,7 +97,7 @@ export default function Mynft() {
             
       <Form.Item
         label="发行价格："
-        name="paice"
+        name="price"
         rules={[
           {
             required: value,

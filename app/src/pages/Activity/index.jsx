@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Input, Modal, Button, Form } from 'antd'
+import { Input, Modal, Button, Form, message } from 'antd'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -45,6 +45,7 @@ class Activity extends Component{
     form.resetFields();
     this.setState({ isModalOpen: false })
     activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
+      message.loading('正在加载',.5)
       this.props.changeloding(true,3000);
     }, (err) => {
       console.log(err);
@@ -203,13 +204,13 @@ class Activity extends Component{
                   <div className="showin1">
                     {
                   this.state.data.map((item, index) => {
-                    const {url,name,des,id,person,nftcid,number}=item
+                    const {url,name,des,id,hostAddress,hostName,amount,nftName,nftDes,nftRest}=item
                     return <div className="item1" key={nanoid()} >
-                        <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,person,nftcid,number}} > 
+                        <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,hostAddress,hostName,amount,nftName,nftDes,nftRest}} > 
                             <img style={{ width: '100%', height: '220px' }} src={item.url}/>
                       </Link>
-                      <span id="name0">名字：{item.name}</span><br/>
-                      <span id="host0">举办者：{item.person}</span><br />
+                      <span id="name0">名字：{name}</span><br/>
+                      <span id="host0">举办者：{hostName}</span><br />
                         <Button type="dashed" onClick={this.showModal1(index,item.id)}>领取NFT</Button>
                     </div>
                         
