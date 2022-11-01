@@ -103,9 +103,9 @@ contract Factory is ERC721{
     }
 
     //获取个人nft的信息
-    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,bool,uint256){
+    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,uint256,bool,uint256){
         nftProperty memory nft = nftOwner[msg.sender][id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.status,nft.price);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.activityId,nft.status,nft.price);
     }
 
     //查询nft的总量
