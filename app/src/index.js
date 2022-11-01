@@ -80,7 +80,6 @@ const accountModel = {
         const { signIn } = userSolidity.methods;
         try {
             var address = await signIn(userName).call({from:defaultAccount});
-
             await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
                 if(err){
                     message.error("密码错误", 1);
