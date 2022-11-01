@@ -3,7 +3,7 @@ import { Route,Routes, Navigate } from 'react-router-dom'
 import BaseLayout from "@/components/BaseLayout"
 import Login from "@/components/Login"
 import Register from "@/components/Register"
-import 'antd/dist/antd.less';
+// import 'antd/dist/antd.less';
 
 class App extends Component {
   render() {

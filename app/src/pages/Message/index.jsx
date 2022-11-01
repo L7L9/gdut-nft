@@ -42,7 +42,7 @@ export default class PersonMessage extends Component{
       <Descriptions title="用户信息" >
         <Descriptions.Item label="UserName">{this.state.person[0]}</Descriptions.Item>
         <Descriptions.Item label="Id">{this.state.person[1]}</Descriptions.Item>
-        <Descriptions.Item label="Price">{this.state.person[2]}</Descriptions.Item>
+        <Descriptions.Item label="Balance">{this.state.person[2]}</Descriptions.Item>
       </Descriptions>
       <h1>我拥有的nft:</h1>
       {

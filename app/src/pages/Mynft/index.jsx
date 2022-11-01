@@ -22,7 +22,7 @@ export default function Mynft() {
         message.success("创建成功", 1);
         navigate('/GDUT-nft/home')
       }, 2000)
-    },()=>{})
+    })
   };
   const onChange = (e) => {
     setValue(e.target.value);

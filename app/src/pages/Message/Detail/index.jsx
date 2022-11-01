@@ -42,7 +42,7 @@ const Mydetail = () => {
                         <Card
                         title='商品价格'
                         style={{ borderRadius: '15px',boxShadow: '8px 8px 8px 10px #ecf1f8'  }}
-                        // extra={<Button type="dashed" disabled={!status} onClick={buy}>购买</Button>}
+                        extra={<Button type="dashed" disabled={!status} onClick={buy}>转正</Button>}
                         >
                         <h1 style={{ fontSize: '40px' }}>{status?`￥ ${price}`:'非卖品'}</h1>
                         

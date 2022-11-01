@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from 'react'
+import React, { useEffect,useState,lazy,Suspense } from 'react'
 import {} from 'react-redux'
 import { Menu, Layout, message } from 'antd';
 const { Header, Content, Footer } = Layout;
@@ -6,16 +6,16 @@ import { Routes, Route,useLocation,useNavigate } from 'react-router-dom';
 import {loadingaction} from '@/redux/actions/loading'
 import { items } from '@/routes/allmenuitems';
 import { Navigate } from "react-router-dom";
-import Home from '@/pages/Home'
-import Nftdetail from '@/pages/Home/Nftdetail'
-import Adetail from '@/pages/Activity/Detail'
-import Mydetail from '@/pages/Message/Detail'
-import Searchdetail from '@/pages/Search/Detail'
-import Search from '@/pages/Search'
-import Activity from '@/pages/Activity'
-import Mynft from '@/pages/Mynft'
-import Notify from '@/pages/Notify'
-import Message from '@/pages/Message'
+const Home=lazy(()=>import ('@/pages/Home'))
+const Nftdetail=lazy(()=>import ('@/pages/Home/Nftdetail'))
+const Adetail=lazy(()=>import ('@/pages/Activity/Detail'))
+const Mydetail=lazy(()=>import ('@/pages/Message/Detail'))
+const Searchdetail=lazy(()=>import ('@/pages/Search/Detail'))
+const Search=lazy(()=>import ('@/pages/Search'))
+const Activity=lazy(()=>import ('@/pages/Activity'))
+const Mynft=lazy(()=>import ('@/pages/Mynft'))
+const Notify=lazy(()=>import ('@/pages/Notify'))
+const Message=lazy(()=>import ('@/pages/Message'))
 import Loading from '@/components/Loading'
 import './index.css'
 
@@ -71,8 +71,9 @@ export default function BaseLayout() {
           width: '100%',
           minHeight:'500px'
         }}
-  >
-    <Routes>
+    >
+      <Suspense fallback={<h1>网络有点慢，请刷新试试</h1>}>
+        <Routes>
         <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
         <Route path="/home/detail"  element={<Nftdetail/>}  />
@@ -84,7 +85,9 @@ export default function BaseLayout() {
         <Route path="/message/detail" element={<Mydetail/>} />
         <Route path="/notify"  element={loading?<Loading/>:<Notify/>} />
         <Route path="/message"  element={loading?<Loading/>:<Message/>} />
-      </Routes>
+        </Routes>
+      </Suspense>
+      
       </Content>
       <Footer
     style={{

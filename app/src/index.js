@@ -78,9 +78,10 @@ const accountModel = {
         const accounts = await web3.eth.getAccounts();
         var defaultAccount = accounts[0];
         const { signIn } = userSolidity.methods;
-        var address = await signIn(userName).call({from:defaultAccount});
+        try {
+            var address = await signIn(userName).call({from:defaultAccount});
 
-        await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
+            await web3.eth.personal.unlockAccount(address,password,10).then((res,err) =>{
                 if(err){
                     message.error("密码错误", 1);
                     sessionStorage.setItem('islogin',false)
@@ -92,7 +93,12 @@ const accountModel = {
                     message.success("登陆成功", 1);
                     sessionStorage.setItem('islogin',true)
                 }
-        })
+            })
+        } catch (error) {
+            message.error("用户不存在或密码错误", 1);
+            sessionStorage.setItem('islogin',false)
+        }
+        
     },
     register: async function(userName,password){
         const { signUp } = userSolidity.methods;
@@ -143,7 +149,6 @@ const nftModel = {
     },
     //创建nft
     create: async function (name0, des0, price, status, file0) {
-        console.log(price);
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
         const { getCidStatus } = factory.methods;
@@ -161,7 +166,7 @@ const nftModel = {
             var reader = new FileReader();
             //读取文件转为buffer以上传
             reader.readAsArrayBuffer(file[0]);
-            reader.onloadend = async function(){
+            await(reader.onloadend = async function(){
                 // console.log(reader.result);
                 var img = Buffer.from(reader.result);
                 // console.log("前："+img);
@@ -192,7 +197,7 @@ const nftModel = {
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
-                            return console.log(err);
+                            throw err;
                         } else {
                             console.log("Document created Successfully");
                         }
@@ -211,25 +216,24 @@ const nftModel = {
                         }
                         noticeDB.put(notice,function(err,response){
                             if (err) {
-                                return console.log(err);
+                                throw err;
                             } else {
                                 console.log("插入公告成功");
-                                return new Promise((reslove, reject) => {
-                                    reslove(true)
-                                })
                             }
                         })
                 } else {
                     message.error("该图片已经使用过", 1);
-                    flag = false;
+                    flag=false
+                    throw error;
                 }
+            })()
+            if (!flag) {
+                console.log('走了这一步');
+                return new Promise((reslove, reject) => {
+                    reject(false)
+                });
             }
-            if(flag)return new Promise((reslove, reject) => {
-                reslove(true)
-            });
-            else return new Promise((reslove,reject)=> {
-                reject(false)
-            });
+            
         } else {
             message.error('未选择文件，铸造失败', 1)
             return new Promise((reslove,reject) => {
