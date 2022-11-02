@@ -239,22 +239,18 @@ const nftModel = {
         }
     },
     //赠送
-    give: async function(){
-        var tokenId = prompt("请输入要送出nft的tokenId:","请在此输入");
-        if(tokenId != null){
-            var to = prompt("请输入要送给的账户：","请在此输入");
-            if(to != null){
-                // console.log(tokenId);
-                // console.log(to);
-                const { give } = factory.methods;
+    give: async function(tokenId,to){
+        const { getAddressByName } = userSolidity.methods;
+        var address = await getAddressByName(to).call({}).on('rror',function(error,receipt){
+            message.error("赠送用户不存在",1)
+            throw error;
+        })
+        const { give } = factory.methods;
 
-                await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
-                    console.log(res);
-                });
-                //刷新页面
-                // pageModel.showMyNFT();
-            }
-        } 
+        await give(address,tokenId).send({from:account,gas:1000000}).then(res=>{
+            message.success("赠送成功")
+            console.log(res);
+        });
     },
     buyNft: async function(owner,tokenId){
         const { buy } = userSolidity.methods;
