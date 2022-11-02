@@ -1,5 +1,5 @@
-import { Layout,Card,List,Button } from 'antd';
-import React,{useEffect} from 'react';
+import { Layout,Card,Button, Modal,Input,Form, message } from 'antd';
+import React,{useEffect,useState,useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom'
 //引入connect用于连接UI组件与redux
 import { useSelector, useDispatch } from 'react-redux'
@@ -12,6 +12,8 @@ const {Meta}=Card
 const Mydetail = () => {
     const location = useLocation();
     const dispatch = useDispatch()
+    const submit1 = useRef();
+    const form = useRef();
     useEffect(() => {
         dispatch(loadingaction(true))
     }, [location]);
@@ -21,13 +23,32 @@ const Mydetail = () => {
         navigate(-1);
     }
     const { state: { url:src,tokenId,nftName,nftDes,authorAddress,authorName,activityId,status,price } } = useLocation()
-    // console.log(url, tokenId, cid, nftname, author, des, number);
-    const data = [{
-        title: nftName,
-        src,
-        description:'链上id: '+authorAddress+' '+' '+'作者: '+authorName,
-        content:nftDes
-    }]
+    const [open, setOpen] = useState(false)
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const give = (values) => {
+        const { tokenId, user } = values;
+        setConfirmLoading(true);
+        nftModel.give(tokenId, user).then(() => {
+            message.success('转赠成功', 1)
+            setOpen(false);
+            setConfirmLoading(false);
+        }, () => {
+            message.error('转赠失败，请稍后再试', 1)
+            setOpen(false);
+            setConfirmLoading(false);
+        }).then(() => {
+            form.current.resetFields();
+        })
+    }
+    const showModal = () => {
+        setOpen(true);
+    };
+    const submit = () => {
+        submit1.current.click();
+    }
+    const handleCancel = () => {
+        setOpen(false);
+    };
     return (
         <>
             {loading?<Loading/>:<>
@@ -42,7 +63,7 @@ const Mydetail = () => {
                         <Card
                         title='商品价格'
                         style={{ borderRadius: '15px',boxShadow: '8px 8px 8px 10px #ecf1f8'  }}
-                        extra={<Button type="dashed" disabled={!status} onClick={buy}>转正</Button>}
+                        extra={<Button type="dashed" onClick={showModal}>转赠</Button>}
                         >
                         <h1 style={{ fontSize: '40px' }}>{status?`￥ ${price}`:'非卖品'}</h1>
                         
@@ -62,6 +83,66 @@ const Mydetail = () => {
                 <Button style={{float:'right',marginTop:'20px'}}type="dashed" onClick={back}>返回</Button>
             </div>
             </>}
+            <Modal
+                title="转赠nft"
+                open={open}
+                confirmLoading={confirmLoading}
+                onCancel={handleCancel}
+                onOk={submit}
+            >
+                <div style={{ width:'200px',height:'100px' }}>
+                    <Form
+                    name="basic"
+                    labelCol={{
+                        span: 8,
+                    }}
+                    wrapperCol={{
+                        span: 16,
+                    }}
+                    onFinish={give}
+                    autoComplete="off"
+                    style={{ position: 'absolute', left: '50%', transform: 'translate(-50%)' }}
+                    ref={form}    
+                >
+                    <Form.Item
+                        label="TokenId"
+                        name="tokenId"
+                        rules={[
+                        {
+                            required: true,
+                            message: "请输入要送出nft的tokenId",
+                        },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="账户"
+                        name="user"
+                        rules={[
+                        {
+                            required: true,
+                            message: "请输入要送给的账户：",
+                        },
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+
+                    <Form.Item
+                        wrapperCol={{
+                        offset: 8,
+                        span: 16,
+                        }}
+                    >
+                        <Button type="primary" htmlType="submit" style={{display:'none'}} ref={submit1}>
+                        Submit
+                        </Button>
+                    </Form.Item>
+                    </Form>
+                </div>
+            </Modal>
         </>
     )
 }
