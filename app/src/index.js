@@ -248,7 +248,7 @@ const nftModel = {
         })
         const { give } = factory.methods;
         try {
-            await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
+            await give(address,tokenId).send({from:account,gas:1000000}).then(res=>{
                 return new Promise((reslove, reject) => {
                     reslove(res)
                 })
