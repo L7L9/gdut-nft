@@ -64,7 +64,6 @@ contract Factory is ERC721{
         uint256 _activityId,
         uint256 _price,
         bool _status) external{
-        require(!cidStatus[_cid],"this picture already used");
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,

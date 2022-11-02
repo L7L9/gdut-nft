@@ -427,65 +427,69 @@ const activityModel = {
     //领取活动nft
     getNFT: async function (id, password) {
         if(password.trim() != ''){
-            console.log("id:" + id);
-            const { getActivityNFTAmount } = activity.methods;
-            const { getActivityNFT } = activity.methods;
-            const { addNotice } = userSolidity.methods;
-            // const { give } = factory.methods;
-            const { mint } = factory.methods;
-            var nftAmount = await getActivityNFTAmount(id).call({});
-            console.log("nft数量:" + nftAmount);
-            var tokenId = null;
-            //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
-            var result = await getActivityNFT(id,password).call({from:account});
-            await getActivityNFT(id,password).send({
-                from:account,
-                gas:1000000
-            }).on('error',function(error,receipt){
-                console.log("nft可能被领完,查看error");
-                throw error;
-            }).then(async function(){
-                tokenId = web3.utils.sha3(result[2] + result[1] + result[0]);
-                await mint(tokenId,result[2],result[0],result[3],id,0,false).send({
+            try {
+                console.log("id:" + id);
+                const { getActivityNFTAmount } = activity.methods;
+                const { getActivityNFT } = activity.methods;
+                const { addNotice } = userSolidity.methods;
+                // const { give } = factory.methods;
+                const { mint } = factory.methods;
+                var nftAmount = await getActivityNFTAmount(id).call({});
+                console.log("nft数量:" + nftAmount);
+                var tokenId = null;
+                //0=>cid  1=>nft索引 2=>nft名字  3=>nft描述 
+                var result = await getActivityNFT(id,password).call({from:account});
+                await getActivityNFT(id,password).send({
                     from:account,
                     gas:1000000
-                })
-            }).then(async ()=>{
-                var doc = {
-                    _id : tokenId,
-                    name : result[2],
-                }
-                nftDB.put(doc, function(err, response) {
-                    if (err) {
-                        return console.log(err);
-                    } else {
-                        console.log("Document created Successfully");
+                }).on('error',function(error,receipt){
+                    console.log("nft可能被领完,查看error");
+                    throw error;
+                }).then(async function(){
+                    tokenId = web3.utils.sha3(result[2] + result[1] + result[0]);
+                    await mint(tokenId,result[2],result[0],result[3],id,0,false).send({
+                        from:account,
+                        gas:1000000
+                    })
+                }).then(async ()=>{
+                    var doc = {
+                        _id : tokenId,
+                        name : result[2],
                     }
-                })
-                var noticeId = await addNotice().call();
-                await addNotice().send({
-                    from: account,
-                    gas: 1000000
-                })
-                var notice = {
-                    _id: noticeId,
-                    type: 1,
-                    title: "领取活动nft",
-                    user: account,
-                    des: account + "领取了" + result[4] + "活动"
-                }
-                noticeDB.put(notice,function(err,response){
-                    if (err) {
-                        return console.log(err);
-                    } else {
-                        console.log("插入公告成功");
-                        return new Promise((reslove, reject) => {
+                    nftDB.put(doc, function(err, response) {
+                        if (err) {
+                            return console.log(err);
+                        } else {
+                            console.log("Document created Successfully");
+                        }
+                    })
+                    var noticeId = await addNotice().call();
+                    await addNotice().send({
+                        from: account,
+                        gas: 1000000
+                    })
+                    var notice = {
+                        _id: noticeId,
+                        type: 1,
+                        title: "领取活动nft",
+                        user: account,
+                        des: account + "领取了" + result[4] + "活动"
+                    }
+                    noticeDB.put(notice,function(err,response){
+                        if (err) {
+                            return console.log(err);
+                        } else {
+                            console.log("插入公告成功");
                             message.success("领取nft成功");
-                            reslove(true)
-                        })
-                    }
-                }) 
-            })
+                            return new Promise((reslove, reject) => {
+                                reslove(true)
+                            })
+                        }
+                    }) 
+                })
+            } catch (error) {
+                message.error('密码错误',1)
+            }
         }
         else message.error('您没有密钥或输入的密钥为空字符串',1)
     },
