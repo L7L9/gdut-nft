@@ -263,23 +263,26 @@ const nftModel = {
         const { getMoney } = userSolidity.methods;
         var money = await getMoney().call({from:account});
         var price = await getNftPrice(tokenId).call();
-        console.log(price,money);
         if(new Number(money) >= new Number(price)){
-            await buy(price,owner).send({
-                from:account,
-                gas: 1000000
-            }).on('error',function(error){
-                throw error;
-            }).then(async function(){
-                await transferFromOwner(owner,account,tokenId).send({
+            try {
+                await buy(price,owner).send({
                     from:account,
                     gas: 1000000
                 }).on('error',function(error){
                     throw error;
+                }).then(async function(){
+                    await transferFromOwner(owner,account,tokenId).send({
+                        from:account,
+                        gas: 1000000
+                    }).on('error',function(error){
+                        throw error;
+                    })
+                }).then(()=>{
+                    message.success("购买成功");
                 });
-            }).then(()=>{
-                message.success("购买成功");
-            });
+            } catch (error) {
+                message.error("购买失败",1)
+            }
         } else{
             message.error("您的余额不足",1);
         }
