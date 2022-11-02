@@ -239,18 +239,28 @@ const nftModel = {
         }
     },
     //赠送
-    give: async function(tokenId,to){
+    give: async function (tokenId, to) {
         const { getAddressByName } = userSolidity.methods;
-        var address = await getAddressByName(to).call({}).on('rror',function(error,receipt){
-            message.error("赠送用户不存在",1)
-            throw error;
+        var address = await getAddressByName(to).call({}).on('error',function(error,receipt){
+            return new Promise((reslove, reject) => {
+                reject(error)
+            })
         })
         const { give } = factory.methods;
+        try {
+            await give(to,tokenId).send({from:account,gas:1000000}).then(res=>{
+                return new Promise((reslove, reject) => {
+                    reslove(res)
+                })
+            });
+        } catch (error) {
+            return new Promise((reslove, reject) => {
+                reject(error)
+            })
+        }
 
-        await give(address,tokenId).send({from:account,gas:1000000}).then(res=>{
-            message.success("赠送成功")
-            console.log(res);
-        });
+        //刷新页面
+        // pageModel.showMyNFT();
     },
     buyNft: async function(owner,tokenId){
         const { buy } = userSolidity.methods;
