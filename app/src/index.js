@@ -5,7 +5,8 @@ import factoryArtifact from "../../build/contracts/Factory.json";
 import activityArtifact from "../../build/contracts/Activity.json";
 import userArtifact from "../../build/contracts/User.json";
 
-import {message} from 'antd'
+import { message } from 'antd'
+
 
 //web3实例
 var web3 = null;
@@ -153,19 +154,18 @@ const nftModel = {
         const { getCidStatus } = factory.methods;
         const { addNotice } = userSolidity.methods;
 
-        var file = file0;
         var name = name0;
         var des = des0;
 
-        let flag = true;
         var tokenId = null;
-        if (file.length != 0) {
+        if (file0.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
             var reader = new FileReader();
             //读取文件转为buffer以上传
-            reader.readAsArrayBuffer(file[0]);
-            await(reader.onloadend = async function(){
+            reader.readAsArrayBuffer(file0[0]);
+            reader.onloadend = async function () {
+                
                 // console.log(reader.result);
                 var img = Buffer.from(reader.result);
                 // console.log("前："+img);
@@ -173,7 +173,8 @@ const nftModel = {
                 //返回的cid
                 cid = cids[0].hash;
                 var cidStatus = await getCidStatus(cid).call({}); 
-                if(!cidStatus){
+                if (!cidStatus) {
+                    message.loading('正在创建',1)
                     tokenId = web3.utils.sha3(name + cid);
                     if(!status){
                         price = 0;
@@ -185,8 +186,9 @@ const nftModel = {
                         await setCidStatus(cid).send({
                             from: account,
                             gas: 1000000
-                        }).on('error',function(error){
-                            throw error;
+                        }).on('error', function (error) {
+                            console.log(error);
+                            // throw error;
                         })
                     });
                     var doc = {
@@ -196,7 +198,8 @@ const nftModel = {
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
-                            throw err;
+                            console.log(error);
+                            // throw err;
                         } else {
                             console.log("Document created Successfully");
                         }
@@ -215,24 +218,19 @@ const nftModel = {
                         }
                         noticeDB.put(notice,function(err,response){
                             if (err) {
-                                throw err;
+                                console.log(err);
+                                // throw err;
                             } else {
                                 console.log("插入公告成功");
+                                message.success('创建成功', 1)
+                                window.location.replace("http://localhost:8081/#/GDUT-nft/home");
                             }
                         })
                 } else {
+                    var flag = false
                     message.error("该图片已经使用过", 1);
-                    flag=false
-                    throw error;
                 }
-            })()
-            if (!flag) {
-                console.log('走了这一步');
-                return new Promise((reslove, reject) => {
-                    reject(false)
-                });
             }
-            
         } else {
             message.error('未选择文件，铸造失败', 1)
             return new Promise((reslove,reject) => {

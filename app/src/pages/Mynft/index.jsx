@@ -11,18 +11,12 @@ export default function Mynft() {
   const [nftfile, setNftfile] = useState([])
   useEffect(() => {
     PubSub.subscribe("nftfile", (msg, data) => {
-      setNftfile([data])
+      data===1?setNftfile([]):setNftfile([data])
     })
   })
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     let { userName, des, price, status } = values;
-    nftModel.create(userName, des,price?price:0,status,nftfile).then(() => {
-      message.loading('正在创建，请等待', 2)
-      setTimeout(() => {
-        message.success("创建成功", 1);
-        navigate('/GDUT-nft/home')
-      }, 2000)
-    })
+    nftModel.create(userName, des,price?price:0,status,nftfile)
   };
   const onChange = (e) => {
     setValue(e.target.value);

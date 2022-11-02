@@ -17,16 +17,50 @@
 //     )
 //     }
 // }
-import { Upload, message, Button } from 'antd';
+import { Upload, message,Modal } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import PubSub from 'pubsub-js';
-import ImgCrop from 'antd-img-crop';
 import React, { useState } from 'react';
+
+
+
+const getBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
 const Selectnft = () => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState([]);
-  const onChange = ({ fileList: newFileList,file }) => {
+  const handleCancel = () => setPreviewOpen(false);
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
+    }
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+    setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1));
+  };
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div
+        style={{
+          marginTop: 8,
+        }}
+      >
+        Upload
+      </div>
+    </div>
+  );
+  const handleChange = ({ fileList: newFileList,file }) => {
     if (file.status === 'removed') {
       setFileList([]);
-      PubSub.publish("nftfile", fileList)
+      PubSub.publish("nftfile",1)
     }
     else {
       newFileList[0].status = 'uploading'
@@ -34,10 +68,9 @@ const Selectnft = () => {
         newFileList[0].status = 'done'
         setFileList(newFileList);
         message.success('上传成功',.5)
-      }, 1000)
+      }, 500)
       PubSub.publish("nftfile", newFileList[0].originFileObj)
     }
-    // PubSub.publish("nftfile", window.URL.createObjectURL(new Blob(newFileList)))
   };
   const beforeUpload = (file) => {
     return new Promise((resolve, reject) => {
@@ -49,33 +82,27 @@ const Selectnft = () => {
       return resolve(true);
     })
 }
-  const onPreview = async (file) => {
-    let src = file.url;
-    if (!src) {
-      src = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj);
-        reader.onload = () => resolve(reader.result);
-      });
-    }
-    const image = new Image();
-    image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(image.outerHTML);
-  };
-  return (
-    <ImgCrop rotate>
+  return ( 
+    <>
       <Upload
-        // action="http://localhost:8081"
         listType="picture-card"
         fileList={fileList}
-        onChange={onChange}
-        onPreview={onPreview}
+        onPreview={handlePreview}
+        onChange={handleChange}
         beforeUpload={beforeUpload}
       >
-      {fileList.length < 1 && '+ Upload'}
+        {fileList.length >= 1 ? null : uploadButton}
       </Upload>
-    </ImgCrop>
+      <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
+        <img
+          alt="example"
+          style={{
+            width: '100%',
+          }}
+          src={previewImage}
+        />
+      </Modal>
+    </>
     
   );
 };

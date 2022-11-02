@@ -72,7 +72,7 @@ export default function BaseLayout() {
           minHeight:'500px'
         }}
     >
-      <Suspense fallback={<h1>网络有点慢，请刷新试试</h1>}>
+      <Suspense>
         <Routes>
         <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
