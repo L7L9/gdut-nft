@@ -32,10 +32,10 @@ contract Factory is ERC721{
     }
 
     //id -> nft
-    mapping(uint256 => nftProperty) nfts;
-
-    //tokenId -> nft
     mapping(uint256 => nftProperty) nftMap;
+
+    //tokenId -> id
+    mapping(uint256 => uint256) tokenIdToId;
 
     //个人的nft集合
     mapping(address => mapping(uint256 => nftProperty)) nftOwner;
@@ -75,9 +75,9 @@ contract Factory is ERC721{
             price:_price,
             status: _status
         });
-        nfts[nftAmount] = nft;
+        nftMap[nftAmount] = nft;
 
-        nftMap[_tokenId] = nft;
+        tokenIdToId[_tokenId] = nftAmount;
 
         nftOwner[msg.sender][balanceOf(msg.sender)] = nft;
 
@@ -92,12 +92,12 @@ contract Factory is ERC721{
 
     //获取单个nft的信息
     function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
-        nftProperty memory nft = nfts[id];
+        nftProperty memory nft = nftMap[id];
         return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
     }
 
     function getPropertyByTokenId(uint256 _tokenId) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
-        nftProperty memory nft = nftMap[_tokenId];
+        nftProperty memory nft = nftMap[tokenIdToId[_tokenId]];
         return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
     }
 
@@ -132,7 +132,8 @@ contract Factory is ERC721{
 
         nftOwner[from][personalNftOrder[from][tokenId]] = nft;
         personalNftOrder[from][nft.tokenId] = personalNftOrder[from][tokenId];
-        nftMap[tokenId].status = false;
+        
+        nftMap[tokenIdToId[tokenId]].status = false;
 
         delete nftOwner[from][balanceOf(from)-1];
         delete personalNftOrder[from][tokenId];
@@ -142,11 +143,11 @@ contract Factory is ERC721{
     }
 
     function setStatus(uint256 _tokenId,bool _status,uint256 _price) external{
-        require(_status == !nfts[_tokenId].status,"already this status");
+        require(_status == !nftMap[tokenIdToId[_tokenId]].status,"already this status");
         if(_status){
-            nfts[_tokenId].price = _price;
+            nftMap[tokenIdToId[_tokenId]].price = _price;
         }
-        nfts[_tokenId].status = _status;
+        nftMap[tokenIdToId[_tokenId]].status = _status;
     }
 
     function setCidStatus(string memory cid) external{
@@ -159,6 +160,6 @@ contract Factory is ERC721{
 
     function getNftPrice(uint256 tokenId) external view returns(uint256){
         require(ownerOf(tokenId) != address(0),"this token does not exist");
-        return nftMap[tokenId].price;
+        return nftMap[tokenIdToId[tokenId]].price;
     }
 }
