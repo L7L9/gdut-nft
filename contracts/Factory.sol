@@ -132,6 +132,7 @@ contract Factory is ERC721{
 
         nftOwner[from][personalNftOrder[from][tokenId]] = nft;
         personalNftOrder[from][nft.tokenId] = personalNftOrder[from][tokenId];
+        nftMap[tokenId].status = false;
 
         delete nftOwner[from][balanceOf(from)-1];
         delete personalNftOrder[from][tokenId];
