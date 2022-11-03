@@ -40,9 +40,9 @@ export default class PersonMessage extends Component{
   render(){
     return <div>
       <Descriptions title="用户信息" >
-        <Descriptions.Item label="UserName">{this.state.person[0]}</Descriptions.Item>
-        <Descriptions.Item label="Id">{this.state.person[1]}</Descriptions.Item>
-        <Descriptions.Item label="Balance">{this.state.person[2]}</Descriptions.Item>
+        <Descriptions.Item label="用户名">{this.state.person[0]}</Descriptions.Item>
+        <Descriptions.Item label="用户链上id">{this.state.person[1]}</Descriptions.Item>
+        <Descriptions.Item label="余额">{this.state.person[2]}</Descriptions.Item>
       </Descriptions>
       <h1>我拥有的nft:</h1>
       {

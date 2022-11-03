@@ -241,13 +241,9 @@ const nftModel = {
     //赠送
     give: async function (tokenId, to) {
         const { getAddressByName } = userSolidity.methods;
-        var address = await getAddressByName(to).call({}).on('error',function(error,receipt){
-            return new Promise((reslove, reject) => {
-                reject(error)
-            })
-        })
         const { give } = factory.methods;
         try {
+            var address = await getAddressByName(to).call({})
             await give(address,tokenId).send({from:account,gas:1000000}).then(res=>{
                 return new Promise((reslove, reject) => {
                     reslove(res)
@@ -258,7 +254,6 @@ const nftModel = {
                 reject(error)
             })
         }
-
         //刷新页面
         // pageModel.showMyNFT();
     },
