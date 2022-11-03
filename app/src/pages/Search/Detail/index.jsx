@@ -61,6 +61,11 @@ const Searchdetail = () => {
                             description={<span style={{ fontSize: '18px', color: 'black' }}>{ownerName} / <span style={{ color: '#0070ef', fontSize: '14px' }}>{ownerAddress}</span></span>}
                             style={{marginTop:'8px'}}
                         />
+                        <Meta
+                            title={<span style={{fontSize:'13px',color:'gray'}}>图片TokenId</span>}
+                            description={<span style={{ color: '#0070ef', fontSize: '14px' }}>{tokenId}</span>}
+                            style={{marginTop:'8px'}}
+                        />        
                     </Footer>
                     </Layout>
                     

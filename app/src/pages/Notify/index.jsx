@@ -1,39 +1,49 @@
-import React, { Component } from 'react';
-import { Layout,Card, Button } from 'antd';
-const { Header, Footer, Sider, Content } = Layout;
+import { List,Card,message} from 'antd';
+import React, { useState } from 'react';
+import { useEffect } from 'react';
+import Loading from '@/components/Loading'
+const listData1 = Array.from({
+  length: 3,
+}).map((_, i) => ({
+  href: 'https://ant.design',
+  title: `ant design part ${i}`,
+  description:
+    'Ant Design, a design language for background applications, is refined by Ant UED Team.',
+  content:
+    'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
+}));
 
-export default class Notify extends Component {
-  render() {
-    return (
-      <div><h1>Notify</h1></div>
-      // <>
-      //   <div style={{ width: '1180px', position: 'relative', left: '50%', transform: 'translate(-50%)' }}>
-      //     <Layout>
-      //       <Layout >
-      //         <Header style={{ backgroundColor: '#f0f2f5' }}><h1 style={{fontSize:'50px',fontWeight:'600',float:'right',marginRight:'100px'}}>name</h1></Header>
-      //         <Content style={{marginTop:'20px',paddingRight:'60px'}}>
-      //           <Card
-      //             title="作者用户名+链上id"
-      //             style={{ borderRadius: '15px' }}
-      //             extra={<Button type="dashed" >购买</Button>}
-      //           >
-      //             <h1 style={{fontSize:'40px'}}>￥  999999999</h1>
-      //             <h3>商品描述</h3>
-      //             <p style={{color:'#959599'}}>画面表现的是中国古代山海经神话中西王母的形象，电影级的场景氛围，优雅的西王母犹如神女降临，美好中带着一丝霸气，尽显王母的气质。画面表现的是中国古代山海经神话中西王母的形象，电影级的场景氛围，优雅的西王母犹如神女降临，美好中带着一丝霸气，尽显王母的气质。</p>
-      //           </Card>
-      //         </Content>
-      //         <Footer >
-      //           <h2>拥有者+链上id</h2>
-      //         </Footer>
-      //       </Layout>
-      //       <Sider style={{ backgroundColor: '#f0f2f5', height: '500px' }} width= '380px'>
-      //         <img src="https://static.ibox.art/file/oss/test/image/nft-goods/56d0e75fc8014258a69dcdd07e43dbc6.png?style=st6" alt="" style={{ width: '380px', height: '500px', borderRadius: '15px' }} />
-      //       </Sider>
-      //     </Layout>
-      //     <Button style={{float:'right',marginTop:'20px'}}type="dashed">返回</Button>
-      //   </div>
-      // </>
-      
-    )
-  }
-}
+const Notify = () => {
+  const [loading, setLoading] = useState(true);
+  const [listData, setlistData] = useState([]);
+  useEffect(() => {
+    setTimeout(() => {
+      setlistData(listData1)
+      setLoading(false);
+      message.success(`${listData1.length}条公告已加载出来`)
+    },2000)
+  },[])
+  return (
+    <>
+      {loading?<Loading/>:<List
+        itemLayout="vertical"
+        size="large"
+        dataSource={listData}
+        renderItem={(item) => (
+          <List.Item
+            key={item.title}
+          >
+            <Card hoverable>
+              <List.Item.Meta
+                title={item.title}
+                description={item.description}
+              />
+              {item.content}
+            </Card>
+          </List.Item>
+        )}
+      />}
+    </>
+  );
+};
+export default Notify;

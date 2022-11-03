@@ -12,8 +12,7 @@ const {Meta}=Card
 const Mydetail = () => {
     const location = useLocation();
     const dispatch = useDispatch()
-    const submit1 = useRef();
-    const form = useRef();
+    const user = useRef();
     useEffect(() => {
         dispatch(loadingaction(true))
     }, [location]);
@@ -25,10 +24,10 @@ const Mydetail = () => {
     const { state: { url:src,tokenId,nftName,nftDes,authorAddress,authorName,activityId,status,price } } = useLocation()
     const [open, setOpen] = useState(false)
     const [confirmLoading, setConfirmLoading] = useState(false);
-    const give = (values) => {
-        const { tokenId, user } = values;
+    const submit = () => {
+        const username = user.current.input.value;
         setConfirmLoading(true);
-        nftModel.give(tokenId, user).then(() => {
+        nftModel.give(tokenId, username).then(() => {
             message.success('转赠成功', 1)
             setOpen(false);
             setConfirmLoading(false);
@@ -36,16 +35,11 @@ const Mydetail = () => {
             message.error('转赠失败，请稍后再试', 1)
             setOpen(false);
             setConfirmLoading(false);
-        }).then(() => {
-            form.current.resetFields();
         })
     }
     const showModal = () => {
         setOpen(true);
     };
-    const submit = () => {
-        submit1.current.click();
-    }
     const handleCancel = () => {
         setOpen(false);
     };
@@ -74,6 +68,11 @@ const Mydetail = () => {
                             title={<span style={{fontSize:'13px',color:'gray'}}>创作者</span>}
                             description={<span style={{fontSize:'18px',color:'black'}}>{authorName} / <span style={{color:'#0070ef',fontSize:'14px'}}>{authorAddress}</span></span>}
                         />
+                        <Meta
+                            title={<span style={{fontSize:'13px',color:'gray'}}>图片TokenId</span>}
+                            description={<span style={{ color: '#0070ef', fontSize: '14px' }}>{tokenId}</span>}
+                            style={{marginTop:'8px'}}
+                        />        
                     </Footer>
                     </Layout>
                     
@@ -90,58 +89,7 @@ const Mydetail = () => {
                 onCancel={handleCancel}
                 onOk={submit}
             >
-                <div style={{ width:'200px',height:'100px' }}>
-                    <Form
-                    name="basic"
-                    labelCol={{
-                        span: 8,
-                    }}
-                    wrapperCol={{
-                        span: 16,
-                    }}
-                    onFinish={give}
-                    autoComplete="off"
-                    style={{ position: 'absolute', left: '50%', transform: 'translate(-50%)' }}
-                    ref={form}    
-                >
-                    <Form.Item
-                        label="TokenId"
-                        name="tokenId"
-                        rules={[
-                        {
-                            required: true,
-                            message: "请输入要送出nft的tokenId",
-                        },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="账户"
-                        name="user"
-                        rules={[
-                        {
-                            required: true,
-                            message: "请输入要送给的账户：",
-                        },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        wrapperCol={{
-                        offset: 8,
-                        span: 16,
-                        }}
-                    >
-                        <Button type="primary" htmlType="submit" style={{display:'none'}} ref={submit1}>
-                        Submit
-                        </Button>
-                    </Form.Item>
-                    </Form>
-                </div>
+                <Input placeholder='请输入要转赠的账户' ref={user}></Input>
             </Modal>
         </>
     )

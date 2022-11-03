@@ -70,7 +70,7 @@ const Adetail = () => {
                         <Meta
                             title={<span style={{fontSize:'13px',color:'gray'}}>举办者</span>}
                             description={<span style={{fontSize:'18px',color:'black'}}>{hostName} / <span style={{color:'#0070ef',fontSize:'14px'}}>{hostAddress}</span></span>}
-                        />
+                        />        
                     </Footer>
                     </Layout>
                     

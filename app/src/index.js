@@ -198,7 +198,7 @@ const nftModel = {
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
-                            console.log(error);
+                            console.log(err);
                             // throw err;
                         } else {
                             console.log("Document created Successfully");

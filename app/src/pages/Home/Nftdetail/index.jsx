@@ -47,7 +47,6 @@ const Nftdetail = () => {
                         extra={<Button type="dashed" disabled={!status} onClick={buy}>购买</Button>}
                         >
                         <h1 style={{ fontSize: '40px' }}>{status?`￥ ${price}`:'非卖品'}</h1>
-                        
                         </Card>
                     </Content>
                     <Footer >
@@ -59,7 +58,12 @@ const Nftdetail = () => {
                             title={<span style={{fontSize:'13px',color:'gray'}}>拥有者</span>}
                             description={<span style={{ fontSize: '18px', color: 'black' }}>{ownerName} / <span style={{ color: '#0070ef', fontSize: '14px' }}>{ownerAddress}</span></span>}
                             style={{marginTop:'8px'}}
-                        />
+                            />
+                        <Meta
+                            title={<span style={{fontSize:'13px',color:'gray'}}>图片TokenId</span>}
+                            description={<span style={{ color: '#0070ef', fontSize: '14px' }}>{tokenId}</span>}
+                            style={{marginTop:'8px'}}
+                        />    
                     </Footer>
                     </Layout>
                     
