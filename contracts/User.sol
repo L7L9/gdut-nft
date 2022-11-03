@@ -48,7 +48,7 @@ contract User{
         userMap[addressToName[owner]].money += price;
     }
 
-    function getAddressByName(string memory _name) external view returns(address){
+    function getAddressByName(string memory _name) external view userIsExist(_name) returns(address){
         return userMap[_name].userAddress;
     }
 
