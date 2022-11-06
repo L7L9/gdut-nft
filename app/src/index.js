@@ -757,8 +757,8 @@ const noticeModel = {
     getNotice: async function(){
         const { addNotice } = userSolidity.methods;
         var amount = await addNotice().call();
+        var result = [];
         if(amount > 0){
-            var result = [];
             var selectRes = null;
             for(var i = 0;i < amount;i++){
                 selectRes = noticeDB.get(i);
