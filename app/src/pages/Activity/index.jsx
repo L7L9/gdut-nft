@@ -45,8 +45,8 @@ class Activity extends Component{
     form.resetFields();
     this.setState({ isModalOpen: false })
     activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
-      message.loading('正在加载',.5)
-      this.props.changeloding(true,3000);
+      message.success("创建成功")
+      this.props.changeloding(true,1000);
     }, (err) => {
       console.log(err);
     })

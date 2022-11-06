@@ -32,7 +32,7 @@ const Mydetail = () => {
             setOpen(false);
             setConfirmLoading(false);
         }, () => {
-            message.error('转赠失败，请稍后再试', 1)
+            message.error('转赠失败，请检查输入或稍后重试', 1)
             setOpen(false);
             setConfirmLoading(false);
         })
@@ -89,7 +89,7 @@ const Mydetail = () => {
                 onCancel={handleCancel}
                 onOk={submit}
             >
-                <Input placeholder='请输入要转赠的账户' ref={user}></Input>
+                <Input placeholder='请输入对方的用户名' ref={user}></Input>
             </Modal>
         </>
     )
