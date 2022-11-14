@@ -195,7 +195,10 @@ const nftModel = {
                     });
                     message.success("铸造成功", 1);
                     setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
-                    var noticeDes = "用户(" + account + ")创建了一个个人藏品:" + name;
+                    const { getUserInfoByAddress } = userSolidity.methods;
+                    var userInfo = await getUserInfoByAddress(account).call();
+                    var userName = userInfo[0];
+                    var noticeDes = "用户(" + userName + ")创建了一个个人藏品:" + name;
                     await createNotice("铸造个人藏品",noticeDes,0).send({
                         from: account,
                         gas: 1000000
@@ -204,6 +207,7 @@ const nftModel = {
                         _id : tokenId,
                         name : name,
                         cid : cid,
+                        author : userName
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
@@ -318,8 +322,96 @@ const nftModel = {
                     status: temp[7],//是否能被购买
                     price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
                 })
-            }
-            
+            }   
+        })
+        return new Promise(reslove => {
+            reslove(res)
+        })
+    },
+
+    //搜索某位作者的所有作品
+    searchByAuthor : async function (value){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var regExp = new RegExp('.*' + value + '.*', 'i');
+        var content;
+        var url;
+        var res = [];
+        var ipfsResult;
+        await nftDB.find({
+            selector: {
+                author:{"$regex": regExp},
+            },
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                console.log(result.docs[i])
+                ipfsResult = await ipfs.get(result.docs[i].cid);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                const { getPropertyByTokenId } = factory.methods;
+                var temp = await getPropertyByTokenId(result.docs[i]._id).call();
+                var authorInfo = await getUserInfoByAddress(temp[3]).call();
+                var authorName = authorInfo[0];
+                var ownerInfo = await getUserInfoByAddress(temp[4]).call();
+                var ownerName = ownerInfo[0];
+                res.push({
+                    url,
+                    tokenId: temp[0],//tokenId
+                    nftName: temp[2],//nft名字
+                    authorAddress: temp[3],//作者链上id
+                    authorName: authorName,//作者用户名
+                    ownerAddress: temp[4],//拥有者链上id
+                    ownerName: ownerName,//拥有者名字
+                    nftDes: temp[5],//nft描述
+                    activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: temp[7],//是否能被购买
+                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                })
+            }     
+        })
+        return new Promise(reslove => {
+            reslove(res)
+        })
+    },
+
+    //搜索作品,通过作者筛选
+    selectByAuthor : async function (name,author){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var regExp = new RegExp('.*' + name + '.*', 'i');
+        var content;
+        var url;
+        var res = [];
+        var ipfsResult;
+        await nftDB.find({
+            selector: {
+                name:{"$regex": regExp},
+                author:author
+            },
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                console.log(result.docs[i])
+                ipfsResult = await ipfs.get(result.docs[i].cid);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                const { getPropertyByTokenId } = factory.methods;
+                var temp = await getPropertyByTokenId(result.docs[i]._id).call();
+                var authorInfo = await getUserInfoByAddress(temp[3]).call();
+                var authorName = authorInfo[0];
+                var ownerInfo = await getUserInfoByAddress(temp[4]).call();
+                var ownerName = ownerInfo[0];
+                res.push({
+                    url,
+                    tokenId: temp[0],//tokenId
+                    nftName: temp[2],//nft名字
+                    authorAddress: temp[3],//作者链上id
+                    authorName: authorName,//作者用户名
+                    ownerAddress: temp[4],//拥有者链上id
+                    ownerName: ownerName,//拥有者名字
+                    nftDes: temp[5],//nft描述
+                    activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
+                    status: temp[7],//是否能被购买
+                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                })
+            }     
         })
         return new Promise(reslove => {
             reslove(res)
@@ -409,11 +501,14 @@ const activityModel = {
             try {
                 // message.loading('正在加载', 1);
                 console.log("id:" + id);
+                const { getActivityProperty } = activity.methods;
                 const { getActivityNFTAmount } = activity.methods;
                 const { getActivityNFT } = activity.methods;
                 const { createNotice } = noticeSolidity.methods;
                 // const { give } = factory.methods;
                 const { mint } = factory.methods;
+
+                var activityInfo = await getActivityProperty(id).call({});
                 var nftAmount = await getActivityNFTAmount(id).call({});
                 console.log("nft数量:" + nftAmount);
                 var tokenId = null;
@@ -432,9 +527,15 @@ const activityModel = {
                         gas:1000000
                     })
                 }).then(async ()=>{
+                    const { getUserInfoByAddress } = userSolidity.methods;
+                    var userInfo = await getUserInfoByAddress(account).call();
+                    var userName = userInfo[0];
+                    var hostInfo = await getUserInfoByAddress(activityInfo[3]).call();
+                    var hostName = hostInfo[0];
                     var doc = {
                         _id : tokenId,
                         name : result[2],
+                        author : hostName
                     }
                     nftDB.put(doc, function(err, response) {
                         if (err) {
@@ -444,7 +545,7 @@ const activityModel = {
                             console.log("Document created Successfully");
                         }
                     })
-                    var noticeDes = "用户(" + account + ")领取了" + result[4] + "活动的藏品";
+                    var noticeDes = "用户(" + userName + ")领取了" + result[4] + "活动的藏品";
                     await createNotice("领取活动藏品",noticeDes,3).send({
                         from: account,
                         gas: 1000000
