@@ -1,4 +1,4 @@
-import { List,Card,message} from 'antd';
+import { List,Card,message,Image} from 'antd';
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import Loading from '@/components/Loading'

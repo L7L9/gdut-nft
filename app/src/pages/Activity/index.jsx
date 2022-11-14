@@ -1,43 +1,25 @@
 import React, { Component } from 'react'
 import { Input, Modal, Button, Form, message } from 'antd'
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import {loadingactionasync} from '@/redux/actions/loading'
-import Loading from '@/components/Loading';
-import Nodata from '@/components/Nodata';
 import Selectfile from './Selectfile';
-import {nanoid} from 'nanoid'
 const { Search } = Input;
-import './index.css'
+import Content from '@/public/Content';
+import { markID } from '@/utils/globalType';
 
 
 
 class Activity extends Component{
-  state = { isModalOpen: false,data:[123],isModalOpen1:false,num:-1,id:''}
+  state = { isModalOpen: false,data:[123],value:''}
   showModal = () => this.setState({isModalOpen:true});
-  showModal1 = (num, id) => {
-    return () => {
-      this.setState({ isModalOpen1: true,num,id})
-    }
-  };
   handleOk = () => {
     const { submit } = this.refs;
     submit.click();
   };
-  handleOk1 = () => {
-    const { num, id } = this.state
-    const { pass: { input} } = this.refs
-    let password = input.value;
-    activityModel.getNFT(id, password)
-    this.setState({ isModalOpen1: false })
-  };
   handleCancel = () => this.setState({isModalOpen:false});
-  handleCancel1 = () => this.setState({isModalOpen1:false});
-  onSearch = async (value) => {
-    this.setState({ data:[123] })
-    const data = await activityModel.search(value);
-    this.setState({ data })
+  onSearch = value => {
+    this.setState({ value })
+    
   }
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
@@ -51,14 +33,9 @@ class Activity extends Component{
       console.log(err);
     })
   };
-
-  getdata2 = async () => {
-    pageModel.showAllActivities().then(res => {
-      this.setState({ data: res })
-    })
-  }
-  componentDidMount() {
-    this.getdata2()
+  returnvalue = () => {
+    if (this.state.value.trim != '') return { value:this.state.value}
+    else return {}
   }
   render(){
     return <div>
@@ -194,41 +171,10 @@ class Activity extends Component{
         </Button>
       </Form.Item>
       </Form>
-      </Modal>
+        </Modal>
         <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>我也要创建活动</Button> 
       </div>
-      {
-              this.state.data[0] == 123 ? <Loading /> : this.state.data.length == 0 ? <Nodata /> :
-              <>
-                <div className="showout1">
-                  <div className="showin1">
-                    {
-                  this.state.data.map((item, index) => {
-                    const {url,name,des,id,hostAddress,hostName,amount,nftName,nftDes,nftRest}=item
-                    return <div className="item1" key={nanoid()} >
-                        <Link to={`/GDUT-nft/activity/detail`} state={{url,name,des,id,hostAddress,hostName,amount,nftName,nftDes,nftRest}} > 
-                            <img style={{ width: '100%', height: '220px' }} src={item.url}/>
-                      </Link>
-                      <span id="name0">名字：{name}</span><br/>
-                      <span id="host0">举办者：{hostName}</span><br />
-                        <Button type="dashed" onClick={this.showModal1(index,item.id)}>领取NFT</Button>
-                    </div>
-                        
-                      })
-                      
-                    }
-                  </div>
-                </div>
-              </>
-      }
-      <Modal title="密钥输入框" open={this.state.isModalOpen1} onOk={this.handleOk1} onCancel={this.handleCancel1}>
-      <Input
-      placeholder="请输入密钥"
-      // iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-          ref='pass'
-          allowClear={true}
-      />
-      </Modal>
+      <Content markID={markID.activity} {...this.returnvalue()} />
     </div>
   }
 }

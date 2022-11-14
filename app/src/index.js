@@ -407,6 +407,7 @@ const activityModel = {
     getNFT: async function (id, password) {
         if(password.trim() != ''){
             try {
+                // message.loading('正在加载', 1);
                 console.log("id:" + id);
                 const { getActivityNFTAmount } = activity.methods;
                 const { getActivityNFT } = activity.methods;

@@ -69,7 +69,8 @@ export default function BaseLayout() {
           padding: '50px 50px',
           position: 'relative',
           width: '100%',
-          minHeight:'500px'
+          minHeight: '500px',
+          backgroundColor:'#f8fbff'
         }}
     >
       <Suspense>
@@ -92,6 +93,7 @@ export default function BaseLayout() {
       <Footer
     style={{
       textAlign: 'center',
+      backgroundColor:'#f8fbff'
     }}
   >
     GDUT-NFT ©2022 数字藏品

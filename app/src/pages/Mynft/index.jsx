@@ -16,7 +16,7 @@ export default function Mynft() {
   })
   const onFinish = async (values) => {
     let { userName, des, price, status } = values;
-    nftModel.create(userName, des,price?price:0,status,nftfile)
+    nftModel.create(userName, des, price ? price : 0, status, nftfile)
   };
   const onChange = (e) => {
     setValue(e.target.value);

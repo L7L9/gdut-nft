@@ -1,0 +1,59 @@
+.showout{
+    position: relative;
+    left: 50%;
+    width: 1185px;
+    /* background-color: brown; */
+    transform: translate(-50%);
+}
+.showin{
+    position: relative;
+    left: 50%;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    transform: translate(-50%);
+}
+.showin .item{
+    position: relative;
+    margin-bottom: 8px;
+    display: inline-block;
+    margin-left: 17px;
+    margin-top: 15px;
+    width: 275px;
+    box-shadow: 0 6px 14px rgb(1 0 95 / 10%);
+}
+
+.des{
+    margin-top: 310px;
+    background-color: #f8fbff;
+}
+
+
+.item img{
+    position: absolute;
+    width: 275px;
+    height:300px;
+    object-fit:cover
+}
+
+/* .mask{
+    position: absolute;
+    width: 275px;
+    height:300px;
+    transition: all .2s;
+}
+.mask:hover{
+    background: rgba(255,255,255,0.1);
+    让透过card的底部元素模糊化,达到毛玻璃效果
+    backdrop-filter: blur(5px);
+    transform: scale3d(1.1,1.1,1.1);
+    transition: all .2s;
+} */
+
+.des h3{
+    text-align: center;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+}
+
