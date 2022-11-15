@@ -425,6 +425,8 @@ const activityModel = {
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
 
+        const { getUserInfoByAddress } = userSolidity.methods;
+
         const { createNotice } = noticeSolidity.methods;
 
         var file = document.querySelector("#anft").files;
@@ -463,9 +465,12 @@ const activityModel = {
                         }).on('error',function(error){
                             throw error;
                         })
+                        var hostInfo = await getUserInfoByAddress(temp[3]).call();
+                        var hostName = hostInfo[0];
                         var doc = {
                             _id:activityId,
                             name:name,
+                            host:hostName
                         }
                         activityDB.put(doc, function(err, response) {
                             if (err) {
@@ -474,7 +479,7 @@ const activityModel = {
                                 console.log("Document created Successfully");
                             }
                         })
-                        var noticeDes = "用户(" + account + ")创建了" + name + "活动";
+                        var noticeDes = "用户(" + hostName + ")创建了" + name + "活动";
                         await createNotice("创建活动",noticeDes,2).send({
                             from: account,
                             gas: 1000000
@@ -603,7 +608,102 @@ const activityModel = {
         return new Promise(reslove => {
             reslove(searchRes)
         })
-    }
+    },
+    //搜索某位举办者举办的所有活动(模糊搜索)
+    searchByHost: async function(host){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        const { getActivityProperty } = activity.methods;
+        const { showActivityNFT } = activity.methods;
+        var regExp = new RegExp('.*' + host + '.*', 'i');
+        var searchRes = [];
+        var res = null;
+        var content = null;
+        var url = null;
+        var getResult = null;
+        var nftRes = null;
+        await activityDB.find({
+            selector: {
+                host:{"$regex": regExp},
+            },
+        }).then(async function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                res = await getActivityProperty(result.docs[i]._id).call();
+                getResult = await ipfs.get(res[4]);
+                nftRes = await showActivityNFT(result.docs[i]._id).call();
+                // nft图片
+                content = getResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+
+                var hostInfo = await getUserInfoByAddress(res[3]).call();
+                var hostName = hostInfo[0];
+
+                searchRes.push({
+                    url,
+                    name: res[0],//活动名字
+                    des: res[1],//活动描述
+                    id: res[2],//活动id
+                    hostAddress: res[3],//活动举办者链上id
+                    hostName: hostName,//活动举办者名字
+                    amount:res[5],//发行nft数量
+                    nftName:nftRes[0],//nft名字
+                    nftDes: nftRes[1],//nft描述
+                    nftRest: nftRes[2]//该活动还剩余可被领取的nft数量
+                });
+            }
+            
+        })
+        return new Promise(reslove => {
+            reslove(searchRes)
+        })
+    },
+    //搜索活动，根据举办者筛选
+    selectByHost: async function(name,host){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        const { getActivityProperty } = activity.methods;
+        const { showActivityNFT } = activity.methods;
+        var regExp = new RegExp('.*' + name + '.*', 'i');
+        var searchRes = [];
+        var res = null;
+        var content = null;
+        var url = null;
+        var getResult = null;
+        var nftRes = null;
+        await activityDB.find({
+            selector: {
+                name:{"$regex": regExp},
+                host:host
+            },
+        }).then(async function(result){
+            for(let i=0;result.docs[i]!=null;i++){
+                res = await getActivityProperty(result.docs[i]._id).call();
+                getResult = await ipfs.get(res[4]);
+                nftRes = await showActivityNFT(result.docs[i]._id).call();
+                // nft图片
+                content = getResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+
+                var hostInfo = await getUserInfoByAddress(res[3]).call();
+                var hostName = hostInfo[0];
+
+                searchRes.push({
+                    url,
+                    name: res[0],//活动名字
+                    des: res[1],//活动描述
+                    id: res[2],//活动id
+                    hostAddress: res[3],//活动举办者链上id
+                    hostName: hostName,//活动举办者名字
+                    amount:res[5],//发行nft数量
+                    nftName:nftRes[0],//nft名字
+                    nftDes: nftRes[1],//nft描述
+                    nftRest: nftRes[2]//该活动还剩余可被领取的nft数量
+                });
+            }
+            
+        })
+        return new Promise(reslove => {
+            reslove(searchRes)
+        })
+    },
 }
 
 const pageModel = {
