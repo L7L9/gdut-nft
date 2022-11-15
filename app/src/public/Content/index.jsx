@@ -114,7 +114,7 @@ class Content extends Component {
                         return (
                             <div className="item" key={nanoid()} style={{height:this.returnheight()}}>  
                             <Link to={this.returnpath()} state={{ ...item }} >
-                                <div style={{overflow:'hidden'}}>
+                                <div className='imgbox'>
                                 <img src={item.url} />
                                 </div>
                                 <div className='des'>

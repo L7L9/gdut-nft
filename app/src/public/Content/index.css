@@ -24,16 +24,29 @@
 }
 
 .des{
-    margin-top: 310px;
+    margin-top: 5px;
     background-color: #f8fbff;
 }
 
+
+.imgbox{
+    position:relative;
+    width:275px;
+    height:300px;
+    overflow:hidden;
+}
 
 .item img{
     position: absolute;
     width: 275px;
     height:300px;
-    object-fit:cover
+    object-fit:cover;
+    transition: all .4s;
+}
+
+.item img:hover{
+    transform: scale3d(1.1,1.1,1.1);
+    transition: all .4s;
 }
 
 /* .mask{
