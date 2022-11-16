@@ -186,16 +186,15 @@ const nftModel = {
                         await mint(tokenId,name,cid,des,0,price,status).send({
                             from: account,
                             gas: 1000000
-                        }).then(async ()=>{
-                            await setCidStatus(cid).send({
-                                from: account,
-                                gas: 1000000
-                            }).on('error', function (error) {
-                                console.log(error);
-                                // throw error;
-                            })
-                        });
+                        }).then(async ()=>{});
                     }
+                    await setCidStatus(cid).send({
+                        from: account,
+                        gas: 1000000
+                    }).on('error', function (error) {
+                        console.log(error);
+                        // throw error;
+                    })
                     message.success("铸造成功", 1);
                     setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
                     const { getUserInfoByAddress } = userSolidity.methods;
