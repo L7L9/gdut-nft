@@ -150,7 +150,7 @@ const nftModel = {
         })
     },
     //创建nft
-    create: async function (name0, des0, price, status, file0) {
+    create: async function (name0, des0, price, status, file0,amount) {
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
         const { getCidStatus } = factory.methods;
@@ -177,28 +177,30 @@ const nftModel = {
                 var cidStatus = await getCidStatus(cid).call({}); 
                 if (!cidStatus) {
                     message.loading('正在创建',1)
-                    tokenId = web3.utils.sha3(name + cid);
                     if(!status){
                         price = 0;
                     }
-                    await mint(tokenId,name,cid,des,0,price,status).send({
-                        from: account,
-                        gas: 1000000
-                    }).then(async ()=>{
-                        await setCidStatus(cid).send({
+                    for(let i =0;i<amount;i++){
+                        tokenId = web3.utils.sha3(name + i + cid);
+
+                        await mint(tokenId,name,cid,des,0,price,status).send({
                             from: account,
                             gas: 1000000
-                        }).on('error', function (error) {
-                            console.log(error);
-                            // throw error;
-                        })
-                    });
+                        }).then(async ()=>{});
+                    }
+                    await setCidStatus(cid).send({
+                        from: account,
+                        gas: 1000000
+                    }).on('error', function (error) {
+                        console.log(error);
+                        // throw error;
+                    })
                     message.success("铸造成功", 1);
                     setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
                     const { getUserInfoByAddress } = userSolidity.methods;
                     var userInfo = await getUserInfoByAddress(account).call();
                     var userName = userInfo[0];
-                    var noticeDes = "用户(" + userName + ")创建了一个个人藏品:" + name;
+                    var noticeDes = "用户(" + userName + ")创建了" + amount +"一个藏品:" + name;
                     await createNotice("铸造个人藏品",noticeDes,0).send({
                         from: account,
                         gas: 1000000
