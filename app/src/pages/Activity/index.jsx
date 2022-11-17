@@ -1,16 +1,18 @@
-import React, { Component } from 'react'
-import { Input, Modal, Button, Form, message } from 'antd'
+import React, { Component,lazy } from 'react'
+import { Input, Modal, Button, Form, Segmented } from 'antd'
+import {BarsOutlined,AppstoreOutlined} from '@ant-design/icons'
 import { connect } from 'react-redux';
+import {Refresh} from '@/redux/actions/refresh'
 import {loadingactionasync} from '@/redux/actions/loading'
 import Selectfile from './Selectfile';
-const { Search } = Input;
+const PubTable=lazy(()=>import ('@/public/PubTable'))
 import Content from '@/public/Content';
 import { markID } from '@/utils/globalType';
 
 
 
 class Activity extends Component{
-  state = { isModalOpen: false,data:[123],value:''}
+  state = { isModalOpen: false,data:[123],value:'',show:'show'}
   showModal = () => this.setState({isModalOpen:true});
   handleOk = () => {
     const { submit } = this.refs;
@@ -21,14 +23,18 @@ class Activity extends Component{
     this.setState({ value })
     
   }
+  showchange = (value) => {
+    this.setState({show:value})
+  }
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
     const { form } = this.refs;
     form.resetFields();
     this.setState({ isModalOpen: false })
     activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
-      message.success("创建成功")
-      this.props.changeloding(true,1000);
+      const { refresh, changerefresh, changeloding } = this.props
+      changeloding(true,1000)
+      changerefresh({...refresh,activity:true})
     }, (err) => {
       console.log(err);
     })
@@ -39,17 +45,9 @@ class Activity extends Component{
   }
   render(){
     return <div>
-      <div style={{overflow:'hidden'}}>
-        <h1 style={{float:'left'}}>当前链上活动有：</h1>
+      <h1 style={{ fontSize: '35px', fontWeight: '600', display: 'inline-block' }}>活动</h1>
+      <div style={{overflow:'hidden',marginBottom:'15px'}}>
         <div className="search" style={{float:'left',marginTop:'3px'}}>
-          <Search
-        placeholder="查询活动"
-        allowClear
-        onSearch={this.onSearch}
-        style={{
-          width: 150,
-        }}
-          />
         </div>
         <Modal title="创建活动" open={this.state.isModalOpen}  onCancel={this.handleCancel}
       footer={[
@@ -172,16 +170,34 @@ class Activity extends Component{
       </Form.Item>
       </Form>
         </Modal>
-        <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>我也要创建活动</Button> 
+        <Segmented
+            options={[
+              {
+                label: '展示',
+                value: 'show',
+                icon: <AppstoreOutlined />,
+              },
+              {
+                label: '列表',
+                value: 'list',
+                icon: <BarsOutlined />,
+              }
+            ]}
+            style={{ float: 'left',marginTop:'10px',marginLeft:'8px' }}
+          onChange={this.showchange}
+        />
+        <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>创建活动</Button>
       </div>
-      <Content markID={markID.activity} {...this.returnvalue()} />
+      {this.state.show==='show'?<Content markID={markID.activity} {...this.returnvalue()} />:<PubTable markID={markID.activity} issearch={true}/>}
+      
     </div>
   }
 }
 
 export default connect(
-  state => ({ loading: state.loading}),
+  state => ({ loading: state.loading,refresh:state.refresh}),
   {
-      changeloding:loadingactionasync
+    changeloding: loadingactionasync,
+    changerefresh:Refresh
   }
 )(Activity)

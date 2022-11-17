@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Loading from '@/components/Loading';
 import Nodata from '@/components/Nodata';
 import {Setdata} from '@/redux/actions/data'
+import {Refresh} from '@/redux/actions/refresh'
 import { connect } from 'react-redux';
 import './index.css'
 
@@ -12,31 +13,34 @@ class Content extends Component {
     state = { data: [], isloading: true,isModalOpen:false,id:'' }
     
     showallnft = () => {
-        const { markID, alldata, updatedata, value } = this.props
+        const { markID, alldata, updatedata, value,changerefresh,refresh } = this.props
         console.log(value);
         this.setState({ isloading: true })
         pageModel.showAllNFT().then(res => {
             updatedata({ ...alldata, [markID]: res });
             this.setState({ data: res })
             this.setState({ isloading: false })
+            changerefresh({...refresh,home:false})
         })
     }
     showmynft = () => {
-        const { markID, alldata, updatedata } = this.props
+        const { markID, alldata, updatedata,changerefresh,refresh } = this.props
         this.setState({ isloading: true })
         pageModel.showMyNFT().then(res => {
             updatedata({ ...alldata, [markID]: res })
             this.setState({ data: res })
             this.setState({ isloading: false })
+            changerefresh({...refresh,message:false})
         })
     }
     showactivity = () => {
-        const { markID, alldata, updatedata } = this.props
+        const { markID, alldata, updatedata,changerefresh,refresh } = this.props
         this.setState({ isloading: true })
         pageModel.showAllActivities().then(res => {
             updatedata({ ...alldata, [markID]: res });
             this.setState({ data: res })
             this.setState({ isloading: false })
+            changerefresh({...refresh,activity:false})
         })
     }
     activitysearch = () => {
@@ -84,15 +88,15 @@ class Content extends Component {
     };
     handleCancel = () => this.setState({isModalOpen:false});
     componentDidMount() {
-        const { markID } = this.props
-        markID === 'allnft' ? this.showallnft() :
-        markID === 'mynft' ? this.showmynft() : 
-        markID === 'activity' ? this.showactivity() : 
+        const { markID,alldata } = this.props
+        markID === 'allnft' ? (this.props.refresh.home ? this.showallnft() : (this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))):
+        markID === 'mynft' ? (this.props.refresh.message? this.showmynft():( this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))) : 
+        markID === 'activity' ? (this.props.refresh.activity?this.showactivity():(this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))) : 
         markID === 'nftsearch' ? this.nftsearch():null
     }
     getSnapshotBeforeUpdate(preprops,prestate) {
-        const { value } = this.props
-        return preprops.value == value ? false : true
+        const { value,markID } = this.props
+        return preprops.value == value && preprops.markID === markID ? false : true
     }
     componentDidUpdate(prevProps,prevState,snapshot) {
         if (snapshot) {
@@ -145,8 +149,9 @@ class Content extends Component {
 
 
 export default connect(
-    state => ({alldata:state.data}),
+    state => ({alldata:state.data,refresh:state.refresh}),
     {
-        updatedata:Setdata
+        updatedata: Setdata,
+        changerefresh:Refresh
     }
 )(Content)

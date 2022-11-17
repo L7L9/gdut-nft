@@ -1,7 +1,9 @@
 import React, { useState,useEffect } from 'react'
 import { Button, Form, Input,message,Radio } from 'antd';
 import { useNavigate } from 'react-router-dom'
+import {useSelector,useDispatch} from 'react-redux'
 import Selectnft from './Selectnft'
+import {Refresh} from '@/redux/actions/refresh'
 import './index.css'
 
 
@@ -9,6 +11,10 @@ export default function Mynft() {
   const navigate = useNavigate();
   const [value, setValue] = useState(false)
   const [nftfile, setNftfile] = useState([])
+  const refresh = useSelector(state => state.refresh)
+	
+	// 修改中央仓库数据
+	const dispatch = useDispatch()
   useEffect(() => {
     PubSub.subscribe("nftfile", (msg, data) => {
       data===1?setNftfile([]):setNftfile([data])
@@ -17,13 +23,14 @@ export default function Mynft() {
   const onFinish = async (values) => {
     let { userName, des, price, status } = values;
     nftModel.create(userName, des, price ? price : 0, status, nftfile)
+    dispatch(Refresh({...refresh,home:true,message:true}))
   };
   const onChange = (e) => {
     setValue(e.target.value);
   };
   return (
     <div>
-      <h1>铸造我的NFT</h1>
+      <h1 style={{ fontSize: '35px', fontWeight: '600', display: 'inline-block' }}>铸造</h1>
       <div className='out'>
         <div style={{ float: 'left', width: '300px', height: '300px',position:'relative'}}>
           <div style={{position:'absolute',left:'50%',top:'35%',transform:'translate(-50%,-50%)'}}>

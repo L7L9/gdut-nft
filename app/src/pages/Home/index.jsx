@@ -1,12 +1,17 @@
-import React, { Component } from 'react';
+import React, { Component,lazy } from 'react';
 import {BarsOutlined,AppstoreOutlined} from '@ant-design/icons'
 import { Segmented } from 'antd';
 import Content from '@/public/Content';
+const PubTable=lazy(()=>import ('@/public/PubTable'))
 import { markID } from '@/utils/globalType';
 
 
 
 export default class Home extends Component {
+  state={show:'show'}
+  showchange = (value) => {
+    this.setState({show:value})
+  }
   render() {
     return (
       <>
@@ -16,20 +21,20 @@ export default class Home extends Component {
             options={[
               {
                 label: '展示',
-                value: '展示',
+                value: 'show',
                 icon: <AppstoreOutlined />,
               },
               {
                 label: '列表',
-                value: '列表',
+                value: 'list',
                 icon: <BarsOutlined />,
               }
             ]}
-            style={{
-              float: 'right'  }}
+            style={{ float: 'right' }}
+            onChange={this.showchange}
           />
         </div>
-        <Content markID={markID.allnft} />
+        {this.state.show==='show'?<Content markID={markID.allnft}/>:<PubTable markID={markID.allnft} issearch={true}/>}
       </>
     )
   }

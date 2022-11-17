@@ -465,7 +465,9 @@ const activityModel = {
                         }).on('error',function(error){
                             throw error;
                         })
-                        var hostInfo = await getUserInfoByAddress(temp[3]).call();
+                        message.success("创建成功")
+                        
+                        var hostInfo = await getUserInfoByAddress(account).call();
                         var hostName = hostInfo[0];
                         var doc = {
                             _id:activityId,
@@ -479,17 +481,16 @@ const activityModel = {
                                 console.log("Document created Successfully");
                             }
                         })
+                        
                         var noticeDes = "用户(" + hostName + ")创建了" + name + "活动";
                         await createNotice("创建活动",noticeDes,2).send({
                             from: account,
                             gas: 1000000
-                        }).then(res=>console.log(res))
+                        }).then(res => console.log(res))
                     })
                 } else {
-                    message.error("活动的nft图片已经使用过了",1);
-                    return new Promise((reslove,reject) => {
-                        reject(false);
-                    })
+                    message.error("活动的nft图片已经使用过了", 1);
+                    throw error;
                 }
             }
         } else {

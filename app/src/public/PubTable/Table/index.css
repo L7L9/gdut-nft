@@ -1,0 +1,20 @@
+.ant-table-thead .ant-table-cell {
+  background-color: #7b99e1;
+  color: #fff;
+}
+.ant-table-column-has-sorters,
+.ant-table-column-has-sorters:hover {
+  background-color: #7b99e1 !important;
+}
+.ant-table-tbody {
+  background-color: #ebf2fc;
+}
+.ant-table-row:nth-child(even) .ant-table-cell {
+  background-color: #E5EFFAFF;
+}
+.ant-table-row:nth-child(odd) .ant-table-cell {
+  background-color: #fff;
+}
+.ant-tooltip {
+  display: none;
+}

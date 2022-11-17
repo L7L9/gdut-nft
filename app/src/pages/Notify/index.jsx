@@ -15,7 +15,7 @@ const Notify = () => {
         content:item.des
       })))
       setLoading(false);
-      if (res.length > 0) message.success(`${res.length}条公告已加载出来`)
+      if (res.length > 0) message.success(`${res.length}条公告已加载出来`,.8)
       else message.info("暂无公告")
     })
   },[])

@@ -27,7 +27,7 @@ export const items = [
     },
     {
         key:'铸造我的nft',
-        label: <Link to="/GDUT-nft/mynft" >铸造我的nft</Link>,
+        label: <Link to="/GDUT-nft/mynft" >铸造</Link>,
         icon:<HighlightOutlined />
     },
     {
