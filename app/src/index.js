@@ -150,14 +150,14 @@ const nftModel = {
         })
     },
     //创建nft
-    create: async function (name0, des0, price, status, file0,amount) {
+    create: async function (name, des, price, status, file0, amount) {
         const { mint } = factory.methods;
         const { setCidStatus } = factory.methods;
         const { getCidStatus } = factory.methods;
         const { createNotice } = noticeSolidity.methods;
-
-        var name = name0;
-        var des = des0;
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var userInfo = await getUserInfoByAddress(account).call();
+        var userName = userInfo[0];
 
         var tokenId = null;
         if (file0.length != 0) {
@@ -181,45 +181,46 @@ const nftModel = {
                         price = 0;
                     }
                     for(let i =0;i<amount;i++){
+                        message.loading('正在铸造第'+(i+1)+'个',1)
                         tokenId = web3.utils.sha3(name + i + cid);
 
                         await mint(tokenId,name,cid,des,0,price,status).send({
                             from: account,
                             gas: 1000000
-                        }).then(async ()=>{});
+                        }).then(async ()=>{
+                            await setCidStatus(cid).send({
+                                from: account,
+                                gas: 1000000
+                            }).on('error', function (error) {
+                                console.log(error);
+                                // throw error;
+                            }).then(async ()=>{
+                                var doc = {
+                                    _id : tokenId,
+                                    name : name,
+                                    cid : cid,
+                                    author : userName
+                                }
+                                nftDB.put(doc, function(err, response) {
+                                    if (err) {
+                                        console.log(err);
+                                        // throw err;
+                                    } else {
+                                        console.log("Document created Successfully");
+                                    }
+                                })
+                            })
+                        });
                     }
-                    await setCidStatus(cid).send({
-                        from: account,
-                        gas: 1000000
-                    }).on('error', function (error) {
-                        console.log(error);
-                        // throw error;
-                    })
-                    message.success("铸造成功", 1);
+                    message.success("铸造完成", 1);
                     setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
-                    const { getUserInfoByAddress } = userSolidity.methods;
-                    var userInfo = await getUserInfoByAddress(account).call();
-                    var userName = userInfo[0];
+                    
                     var noticeDes = "用户(" + userName + ")创建了" + amount +"一个藏品:" + name;
                     await createNotice("铸造个人藏品",noticeDes,0).send({
                         from: account,
                         gas: 1000000
                     }).then(res=>console.log(res))
-                    var doc = {
-                        _id : tokenId,
-                        name : name,
-                        cid : cid,
-                        author : userName
-                    }
-                    nftDB.put(doc, function(err, response) {
-                        if (err) {
-                            console.log(err);
-                            // throw err;
-                        } else {
-                            console.log("Document created Successfully");
-                            
-                        }
-                    })
+                    
                 } else {
                     message.error("该图片已经使用过", 1);
                 }
