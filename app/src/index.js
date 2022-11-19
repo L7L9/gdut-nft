@@ -248,73 +248,82 @@ const nftModel = {
     },
 
     //创建nft
-    create: async function (name, des, price, status, cid, amount) {
+    create: async function (name, des, price, status, file0) {
         const { mint } = factory.methods;
         const { getCidStatus } = factory.methods;
         const { createNotice } = noticeSolidity.methods;
         const { getUserInfoByAddress } = userSolidity.methods;
         var userInfo = await getUserInfoByAddress(account).call();
         var userName = userInfo[0];
-
-        var tokenId = null;
+        if (file0.length != 0) {
+            var tokenId = null;
             //将文件存入ipfs中并获取cid
             var cid = null;
             var reader = new FileReader();
             //读取文件转为buffer以上传
             reader.readAsArrayBuffer(file0[0]);
             reader.onloadend = async function () {
-                
-                // console.log(reader.result);
-                var img = Buffer.from(reader.result);
-                // console.log("前："+img);
-                var cids = await ipfs.add(img);
-                //返回的cid
-                cid = cids[0].hash;
-                var cidStatus = await getCidStatus(cid).call({}); 
-                if (!cidStatus) {
-                    message.loading('正在创建',1)
-                    if(!status){
-                        price = 0;
-                        if(amount != 1){
-                            message.error('非发行藏品只能铸造一个', 1)
-                            return new Promise((reslove,reject) => {
-                                reject(false)
-                            });
-                        }
-                    }
-                    tokenId = web3.utils.sha3(name + amount + cid);
-
-                    await mint(tokenId,name,cid,des,0,price,status).send({
-                        from: account,
-                        gas: 1000000
-                    }).then(async ()=>{
-                        var doc = {
-                            _id : tokenId,
-                            name : name,
-                            cid : cid,
-                            author : userName
-                        }
-                        nftDB.put(doc, function(err, response) {
-                            if (err) {
-                                console.log(err);
-                                // throw err;
-                            } else {
-                                console.log("Document created Successfully");
-                            }
-                        })
-                    });
-                    message.success("铸造完成", 1);
-                    setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
-                    
-                    var noticeDes = "用户(" + userName + ")创建了" +"一个藏品:" + name;
-                    await createNotice("铸造个人藏品",noticeDes,0).send({
-                        from: account,
-                        gas: 1000000
-                    }).then(res=>console.log(res))
-                } else {
-                    message.error("该图片已经使用过", 1);
+            
+            // console.log(reader.result);
+            var img = Buffer.from(reader.result);
+            // console.log("前："+img);
+            var cids = await ipfs.add(img);
+            //返回的cid
+            cid = cids[0].hash;
+            var cidStatus = await getCidStatus(cid).call({}); 
+            if (!cidStatus) {
+                message.loading('正在创建',1)
+                if(!status){
+                    price = 0;
+                    // if(amount != 1){
+                    //     message.error('非发行藏品只能铸造一个', 1)
+                    //     return new Promise((reslove,reject) => {
+                    //         reject(false)
+                    //     });
+                    // }
                 }
-            }
+                tokenId = web3.utils.sha3(name + cid);
+
+                await mint(tokenId,name,cid,des,0,price,status).send({
+                    from: account,
+                    gas: 1000000
+                }).then(async ()=>{
+                    var doc = {
+                        _id : tokenId,
+                        name : name,
+                        cid : cid,
+                        author : userName
+                }
+                nftDB.put(doc, function(err, response) {
+                    if (err) {
+                        console.log(err);
+                        // throw err;
+                    } else {
+                        console.log("Document created Successfully");
+                    }
+                })
+                });
+                await setCidStatus(cid).send({
+                    from: account,
+                    gas: 1000000
+                })
+                message.success("铸造完成", 1);
+                setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
+                
+                var noticeDes = "用户(" + userName + ")创建了" +"一个藏品:" + name;
+                await createNotice("铸造个人藏品",noticeDes,0).send({
+                    from: account,
+                    gas: 1000000
+                }).then(res=>console.log(res))
+            } else {
+                message.error("该图片已经使用过", 1);
+            }}
+        } else {
+            message.error('未选择文件，铸造失败', 1)
+            return new Promise((reslove,reject) => {
+                reject(false)
+            });
+        }
     },
     //赠送
     give: async function (tokenId, to) {
