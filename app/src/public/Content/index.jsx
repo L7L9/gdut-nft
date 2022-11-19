@@ -79,11 +79,11 @@ class Content extends Component {
             this.setState({ isModalOpen: true,id})
         }
     };
-    handleOk = () => {
+    handleOk = async () => {
         const { id } = this.state
         const { pass: { input} } = this.refs
         let password = input.value;
-        activityModel.getNFT(id, password)
+        await activityModel.getNFT(id, password)
         this.setState({ isModalOpen: false })
     };
     handleCancel = () => this.setState({isModalOpen:false});
@@ -92,11 +92,11 @@ class Content extends Component {
         markID === 'allnft' ? (this.props.refresh.home ? this.showallnft() : (this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))):
         markID === 'mynft' ? (this.props.refresh.message? this.showmynft():( this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))) : 
         markID === 'activity' ? (this.props.refresh.activity?this.showactivity():(this.setState({ data: alldata[markID] }),this.setState({ isloading: false }))) : 
-        markID === 'nftsearch' ? this.nftsearch():null
+        markID === 'nftsearch' ? alldata[markID]===undefined?this.nftsearch():(this.setState({ data: alldata[markID] }),this.setState({ isloading: false })):null
     }
     getSnapshotBeforeUpdate(preprops,prestate) {
         const { value,markID } = this.props
-        return preprops.value == value && preprops.markID === markID ? false : true
+        return (preprops.value == value && preprops.markID === markID) ? false : true
     }
     componentDidUpdate(prevProps,prevState,snapshot) {
         if (snapshot) {
@@ -114,10 +114,10 @@ class Content extends Component {
                 <div className="showout">
                     <div className="showin">
                 {
-                    this.state.data.map(item => {
+                    this.state.data.map((item,index) => {
                         return (
                             <div className="item" key={nanoid()} style={{height:this.returnheight()}}>  
-                            <Link to={this.returnpath()} state={{ ...item }} >
+                            <Link to={this.returnpath()} state={{ ...item,index }} >
                                 <div className='imgbox'>
                                 <img src={item.url} />
                                 </div>

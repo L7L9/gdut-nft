@@ -4,7 +4,7 @@ import {BarsOutlined,AppstoreOutlined} from '@ant-design/icons'
 import { connect } from 'react-redux';
 import {Refresh} from '@/redux/actions/refresh'
 import {loadingactionasync} from '@/redux/actions/loading'
-import Selectfile from './Selectfile';
+import Selectfile from '@/components/Selectfile';
 const PubTable=lazy(()=>import ('@/public/PubTable'))
 import Content from '@/public/Content';
 import { markID } from '@/utils/globalType';
@@ -12,7 +12,7 @@ import { markID } from '@/utils/globalType';
 
 
 class Activity extends Component{
-  state = { isModalOpen: false,data:[123],value:'',show:'show'}
+  state = { isModalOpen: false,data:[123],value:'',show:'show',activityfile:[]}
   showModal = () => this.setState({isModalOpen:true});
   handleOk = () => {
     const { submit } = this.refs;
@@ -29,9 +29,10 @@ class Activity extends Component{
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
     const { form } = this.refs;
+    const {activityfile}=this.state
     form.resetFields();
     this.setState({ isModalOpen: false })
-    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes).then(() => {
+    activityModel.initiateActivity(activityname, activitydes, number, password, nftname, nftdes,activityfile).then(() => {
       const { refresh, changerefresh, changeloding } = this.props
       changeloding(true,1000)
       changerefresh({...refresh,activity:true})
@@ -42,6 +43,11 @@ class Activity extends Component{
   returnvalue = () => {
     if (this.state.value.trim != '') return { value:this.state.value}
     else return {}
+  }
+  componentDidMount() {
+    PubSub.subscribe("activityfile", (msg, data) => {
+      data===1?this.setState({activityfile:[]}):this.setState({activityfile:[data]})
+    })
   }
   render(){
     return <div>
@@ -78,7 +84,7 @@ class Activity extends Component{
         label="文件"
         name="file"
       >
-        <Selectfile/>
+        <Selectfile type='create'/>
       </Form.Item>
 
       <Form.Item

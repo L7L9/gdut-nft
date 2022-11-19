@@ -2,8 +2,8 @@ import React, { useState,useEffect } from 'react'
 import { Button, Form, Input,message,Radio } from 'antd';
 import { useNavigate } from 'react-router-dom'
 import {useSelector,useDispatch} from 'react-redux'
-import Selectnft from './Selectnft'
-import {Refresh} from '@/redux/actions/refresh'
+import Selectfile from '@/components/Selectfile'
+import { Refresh } from '@/redux/actions/refresh'
 import './index.css'
 
 
@@ -34,7 +34,7 @@ export default function Mynft() {
       <div className='out'>
         <div style={{ float: 'left', width: '300px', height: '300px',position:'relative'}}>
           <div style={{position:'absolute',left:'50%',top:'35%',transform:'translate(-50%,-50%)'}}>
-            <Selectnft />
+            <Selectfile type='foundry' />
           </div>
           <p style={{width:'100%',marginTop:'185px',marginLeft:'35px'}}>上传一张图片，获得一份独一无二的nft</p>
         </div>
@@ -52,7 +52,7 @@ export default function Mynft() {
       }}
       onFinish={onFinish}
       autoComplete="off"
-      style={{marginLeft:'-30px',marginTop:'50px'}}
+      style={{marginLeft:'-30px'}}
     >
       <Form.Item
         label="名字："
@@ -109,6 +109,20 @@ export default function Mynft() {
       >
         <Input />
       </Form.Item>
+            
+      {/* <Form.Item
+        label="发行数量："
+        name="amount"
+        rules={[
+          {
+            required: value,
+            message: '请输入发行数量!',
+          },
+          ]}
+          style={{display:value?'block':'none'}}
+      >
+        <Input />
+      </Form.Item> */}
       
       <Form.Item
         wrapperCol={{

@@ -1,13 +1,17 @@
 import React, { Component } from 'react'
-import { Layout,Card,List,Button,Modal,Input,message } from 'antd';
+import { Layout, Card, List, Button, Modal, Input, message,Spin } from 'antd';
+// import { LeftOutlined,RightOutlined } from '@ant-design/icons';
+// import ImageGallery from 'react-image-gallery';
+import 'react-image-gallery/styles/css/image-gallery.css'
 import { connect } from 'react-redux'
 import Loading from '@/components/Loading';
 import { Setdata } from '@/redux/actions/data'
+import {Refresh} from '@/redux/actions/refresh'
 const { Header, Footer, Sider, Content } = Layout;
 const {Meta}=Card
 
 class Detail extends Component {
-    state = { loading: true, details: {},open:false,confirmLoading:false }
+    state = { loading: true, details: {},open:false,confirmLoading:false,items:[],startIndex:0,leftbutton:'leave',rightbutton:'leave' }
     back = () => {
         window.history.back()
     }
@@ -108,13 +112,17 @@ class Detail extends Component {
         })
     }
     getnft = async () => {
-        const {details:{id}} = this.props
+        const {details:{id},refresh,changerefresh,markID} = this.props
         const {pass} = this.refs
         let password = pass.input.value;
         this.setState({confirmLoading:true})
         await activityModel.getNFT(id, password)
         this.setState({open:false})
-        this.setState({confirmLoading:false})
+        this.setState({ confirmLoading: false })
+        const str=markID === 'homedetail' ? 'home' :
+        markID === 'activitydetail' ? 'activity' :
+        markID === 'messagedetail' ? 'message' : null
+        changerefresh({...refresh,[str]:true})
     }
     showModal = () => {
         this.setState({open:true});
@@ -122,18 +130,106 @@ class Detail extends Component {
     handleCancel = () => {
         this.setState({open:false});
     };
+    left = () => {
+        const leftdetails = JSON.parse(sessionStorage.getItem('currentdetail'))
+        setTimeout(()=>{this.setState({details:leftdetails[startIndex-1]})},100)
+    }
     componentDidMount() {
-        this.setState({details:this.props.details})
+        const { alldata, markID, details } = this.props
+        const { index: startIndex } = details
+        const markid = markID === 'homedetail' ? 'allnft' :
+        markID === 'activitydetail' ? 'activity' :
+        markID === 'messagedetail' ? 'mynft' : null
+        let items = []
+        const data=alldata[markid]===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata[markid]))
+        let currentdetails=alldata[markid]===undefined?data:alldata[markid]
+        currentdetails.map(item => {
+            items.push({
+                original: item.url,
+                thumbnail: item.url
+            })
+        })
+        this.setState({ details,items,startIndex })
     }
     render() {
-        const { loading, details,markID } = this.props
+        const { loading, details, markID } = this.props
+        const {startIndex,items,leftbutton,rightbutton,Loading1}=this.state
         return (
             <>
                 {loading?<Loading/>:<>
                 <div style={{ width: '1180px', position: 'relative', left: '50%', transform: 'translate(-50%)' }}>
-                    <Layout >
-                        <Sider style={{ borderRadius: '15px'}} width= '500px'>
-                        <img src={details.url} alt="" style={{ width: '500px',  borderRadius: '15px' }} />
+                <Layout >
+                        <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='500px'>
+                        {/* <ImageGallery
+                            useTranslate3D={false} // 取消3d
+                            infinite={false} // 取消无限轮播
+                            showFullscreenButton={false} // 隐藏全屏按钮
+                            showIndex={true} // 显示几分之几
+                            showPlayButton={false} // 隐藏播放按钮
+                            disableKeyDown={false} // 开启键盘左右键
+                            items={items}
+                            startIndex={startIndex}
+                            renderLeftNav={(onClick, disabled) => {
+                                return (
+                                    <LeftOutlined
+                                        onClick={() => {
+                                            if (!disabled) {
+                                                onClick()
+                                                this.left
+                                            }
+                                    }}
+                                    onMouseEnter={() => {
+                                        this.setState({leftbutton:'enter'})
+                                    }} 
+                                    onMouseLeave={() => {
+                                        this.setState({leftbutton:'leave'})
+                                    }}    
+                                    style={{
+                                        position: 'absolute',
+                                        zIndex: 1,
+                                        top: '50%',
+                                        left:'-30px',
+                                        transform: 'translateY(-50%)',
+                                        color: leftbutton==='leave'?'#aeb0b2':'#337ab7',
+                                        fontSize: '80px',
+                                        transition: 'all .5s',
+                                        cursor:disabled?'not-allowed':'pointer'
+                                    }}
+                                    />
+                                )
+                                
+                            }}
+                            renderRightNav={(onClick, disabled) => {
+                                return (
+                                    <RightOutlined
+                                        onClick={() => {
+                                            if (!disabled) {
+                                                onClick()
+                                            }
+                                    }}
+                                    onMouseEnter={() => {
+                                        this.setState({rightbutton:'enter'})
+                                    }} 
+                                    onMouseLeave={() => {
+                                        this.setState({rightbutton:'leave'})
+                                    }}    
+                                    style={{
+                                        position: 'absolute',
+                                        zIndex: 1,
+                                        top: '50%',
+                                        right:'-30px',
+                                        transform: 'translateY(-50%)',
+                                        color: rightbutton==='leave'?'#aeb0b2':'#337ab7',
+                                        fontSize: '80px',
+                                        transition: 'all .5s',
+                                        cursor:disabled?'not-allowed':'pointer'
+                                    }}
+                                    />
+                                )
+                                
+                            }}        
+                        /> */}
+                            <img src={details.url} alt="" style={{ width: '500px',  borderRadius: '15px' }} />
                         </Sider>
                         <Layout style={{backgroundColor: '#f8fbff'}}>
                         <Header style={{ backgroundColor: '#f8fbff' }}>{this.returnHeader()}</Header>
@@ -165,8 +261,9 @@ class Detail extends Component {
 }
 
 export default connect(
-    state => ({alldata:state.data,loading:state.loading}),
+    state => ({alldata:state.data,loading:state.loading,refresh:state.refresh}),
     {
-        updatedata:Setdata
+        updatedata: Setdata,
+        changerefresh:Refresh
     }
 )(Detail)

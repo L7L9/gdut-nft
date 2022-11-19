@@ -11,7 +11,7 @@ import './index.css'
 
 
 class PubTable extends Component {
-    state = { data: [], loading: true, isModalOpen: false,id:'' }
+    state = { data: [], loading: true, isModalOpen: false,id:'',value:'' }
     handleOk = () => {
         const { id } = this.state
         const { pass: { input} } = this.refs
@@ -165,7 +165,7 @@ class PubTable extends Component {
         const { alldata, markID, refresh } = this.props;
         const isrefresh = markID === 'allnft' ? refresh.home :
         markID === 'mynft' ? refresh.message :
-        markID === 'activity' ? refresh.activity :null
+        markID === 'activity' ? refresh.activity :false
         if (alldata[markID] !== undefined && !isrefresh) {
             const data=alldata[markID]
             let datasource = this.handledata(data);
@@ -181,13 +181,25 @@ class PubTable extends Component {
         }, 50)
     }
     componentDidUpdate(preprops) {
-        const { name, author, alldata, markID } = this.props
-        if (preprops.name !== name || preprops.author !== author) {
+        const { name, author, alldata, markID, value,updatedata } = this.props
+        if (preprops.name !== name || preprops.author !== author || preprops.value !== value) {
             if (name.trim() === '' && author.trim() === '') {
-                this.setState({ loading: true })
-                let datasource = this.handledata(alldata[markID])
-                this.setState({ data:datasource  })
-                setTimeout(() => { this.setState({ loading: false }) }, 200)
+                if (markID === 'nftsearch') {
+                    this.setState({ loading: true })
+                    nftModel.search(value).then((res) => {
+                        let datasource = this.handledata(res)
+                        this.setState({loading:false})
+                        this.setState({ data: datasource })
+                        updatedata({...alldata,[markID]:res})
+                    })
+                }
+                else {
+                    this.setState({ loading: true })
+                    let datasource = this.handledata(alldata[markID])
+                    this.setState({ data:datasource  })
+                    setTimeout(() => { this.setState({ loading: false }) }, 200)
+                }
+                
             } else if (name.trim() === ''&&author.trim() !== '') {
                 this.setState({loading:true})
                 markID !== 'activity' ?
@@ -203,11 +215,12 @@ class PubTable extends Component {
                 
             } else if (name.trim() !== '' && author.trim() === '') {
                 this.setState({loading:true})
-                markID!=='activity'?nftModel.search(name).then((res) => {
+                markID !== 'activity' ?
+                nftModel.search(name).then((res) => {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
-                }) : activityModel.search(name).then(res => {
+                }):activityModel.search(name).then(res => {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })

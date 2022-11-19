@@ -518,7 +518,7 @@ const nftModel = {
 
 const activityModel = {
     //创建活动
-    initiateActivity: async function(name,message1,amount,password,nftName,nftMessage){
+    initiateActivity: async function(name,message1,amount,password,nftName,nftMessage,file){
         const { initiate } = activity.methods;
         const { getActivityAmount } = activity.methods;
 
@@ -526,7 +526,7 @@ const activityModel = {
 
         const { createNotice } = noticeSolidity.methods;
 
-        var file = document.querySelector("#anft").files;
+        // var file = document.querySelector("#anft").files;
 
         var cid = null;
 
