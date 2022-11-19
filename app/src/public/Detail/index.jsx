@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { Layout, Card, List, Button, Modal, Input, message,Spin } from 'antd';
-// import { LeftOutlined,RightOutlined } from '@ant-design/icons';
-// import ImageGallery from 'react-image-gallery';
+import { Layout, Card, Button, Modal, Input, message,Spin } from 'antd';
+import { LeftOutlined,RightOutlined } from '@ant-design/icons';
+import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css'
 import { connect } from 'react-redux'
 import Loading from '@/components/Loading';
@@ -11,29 +11,42 @@ const { Header, Footer, Sider, Content } = Layout;
 const {Meta}=Card
 
 class Detail extends Component {
-    state = { loading: true, details: {},open:false,confirmLoading:false,items:[],startIndex:0,leftbutton:'leave',rightbutton:'leave' }
+    state = {
+        spinning: true,
+        details: {},
+        open: false,
+        confirmLoading: false,
+        items: [],
+        startIndex: 0,
+        currentindex:0,
+        leftbutton: 'leave',
+        rightbutton: 'leave'
+    }
     back = () => {
         window.history.back()
     }
     buy = () => {
-        const { details: { ownerAddress, tokenId } } = this.props
+        const { details: { ownerAddress, tokenId } } = this.state
         message.loading('正在加载',.8)
         nftModel.buyNft(ownerAddress,tokenId)
     }
     returnextra = () => {
-        const { markID,details } = this.props
+        const { markID } = this.props
+        const {details} =this.state
         return markID === 'homedetail' ? <Button type="dashed" disabled={!details.status} onClick={this.buy}>购买</Button> :
             markID === 'messagedetail' ? <Button type="dashed" onClick={this.showModal}>转赠</Button> :
             markID === 'activitydetail' ? <Button type="dashed" onClick={this.showModal}>领取NFT</Button>:null
     }
     returnHeader = () => {
-        const { markID,details } = this.props
+        const { markID } = this.props
+        const {details} =this.state
         return <h1 style={{ fontSize: '50px', fontWeight: '600', float: 'left', marginLeft: '100px' }}>
             {markID === 'activitydetail' ? details.name :details.nftName}
         </h1>
     }
     returnContent = () => {
-        const { markID,details } = this.props
+        const { markID } = this.props
+        const {details} =this.state
         return <Card
             title={markID === 'activitydeatil'?'活动信息':'商品价格'}
             style={{ borderRadius: '15px',boxShadow: '8px 8px 8px 10px #ecf1f8'  }}
@@ -51,7 +64,8 @@ class Detail extends Component {
         </Card>
     }
     returnFooter = () => {
-        const { markID,details } = this.props
+        const { markID } = this.props
+        const {details} =this.state
         return markID === 'activitydetail' ?
             <Meta
             title={<span style={{fontSize:'13px',color:'gray'}}>举办者</span>}
@@ -98,7 +112,7 @@ class Detail extends Component {
     }
     submit = () => {
         const { user } = this.refs
-        const {details:{tokenId}}=this.props
+        const {details:{tokenId}}=this.state
         const username = user.input.value;
         this.setState({confirmLoading:true})
         nftModel.give(tokenId, username).then(() => {
@@ -112,7 +126,8 @@ class Detail extends Component {
         })
     }
     getnft = async () => {
-        const {details:{id},refresh,changerefresh,markID} = this.props
+        const { refresh, changerefresh, markID } = this.props
+        const {details: { id }} =this.state
         const {pass} = this.refs
         let password = pass.input.value;
         this.setState({confirmLoading:true})
@@ -122,7 +137,7 @@ class Detail extends Component {
         const str=markID === 'homedetail' ? 'home' :
         markID === 'activitydetail' ? 'activity' :
         markID === 'messagedetail' ? 'message' : null
-        changerefresh({...refresh,[str]:true})
+        changerefresh({...refresh,str:true})
     }
     showModal = () => {
         this.setState({open:true});
@@ -130,13 +145,49 @@ class Detail extends Component {
     handleCancel = () => {
         this.setState({open:false});
     };
-    left = () => {
-        const leftdetails = JSON.parse(sessionStorage.getItem('currentdetail'))
-        setTimeout(()=>{this.setState({details:leftdetails[startIndex-1]})},100)
+    renderNav = (onClick, disabled, direction) => {
+        const { leftbutton, rightbutton } = this.state
+        let hover=direction==='left'?leftbutton:rightbutton
+        const props = {
+            onClick: () => {
+                if (!disabled) {
+                    this.clicknav(direction)
+                    onClick()
+                }
+            },
+            onMouseEnter: () => {
+                direction==='left'?this.setState({leftbutton:'enter'}):this.setState({rightbutton:'enter'})
+            },
+            onMouseLeave: () => {
+                direction==='left'?this.setState({leftbutton:'leave'}):this.setState({rightbutton:'leave'})
+            },
+            style: {
+                position: 'absolute',
+                zIndex: 1,
+                top: '50%',
+                [direction]:'-30px',
+                transform: 'translateY(-50%)',
+                color: hover==='leave'?'#aeb0b2':'#337ab7',
+                fontSize: '80px',
+                transition: 'all .5s',
+                cursor:disabled?'not-allowed':'pointer'}
+        }
+        return (
+            direction==='left'?<LeftOutlined {...props}/>:<RightOutlined {...props}/>
+        )
+    }
+    clicknav = (direction) => {
+        const { currentindex } = this.state
+        let index=direction === 'left' ?currentindex-1:currentindex+1
+        this.setState({ spinning: true, currentindex: index })
+        sessionStorage.setItem('index',index)
+        sessionStorage.setItem('refresh',true)
+        const details = JSON.parse(sessionStorage.getItem('currentdetail'))
+        setTimeout(()=>{this.setState({ details: details[index], spinning: false })},200)
     }
     componentDidMount() {
         const { alldata, markID, details } = this.props
-        const { index: startIndex } = details
+        let { index: startIndex } = details
         const markid = markID === 'homedetail' ? 'allnft' :
         markID === 'activitydetail' ? 'activity' :
         markID === 'messagedetail' ? 'mynft' : null
@@ -146,101 +197,54 @@ class Detail extends Component {
         currentdetails.map(item => {
             items.push({
                 original: item.url,
-                thumbnail: item.url
             })
         })
-        this.setState({ details,items,startIndex })
+        let current = sessionStorage.getItem('index')
+        let isrefresh = sessionStorage.getItem('refresh')
+        startIndex=current!==null?
+        (isrefresh==='true'?Number(current): startIndex):startIndex
+        this.setState({ details:currentdetails[startIndex],items,startIndex,spinning:false,currentindex:startIndex })
+    }
+    componentWillUnmount() {
+        sessionStorage.setItem('refresh',false)
     }
     render() {
-        const { loading, details, markID } = this.props
-        const {startIndex,items,leftbutton,rightbutton,Loading1}=this.state
+        const { loading, markID } = this.props
+        const { startIndex, items, spinning,details } = this.state
         return (
             <>
                 {loading?<Loading/>:<>
                 <div style={{ width: '1180px', position: 'relative', left: '50%', transform: 'translate(-50%)' }}>
-                <Layout >
-                        <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='500px'>
-                        {/* <ImageGallery
-                            useTranslate3D={false} // 取消3d
-                            infinite={false} // 取消无限轮播
-                            showFullscreenButton={false} // 隐藏全屏按钮
-                            showIndex={true} // 显示几分之几
-                            showPlayButton={false} // 隐藏播放按钮
-                            disableKeyDown={false} // 开启键盘左右键
-                            items={items}
-                            startIndex={startIndex}
-                            renderLeftNav={(onClick, disabled) => {
-                                return (
-                                    <LeftOutlined
-                                        onClick={() => {
-                                            if (!disabled) {
-                                                onClick()
-                                                this.left
-                                            }
-                                    }}
-                                    onMouseEnter={() => {
-                                        this.setState({leftbutton:'enter'})
-                                    }} 
-                                    onMouseLeave={() => {
-                                        this.setState({leftbutton:'leave'})
-                                    }}    
-                                    style={{
-                                        position: 'absolute',
-                                        zIndex: 1,
-                                        top: '50%',
-                                        left:'-30px',
-                                        transform: 'translateY(-50%)',
-                                        color: leftbutton==='leave'?'#aeb0b2':'#337ab7',
-                                        fontSize: '80px',
-                                        transition: 'all .5s',
-                                        cursor:disabled?'not-allowed':'pointer'
-                                    }}
-                                    />
-                                )
-                                
-                            }}
-                            renderRightNav={(onClick, disabled) => {
-                                return (
-                                    <RightOutlined
-                                        onClick={() => {
-                                            if (!disabled) {
-                                                onClick()
-                                            }
-                                    }}
-                                    onMouseEnter={() => {
-                                        this.setState({rightbutton:'enter'})
-                                    }} 
-                                    onMouseLeave={() => {
-                                        this.setState({rightbutton:'leave'})
-                                    }}    
-                                    style={{
-                                        position: 'absolute',
-                                        zIndex: 1,
-                                        top: '50%',
-                                        right:'-30px',
-                                        transform: 'translateY(-50%)',
-                                        color: rightbutton==='leave'?'#aeb0b2':'#337ab7',
-                                        fontSize: '80px',
-                                        transition: 'all .5s',
-                                        cursor:disabled?'not-allowed':'pointer'
-                                    }}
-                                    />
-                                )
-                                
-                            }}        
-                        /> */}
-                            <img src={details.url} alt="" style={{ width: '500px',  borderRadius: '15px' }} />
-                        </Sider>
-                        <Layout style={{backgroundColor: '#f8fbff'}}>
-                        <Header style={{ backgroundColor: '#f8fbff' }}>{this.returnHeader()}</Header>
-                        <Content style={{marginTop:'50px',paddingLeft:'60px'}}>
-                            {this.returnContent()}
-                        </Content>
-                        <Footer style={{backgroundColor: '#f8fbff'}}>
-                            {this.returnFooter()}
-                        </Footer>
-                        </Layout>
-                    </Layout>
+                        <Spin
+                            spinning={spinning}
+                        >
+                            <Layout >
+                                <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='500px'>
+                                <ImageGallery
+                                    useTranslate3D={false} // 取消3d
+                                    infinite={false} // 取消无限轮播
+                                    showFullscreenButton={false} // 隐藏全屏按钮
+                                    // showIndex={true} // 显示几分之几
+                                    showPlayButton={false} // 隐藏播放按钮
+                                    disableKeyDown={false} // 开启键盘左右键
+                                    items={items}
+                                    startIndex={startIndex}
+                                    renderLeftNav={(onClick, disabled)=>this.renderNav(onClick,disabled,'left')}
+                                    renderRightNav={(onClick, disabled)=>this.renderNav(onClick,disabled,'right')}        
+                                />
+                                    {/* <img src={details.url} alt="" style={{ width: '500px',  borderRadius: '15px' }} /> */}
+                                </Sider>
+                                <Layout style={{backgroundColor: '#f8fbff'}}>
+                                <Header style={{ backgroundColor: '#f8fbff' }}>{this.returnHeader()}</Header>
+                                <Content style={{marginTop:'50px',paddingLeft:'60px'}}>
+                                    {this.returnContent()}
+                                </Content>
+                                <Footer style={{backgroundColor: '#f8fbff'}}>
+                                    {this.returnFooter()}
+                                </Footer>
+                                </Layout>
+                            </Layout>
+                        </Spin>
                     {markID === 'activitydetail' ?
                         <>
                             <h3 style={{marginTop:'60px',fontSize:'25px',fontWeight:'600'}}>nft名字</h3>
