@@ -31,8 +31,25 @@ contract Factory is ERC721{
         bool status;
     }
 
+    struct nftSell{
+        //ipfs中的cid
+        string cid;
+        //nft名字
+        string name;
+        //作者
+        address author;
+        //nft描述
+        string description;
+        //价格
+        uint256 price;
+
+        uint256 amount;
+    }
+
     //id -> nft
     mapping(uint256 => nftProperty) nftMap;
+
+    mapping(string => nftSell) sellMap;
 
     //tokenId -> id
     mapping(uint256 => uint256) tokenIdToId;
@@ -53,6 +70,32 @@ contract Factory is ERC721{
     modifier Owner(uint256 _tokenId,address owner){
         require(owner == ownerOf(_tokenId));
         _;
+    }
+
+    function createSell(
+        string memory _cid,
+        string memory _name,
+        string memory _description,
+        uint256 _price,
+        uint256 _amount
+    ) external{
+        nftSell memory newSellNft = nftSell({
+            cid: _cid,
+            name: _name,
+            author: msg.sender,
+            description: _description,
+            price: _price,
+            amount: _amount
+        });
+
+        sellMap[_name] = newSellNft;
+    }
+
+    function getSellNFT(string memory _name) external returns(string memory,string memory,uint256,uint256){
+        nftSell memory sellNft = sellMap[_name];
+        sellNft.amount--;
+        sellMap[_name] = sellNft;
+        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount);
     }
 
     //铸造
