@@ -250,6 +250,7 @@ const nftModel = {
     //创建nft
     create: async function (name, des, price, status, file0) {
         const { mint } = factory.methods;
+        const { setCidStatus } = factory.methods;
         const { getCidStatus } = factory.methods;
         const { createNotice } = noticeSolidity.methods;
         const { getUserInfoByAddress } = userSolidity.methods;
@@ -262,25 +263,24 @@ const nftModel = {
             var reader = new FileReader();
             //读取文件转为buffer以上传
             reader.readAsArrayBuffer(file0[0]);
-            reader.onloadend = async function () {
-            
+            reader.onloadend = async function () {     
             // console.log(reader.result);
-            var img = Buffer.from(reader.result);
-            // console.log("前："+img);
-            var cids = await ipfs.add(img);
-            //返回的cid
-            cid = cids[0].hash;
-            var cidStatus = await getCidStatus(cid).call({}); 
-            if (!cidStatus) {
-                message.loading('正在创建',1)
-                if(!status){
-                    price = 0;
-                    // if(amount != 1){
-                    //     message.error('非发行藏品只能铸造一个', 1)
-                    //     return new Promise((reslove,reject) => {
-                    //         reject(false)
-                    //     });
-                    // }
+                var img = Buffer.from(reader.result);
+                // console.log("前："+img);
+                var cids = await ipfs.add(img);
+                //返回的cid
+                cid = cids[0].hash;
+                var cidStatus = await getCidStatus(cid).call({}); 
+                if (!cidStatus) {
+                    message.loading('正在创建',1)
+                    if(!status){
+                        price = 0;
+                        // if(amount != 1){
+                        //     message.error('非发行藏品只能铸造一个', 1)
+                        //     return new Promise((reslove,reject) => {
+                        //         reject(false)
+                        //     });
+                        // }
                 }
                 tokenId = web3.utils.sha3(name + cid);
 
@@ -315,9 +315,10 @@ const nftModel = {
                     from: account,
                     gas: 1000000
                 }).then(res=>console.log(res))
-            } else {
-                message.error("该图片已经使用过", 1);
-            }}
+                } else {
+                    message.error("该图片已经使用过", 1);
+                }
+            }
         } else {
             message.error('未选择文件，铸造失败', 1)
             return new Promise((reslove,reject) => {
@@ -992,6 +993,21 @@ const pageModel = {
         return new Promise((reslove, reject) => {
             reslove(result)
         })
+    },
+
+    apreview: async function(){
+        var files = document.querySelector("#anft").files;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(files[0]);
+        reader.onloadend = async function(){
+            console.log(reader.result);
+            var file = Buffer.from(reader.result);
+
+            var url = window.URL.createObjectURL(new Blob([file]));
+
+            var img = document.getElementById("anftShower");
+            img.src = url;
+        }
     },
 }
 
