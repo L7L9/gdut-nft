@@ -215,15 +215,14 @@ const nftModel = {
         }
     },
 
-    getSellNft: async function(name){
+    getSellNft: async function(id){
         const { buy } = userSolidity.methods;
-        const { getNftPrice } = factory.methods;
         const { getMoney } = userSolidity.methods;
         const { getSellNFT } = factory.methods; 
 
+        var result = await getSellNFT(id).call();
         var money = await getMoney().call({from:account});
-        var price = await getNftPrice(tokenId).call();
-        if(new Number(money) >= new Number(price)){
+        if(new Number(money) >= new Number(result[3])){
             try {
                 await buy(price,owner).send({
                     from:account,
@@ -231,9 +230,8 @@ const nftModel = {
                 }).on('error',function(error){
                     throw error;
                 }).then(async function(){
-                    var result = await getSellNFT(name).call();
                     if(result[3] >= 0){
-                        this.create(name,result[1],result[2],true,result[0],result[3]);
+                        this.create(result[4],result[1],result[2],true,result[0],result[3]);
                     } else {
                         message.error("数量不够",1)
                     }
@@ -817,7 +815,34 @@ const pageModel = {
     },
 
     showSellNFT: async function(){
-        
+        const { getSellAmount } = factory.methods;
+        const { getSellNFT } = factory.methods;
+
+        var amount = await getSellAmount().call();
+        if(amount > 0){
+            var res = null;
+            var ipfsReturn = null;
+            var content = null;
+            var url = null;
+            for(let i = 0;i < amount;i++){
+                res = await getSellNFT(i).call();
+                //res[0]->cid  res[1]->description  res[2]->price  res[3]->amount  res[4]->name
+                ipfsReturn = await ipfs.get(res[0]);
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                result.push({
+                    url,
+                    id: i,
+                    name: res[4],
+                    description: res[1],
+                    price: res[2],
+                    amount: res[3]+1
+                })
+            }
+        }
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
     },
 
     showMyNFT: async function(){

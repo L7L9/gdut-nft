@@ -49,7 +49,7 @@ contract Factory is ERC721{
     //id -> nft
     mapping(uint256 => nftProperty) nftMap;
 
-    mapping(string => nftSell) sellMap;
+    mapping(uint256 => nftSell) sellMap;
 
     //tokenId -> id
     mapping(uint256 => uint256) tokenIdToId;
@@ -64,6 +64,8 @@ contract Factory is ERC721{
 
     //nft的总数量
     uint256 nftAmount;
+
+    uint256 sellAmount;
 
     constructor() ERC721("nft","NFT"){}
 
@@ -88,14 +90,19 @@ contract Factory is ERC721{
             amount: _amount
         });
 
-        sellMap[_name] = newSellNft;
+        sellMap[sellAmount] = newSellNft;
+        sellAmount++;
     }
 
-    function getSellNFT(string memory _name) external returns(string memory,string memory,uint256,uint256){
-        nftSell memory sellNft = sellMap[_name];
+    function getSellNFT(uint256 _id) external returns(string memory,string memory,uint256,uint256,string memory){
+        nftSell memory sellNft = sellMap[_id];
         sellNft.amount--;
-        sellMap[_name] = sellNft;
-        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount);
+        sellMap[_id] = sellNft;
+        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount,sellNft.name);
+    }
+
+    function getSellAmonut() external view returns(uint256){
+        return sellAmount;
     }
 
     //铸造
