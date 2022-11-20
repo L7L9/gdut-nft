@@ -39,14 +39,14 @@ class Detail extends Component {
     }
     returnHeader = () => {
         const { markID } = this.props
-        const {details} =this.state
+        const  { details } = this.state
         return <h1 style={{ fontSize: '50px', fontWeight: '600', float: 'left', marginLeft: '100px' }}>
             {markID === 'activitydetail' ? details.name :details.nftName}
         </h1>
     }
     returnContent = () => {
         const { markID } = this.props
-        const {details} =this.state
+        const { details } = this.state
         return <Card
             title={markID === 'activitydeatil'?'活动信息':'商品价格'}
             style={{ borderRadius: '15px',boxShadow: '8px 8px 8px 10px #ecf1f8'  }}
@@ -65,7 +65,7 @@ class Detail extends Component {
     }
     returnFooter = () => {
         const { markID } = this.props
-        const {details} =this.state
+        const { details } = this.state
         return markID === 'activitydetail' ?
             <Meta
             title={<span style={{fontSize:'13px',color:'gray'}}>举办者</span>}
@@ -182,7 +182,8 @@ class Detail extends Component {
         this.setState({ spinning: true, currentindex: index })
         sessionStorage.setItem('index',index)
         sessionStorage.setItem('refresh',true)
-        const details = JSON.parse(sessionStorage.getItem('currentdetail'))
+        let details = JSON.parse(sessionStorage.getItem('currentdetail'))
+        if(JSON.parse(sessionStorage.getItem('search')) === true)details = JSON.parse(sessionStorage.getItem('searchdetails'))
         setTimeout(()=>{this.setState({ details: details[index], spinning: false })},200)
     }
     componentDidMount() {
@@ -190,7 +191,8 @@ class Detail extends Component {
         let { index: startIndex } = details
         const markid = markID === 'homedetail' ? 'allnft' :
         markID === 'activitydetail' ? 'activity' :
-        markID === 'messagedetail' ? 'mynft' : null
+        markID === 'messagedetail' ? 'mynft' : 
+        markID === 'nftsearch'?'nftsearch':null
         let items = []
         const data=alldata[markid]===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata[markid]))
         let currentdetails=alldata[markid]===undefined?data:alldata[markid]
@@ -203,14 +205,26 @@ class Detail extends Component {
         let isrefresh = sessionStorage.getItem('refresh')
         startIndex=current!==null?
         (isrefresh==='true'?Number(current): startIndex):startIndex
-        this.setState({ details:currentdetails[startIndex],items,startIndex,spinning:false,currentindex:startIndex })
+        this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex })
+        if (JSON.parse(sessionStorage.getItem('search')) === true) {
+            let searchdetails = JSON.parse(sessionStorage.getItem('searchdetails'))
+            items=[]
+            searchdetails.map(item => {
+                items.push({
+                    original: item.url,
+                })
+            })
+            console.log(startIndex);
+            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex })
+        }
     }
     componentWillUnmount() {
-        sessionStorage.setItem('refresh',false)
+        sessionStorage.setItem('refresh', false)
+        sessionStorage.setItem('search',JSON.stringify(false))
     }
     render() {
         const { loading, markID } = this.props
-        const { startIndex, items, spinning,details } = this.state
+        const { startIndex, items, spinning, details } = this.state
         return (
             <>
                 {loading?<Loading/>:<>

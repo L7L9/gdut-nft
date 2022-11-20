@@ -8,7 +8,7 @@ const Searchdetail = () => {
 
     const {state:details} = useLocation()
     return (
-        <Detail details={details} markID={markID.homedetail} />
+        <Detail details={details} markID={markID.nftsearch} />
     )
 }
     

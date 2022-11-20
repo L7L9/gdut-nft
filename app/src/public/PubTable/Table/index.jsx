@@ -77,7 +77,7 @@ class PubTable extends Component {
                 align: 'center',
                 key: 'x',
                 fixed:'right',
-                render: (value) => <Link to={this.returnpath()} state={{...value}}><Button type='primary'>查看详情</Button></Link>,
+                render: (value) => <Link to={this.returnpath()} state={{...value[0],index:value[1]}}><Button type='primary'>查看详情</Button></Link>,
             }
         ]
         const activityextra = [
@@ -124,8 +124,8 @@ class PubTable extends Component {
                 fixed:'right',
                 render: (value) => <>
                     <Space>
-                        <Button type='primary' onClick={()=>{this.setState({ isModalOpen: true,id:value.id})}}>领取nft</Button>
-                        <Link to={this.returnpath()} state={{...value}}><Button type='primary'>查看详情</Button></Link>
+                        <Button type='primary' onClick={()=>{this.setState({ isModalOpen: true,id:value[0].id})}}>领取nft</Button>
+                        <Link to={this.returnpath()} state={{...value[0],index:value[1]}}><Button type='primary'>查看详情</Button></Link>
                     </Space>
                     
                 </>,
@@ -144,7 +144,7 @@ class PubTable extends Component {
                 status:item.status,
                 price: item.price,
                 author:item.authorName,
-                detail:item,
+                detail:[item,index],
                 key:index
             })
         }):data.map((item, index) => {
@@ -155,7 +155,7 @@ class PubTable extends Component {
                 author:item.hostName,
                 amount:item.amount,
                 remain: item.nftRest,
-                detail:item,
+                detail:[item,index],
                 key:index
             })
         })
@@ -183,6 +183,7 @@ class PubTable extends Component {
     componentDidUpdate(preprops) {
         const { name, author, alldata, markID, value,updatedata } = this.props
         if (preprops.name !== name || preprops.author !== author || preprops.value !== value) {
+            sessionStorage.setItem('search', JSON.stringify(true));
             if (name.trim() === '' && author.trim() === '') {
                 if (markID === 'nftsearch') {
                     this.setState({ loading: true })
@@ -190,7 +191,8 @@ class PubTable extends Component {
                         let datasource = this.handledata(res)
                         this.setState({loading:false})
                         this.setState({ data: datasource })
-                        updatedata({...alldata,[markID]:res})
+                        updatedata({ ...alldata, [markID]: res })
+                        sessionStorage.setItem('searchdetails', JSON.stringify(res));
                     })
                 }
                 else {
@@ -198,6 +200,7 @@ class PubTable extends Component {
                     let datasource = this.handledata(alldata[markID])
                     this.setState({ data:datasource  })
                     setTimeout(() => { this.setState({ loading: false }) }, 200)
+                    sessionStorage.setItem('searchdetails', JSON.stringify(alldata[markID]));
                 }
                 
             } else if (name.trim() === ''&&author.trim() !== '') {
@@ -207,10 +210,12 @@ class PubTable extends Component {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 }) : activityModel.searchByHost(author).then(res => {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 })
                 
             } else if (name.trim() !== '' && author.trim() === '') {
@@ -220,10 +225,12 @@ class PubTable extends Component {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 }):activityModel.search(name).then(res => {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 })
             }
             else {
@@ -232,16 +239,15 @@ class PubTable extends Component {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 }) : activityModel.selectByHost(name, author).then(res => {
                     let datasource = this.handledata(res)
                     this.setState({loading:false})
                     this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
                 })
             }
         }
-        
-        
-        
     }
     render() {
         const {markID}=this.props
