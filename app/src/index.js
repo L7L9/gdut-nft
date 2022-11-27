@@ -417,7 +417,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }   
         })
@@ -461,7 +462,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }     
         })
@@ -506,7 +508,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }     
         })
@@ -891,7 +894,8 @@ const pageModel = {
                     nftDes: res[4],//nft描述
                     activityId:res[5],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: res[6],//是否能被购买
-                    price: res[7]//价格(若不能被购买则为0)
+                    price: res[7],//价格(若不能被购买则为0)
+                    mintTime: temp[8]
                 })     
             }
         }
@@ -941,7 +945,8 @@ const pageModel = {
                     nftDes: res[5],//nft描述
                     activityId:res[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: res[7],//是否能被购买
-                    price: res[8]//价格(若不能被购买则为0)
+                    price: res[8],//价格(若不能被购买则为0)
+                    mintTime: res[9]
                 });
             }
         }
