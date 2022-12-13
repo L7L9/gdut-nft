@@ -29,6 +29,8 @@ contract Factory is ERC721{
         uint256 price;
         //是否卖(true卖，false不卖)
         bool status;
+        //铸造时间
+        uint256 mintTime;
     }
 
     struct nftSell{
@@ -123,7 +125,8 @@ contract Factory is ERC721{
             description: _description,
             activityId: _activityId,
             price:_price,
-            status: _status
+            status: _status,
+            mintTime: block.timestamp
         });
         nftMap[nftAmount] = nft;
 
@@ -141,20 +144,20 @@ contract Factory is ERC721{
     }
 
     //获取单个nft的信息
-    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
+    function getProperty(uint256 id) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256,uint256){
         nftProperty memory nft = nftMap[id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price,nft.mintTime);
     }
 
-    function getPropertyByTokenId(uint256 _tokenId) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256){
+    function getPropertyByTokenId(uint256 _tokenId) external view returns(uint256,string memory,string memory,address,address,string memory,uint256,bool,uint256,uint256){
         nftProperty memory nft = nftMap[tokenIdToId[_tokenId]];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,ownerOf(nft.tokenId),nft.description,nft.activityId,nft.status,nft.price,nft.mintTime);
     }
 
     //获取个人nft的信息
-    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,uint256,bool,uint256){
+    function getPersonalNFT(uint256 id) external view returns(uint256,string memory,string memory,address,string memory,uint256,bool,uint256,uint256){
         nftProperty memory nft = nftOwner[msg.sender][id];
-        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.activityId,nft.status,nft.price);
+        return (nft.tokenId,nft.cid,nft.name,nft.author,nft.description,nft.activityId,nft.status,nft.price,nft.mintTime);
     }
 
     //查询nft的总量

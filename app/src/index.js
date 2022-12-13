@@ -292,7 +292,8 @@ const nftModel = {
                         _id : tokenId,
                         name : name,
                         cid : cid,
-                        author : userName
+                        author : userName,
+                        price : parseInt(price)
                 }
                 nftDB.put(doc, function(err, response) {
                     if (err) {
@@ -416,7 +417,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }   
         })
@@ -460,7 +462,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }     
         })
@@ -469,18 +472,21 @@ const nftModel = {
         })
     },
 
-    //搜索作品,通过作者筛选
-    selectByAuthor : async function (name,author){
+    //多条件筛选
+    select : async function (name,author,priceMin,priceMax){
         const { getUserInfoByAddress } = userSolidity.methods;
-        var regExp = new RegExp('.*' + name + '.*', 'i');
         var content;
         var url;
         var res = [];
         var ipfsResult;
         await nftDB.find({
             selector: {
-                name:{"$regex": regExp},
-                author:author
+                name:{"$regex": name==null?"":name},
+                author:{"$regex": author==null?"":author},
+                price:{
+                    "$gte": priceMin==null?0:priceMin,
+                    "$lte": priceMax==null?Number.MAX_SAFE_INTEGER:priceMax
+                }
             },
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
@@ -505,7 +511,8 @@ const nftModel = {
                     nftDes: temp[5],//nft描述
                     activityId:temp[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: temp[7],//是否能被购买
-                    price: temp[8]//价格(若不能被购买则为0)  其他=>活动发行
+                    price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
+                    mintTime: temp[9]
                 })
             }     
         })
@@ -889,7 +896,8 @@ const pageModel = {
                     nftDes: res[4],//nft描述
                     activityId:res[5],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: res[6],//是否能被购买
-                    price: res[7]//价格(若不能被购买则为0)
+                    price: res[7],//价格(若不能被购买则为0)
+                    mintTime: temp[8]
                 })     
             }
         }
@@ -939,7 +947,8 @@ const pageModel = {
                     nftDes: res[5],//nft描述
                     activityId:res[6],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: res[7],//是否能被购买
-                    price: res[8]//价格(若不能被购买则为0)
+                    price: res[8],//价格(若不能被购买则为0)
+                    mintTime: res[9]
                 });
             }
         }
