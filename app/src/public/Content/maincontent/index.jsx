@@ -104,7 +104,6 @@ class Content extends Component {
                             (this.setState({ data: alldata[markID] }), updatedata({ ...alldata, currentdata: alldata[markID] }))
                             clearInterval(timer)
                         }
-                        
                     },50)
                 
                 ))
@@ -154,7 +153,6 @@ class Content extends Component {
             // markID === 'allnft' ? this.showallnft() :
             // markID === 'mynft' ? this.showmynft() : 
             // markID === 'activity' && value.trim() !== '' ? this.activitysearch() : this.showactivity()
-            
             updatedata({ ...alldata, currentdata:undefined});
             if (markID === 'activity') {
                 changeloading(true)

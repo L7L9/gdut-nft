@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Layout, Card, Button, Modal, Input, message,Spin,Image } from 'antd';
+import { Layout, Card, Button, Modal, Input, message,Spin,Image,Typography  } from 'antd';
 import { LeftOutlined,RightOutlined } from '@ant-design/icons';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css'
@@ -10,7 +10,8 @@ import { Refresh } from '@/redux/actions/refresh'
 import './index.less'
 import { getmainColor } from '@/utils/getmainColor';
 const { Header, Footer, Sider, Content } = Layout;
-const {Meta}=Card
+const { Meta } = Card
+const { Text } = Typography;
 
 class Detail extends Component {
     state = {
@@ -36,9 +37,9 @@ class Detail extends Component {
     returnextra = () => {
         const { markID } = this.props
         const {details} =this.state
-        return markID === 'homedetail' ? <Button type="dashed" disabled={!details.status} onClick={this.buy}>购买</Button> :
-            markID === 'messagedetail' ? <Button type="dashed" onClick={this.showModal}>转赠</Button> :
-            markID === 'activitydetail' ? <Button type="dashed" onClick={this.showModal}>领取NFT</Button>:null
+        return markID === 'homedetail' ? <Button type='primary' disabled={!details.status} onClick={this.buy}>购买</Button> :
+            markID === 'messagedetail' ? <Button type='primary' onClick={this.showModal}>转赠</Button> :
+            markID === 'activitydetail' ? <Button type='primary' onClick={this.showModal}>领取NFT</Button>:null
     }
     returnHeader = () => {
         const { markID } = this.props
@@ -51,18 +52,23 @@ class Detail extends Component {
         const { markID } = this.props
         const { details } = this.state
         return <Card
-            title={markID === 'activitydeatil'?'活动信息':'商品价格'}
+            title={markID === 'activitydetail'?'活动信息':'商品信息'}
             style={{ borderRadius: '15px',boxShadow: '8px 8px 8px 10px #ecf1f8'  }}
             extra={this.returnextra()}
             >
             {
-                markID === 'activitydetail' ? <>
-                    <h4>活动描述</h4>
-                    <p style={{color:'#959599'}}>{details.des}</p>    
-                    <h4>nft发行数量</h4>
-                    <p style={{color:'#959599'}}>{details.amount}</p>
-                </> :
-                <h1 style={{ fontSize: '40px' }}>{details.status ? `￥ ${details.price}` : '非卖品'}</h1>
+                markID === 'activitydetail' ?
+                    <>
+                        <h4>活动描述</h4>
+                        <p style={{color:'#959599'}}>{details.des}</p>    
+                        <h4>nft发行数量</h4>
+                        <p style={{color:'#959599'}}>{details.amount}</p>
+                    </> :
+                    <>
+                        {details.status ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>非卖品</Text>}
+                        <h3 style={{ marginTop: '30px', fontSize: '18px', fontWeight: '400' }}>商品描述</h3>
+                        <p style={{ color: '#959599',fontSize:'15px'}}>{details.nftDes}</p>
+                    </>
             }
         </Card>
     }
@@ -217,7 +223,6 @@ class Detail extends Component {
             items.push({
                 original: item.url,
                 thumbnail: item.url,
-                // originalHeight:'auto'
             })
         })
         let current = sessionStorage.getItem('index')
@@ -247,12 +252,12 @@ class Detail extends Component {
         return (
             <>
                 {loading?<Loading/>:<>
-                <div style={{ width: '1180px', position: 'relative', left: '50%', transform: 'translate(-50%)' }}>
+                <div style={{ width: '1280px', position: 'relative', left: '50%', transform: 'translate(-50%)' }}>
                         <Spin
                             spinning={spinning}
                         >
                             <Layout >
-                                <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='500px'>
+                                <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='800px' >
                                     <ImageGallery
                                     useTranslate3D={false} // 取消3d
                                     infinite={false} // 取消无限轮播
@@ -287,12 +292,11 @@ class Detail extends Component {
                         <>
                             <h3 style={{marginTop:'60px',fontSize:'25px',fontWeight:'600'}}>nft名字</h3>
                             <p style={{ color: '#959599', fontSize: '15px' }}>{details.nftName}</p>
+                            <h3 style={{ marginTop: '60px', fontSize: '25px', fontWeight: '600' }}>nft描述</h3>
+                            <p style={{ color: '#959599',fontSize:'15px'}}>{details.nftDes}</p>
                         </>:null
                     }
-                    <h3 style={{ marginTop: '60px', fontSize: '25px', fontWeight: '600' }}>
-                        {markID === 'activitydetail' ?'nft描述':'商品描述'}
-                    </h3>
-                    <p style={{ color: '#959599',fontSize:'15px'}}>{details.nftDes}</p>
+                    
                     <Button style={{float:'right',marginTop:'20px'}}type="dashed" onClick={this.back}>返回</Button>
                 </div>
                 </>}
