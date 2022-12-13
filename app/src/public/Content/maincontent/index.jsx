@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { nanoid } from 'nanoid'
-import { Button,Modal,Input } from 'antd';
+import { Button,Modal,Input, message } from 'antd';
 import { Link } from 'react-router-dom';
 import Search from '../Search';
 import Loading from '@/components/Loading';
@@ -154,9 +154,10 @@ class Content extends Component {
             // markID === 'allnft' ? this.showallnft() :
             // markID === 'mynft' ? this.showmynft() : 
             // markID === 'activity' && value.trim() !== '' ? this.activitysearch() : this.showactivity()
-            changeloading(true)
+            
             updatedata({ ...alldata, currentdata:undefined});
             if (markID === 'activity') {
+                changeloading(true)
                 let { name, author } = value
                 name=name===undefined?'':name
                 author=author===undefined?'':author
@@ -190,14 +191,25 @@ class Content extends Component {
                     }) 
                 }
             }
-            else nftModel.search(value.name).then((res) => {
-                if (markID === 'nftsearch') {
-                    updatedata({ ...alldata, currentdata: res,[markID]:res});
+            else {
+                for (const key in value) {
+                    if(value[key]===undefined)value[key]=null
                 }
-                else updatedata({ ...alldata, currentdata: res,});
-                this.setState({ data: res })
-                changeloading(false)
-            })
+                if (value.highprice!==null&&value.lowprice!==null&&value.highprice <= value.lowprice) message.error('请选择好价格范围')
+                else {
+                    changeloading(true)
+                    let {name,author,lowprice,highprice}=value
+                    nftModel.select(name, author, lowprice,highprice).then((res) => {
+                        console.log(res);
+                    if (markID === 'nftsearch') {
+                        updatedata({ ...alldata, currentdata: res,[markID]:res});
+                    }
+                    else updatedata({ ...alldata, currentdata: res,});
+                    this.setState({ data: res })
+                    changeloading(false)
+                    })
+                }
+            }
         }
         
     }

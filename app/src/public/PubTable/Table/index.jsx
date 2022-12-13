@@ -259,14 +259,21 @@ class PubTable extends Component {
             //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
             //     })
             // }
-            changeloading(true)
-            nftModel.search(value.name).then((res) => {
-                updatedata({ ...alldata, currentdata:res })
-                let datasource = this.handledata(res)
-                changeloading(false)
-                this.setState({ data: datasource })
-                sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            })
+            for (const key in value) {
+                if(value[key]===undefined)value[key]=null
+            }
+            if (value.highprice !== null && value.lowprice !== null && value.highprice <= value.lowprice) message.error('请选择好价格范围')
+            else {
+                changeloading(true)
+                let {name,author,lowprice,highprice}=value
+                nftModel.select(name,author,lowprice,highprice).then((res) => {
+                    updatedata({ ...alldata, currentdata:res })
+                    let datasource = this.handledata(res)
+                    changeloading(false)
+                    this.setState({ data: datasource })
+                    sessionStorage.setItem('searchdetails', JSON.stringify(res));
+                })
+            }
         }
         
     }

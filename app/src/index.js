@@ -897,7 +897,7 @@ const pageModel = {
                     activityId:res[5],//是否是活动的nft: 0=>不是活动发行  其他=>活动发行
                     status: res[6],//是否能被购买
                     price: res[7],//价格(若不能被购买则为0)
-                    mintTime: temp[8]
+                    mintTime: res[8]
                 })     
             }
         }
