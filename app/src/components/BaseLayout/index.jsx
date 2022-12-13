@@ -7,7 +7,8 @@ import {loadingaction} from '@/redux/actions/loading'
 import { items } from '@/routes/allmenuitems';
 import { Navigate } from "react-router-dom";
 const Home=lazy(()=>import ('@/pages/Home'))
-const Nftdetail=lazy(()=>import ('@/pages/Home/Nftdetail'))
+const News=lazy(()=>import ('@/pages/News'))
+const Nftdetail=lazy(()=>import ('@/pages/News/Nftdetail'))
 const Adetail=lazy(()=>import ('@/pages/Activity/Detail'))
 const Mydetail=lazy(()=>import ('@/pages/Message/Detail'))
 const Searchdetail=lazy(()=>import ('@/pages/Search/Detail'))
@@ -39,8 +40,9 @@ export default function BaseLayout() {
       navigate('/login')
     }
     switch (location.pathname) {
-      case '/GDUT-nft/home/detail':
-      case '/GDUT-nft/home': setcurrentpath(['首页']); break;
+      case '/GDUT-nft/home':setcurrentpath(['首页']); break;
+      case '/GDUT-nft/news/detail':
+      case '/GDUT-nft/news': setcurrentpath(['新品']); break;
       case '/GDUT-nft/search/detail':
       case '/GDUT-nft/search': setcurrentpath(['搜索']); break;
       case '/GDUT-nft/activity/detail':
@@ -51,6 +53,7 @@ export default function BaseLayout() {
       case '/GDUT-nft/notify': setcurrentpath(['公告']); break;
     }
     dispatch(loadingaction(true))
+    sessionStorage.setItem('search',false)
   }, [location]);
   const loading = useSelector(state => state.loading)
   return (
@@ -65,11 +68,12 @@ export default function BaseLayout() {
         />
       </Header>
       <Content
+        className='allcontent'
         style={{
           padding: '50px 50px',
           position: 'relative',
           width: '100%',
-          minHeight: '500px',
+          minHeight: '648px',
           backgroundColor:'#f8fbff'
         }}
     >
@@ -77,7 +81,8 @@ export default function BaseLayout() {
         <Routes>
         <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
         <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
-        <Route path="/home/detail"  element={<Nftdetail/>}  />
+        <Route path="/news"  element={loading?<Loading/>:<News/>}  />
+        <Route path="/news/detail"  element={<Nftdetail/>}  />
         <Route path="/search" element={<Search />} />
         <Route path='/search/detail' element={<Searchdetail />} />
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>

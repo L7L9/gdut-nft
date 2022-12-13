@@ -15,7 +15,7 @@ export default class PubTable extends Component {
         const {author,name}=this.state
         return (
             <>
-                {this.state.issearch ? <SearchForm {...this.props} setsearchvalue={this.setsearchvalue} /> : null}
+                {/* {this.state.issearch ? <SearchForm {...this.props} setsearchvalue={this.setsearchvalue} /> : null} */}
                 <Table {...this.props} author={author} name={name} />
             </>
         )

@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 
 
 class Search extends Component {
-    state = { first: true, value: '',show:'show' }
+    state = { first: true, value: {},show:'show' }
     showchange = (value) => {
         this.setState({show:value})
     }
@@ -22,7 +22,7 @@ class Search extends Component {
             this.setState({first:data})
         })
         PubSub.subscribe("value", (msg, value) => {
-            this.setState({value})
+            this.setState({value:{name:value}})
         })
     }
     
@@ -48,8 +48,8 @@ class Search extends Component {
                     onChange={this.showchange}
                     />
                 </div>
-                {this.state.show === 'show' ? <Content markID={markID.nftsearch} value={this.state.value} /> :
-                <PubTable markID={markID.nftsearch} issearch={false} value={this.state.value}/>}
+                    {this.state.show === 'show' ? <Content markID={markID.nftsearch} value={this.state.value} /> :
+                <PubTable markID={markID.nftsearch} value={this.state.value}/>}
             </>
         )
     }

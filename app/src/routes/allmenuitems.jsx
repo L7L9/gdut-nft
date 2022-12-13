@@ -1,7 +1,14 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import SearchInput from '../components/Searchinput';
-import { AppstoreOutlined, MailOutlined,HighlightOutlined,BulbOutlined,UserOutlined } from '@ant-design/icons';
+import {
+    AppstoreOutlined,
+    MailOutlined,
+    HighlightOutlined,
+    BulbOutlined,
+    UserOutlined,
+    RocketOutlined,
+} from '@ant-design/icons';
 
 
 
@@ -19,6 +26,11 @@ export const items = [
     {
         key:'搜索',
         label: <Link to="/GDUT-nft/search" ><SearchInput/></Link>
+    },
+    {
+        key:'新品',
+        label: <Link to="/GDUT-nft/news" >新品</Link>,
+        icon: <RocketOutlined />
     },
     {
         key:'活动',

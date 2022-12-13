@@ -1,7 +1,8 @@
-import { Upload, message,Modal,Image } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Upload, message,Image,Spin } from 'antd';
+import { PlusOutlined,InboxOutlined   } from '@ant-design/icons';
 import PubSub from 'pubsub-js';
 import React, { useState } from 'react';
+import { getmainColor } from '@/utils/getmainColor';
 
 
 
@@ -15,46 +16,58 @@ const getBase64 = (file) =>
 const Selectnft = (props) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-  const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState([]);
   const handleCancel = () => setPreviewOpen(false);
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
+    getmainColor(file.preview)
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
-    setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1));
     setTimeout(() => {
       document.querySelector('.ant-image').click()
     },20)
   };
   const uploadButton = (
     <div>
-      <PlusOutlined />
+      {props.type === 'foundry' ?<InboxOutlined  style={{ color: '#4f98fe', fontSize:'40px'}}/>:<PlusOutlined/>}
       <div
         style={{
           marginTop: 8,
         }}
       >
-        Upload
+        {props.type === 'foundry' ?
+          <div>
+            <p style={{fontSize:'20px',fontWeight:'600'}}>点击上传一张图片</p>
+            <p style={{marginTop:'6px'}}>上传一张图片，获得一份独一无二的nft</p>
+          </div> :
+          '上传'}
       </div>
     </div>
   );
-  const handleChange = ({ fileList: newFileList, file }) => {
-    const {type}=props
+  const handleChange = async ({ fileList: newFileList, file }) => {
+    const { type } = props
+    console.log(file.status);
     if (file.status === 'removed') {
       setFileList([]);
       type === 'foundry' ? PubSub.publish("nftfile", 1) :
       type==='create'?PubSub.publish("activityfile",1):null
     }
     else {
-      newFileList[0].status = 'uploading'
+      newFileList[0].status = 'done'
+      if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+      }
+      setPreviewImage(file.url || file.preview);
       setTimeout(() => {
-        newFileList[0].status = 'done'
         setFileList(newFileList);
-        message.success('上传成功',.5)
-      }, 500)
+        setTimeout(() => {
+          let image=document.querySelector('.ant-upload-list-item-image')
+          image.src = file.preview
+          message.success('上传成功', .5)
+        }, 100)
+      }, 200)
       type === 'foundry' ? PubSub.publish("nftfile", newFileList[0].originFileObj) :
       type==='create'?PubSub.publish("activityfile",newFileList[0].originFileObj):null
     }
@@ -68,31 +81,24 @@ const Selectnft = (props) => {
       }
       return resolve(true);
     })
-}
+  }
+  
   return ( 
     <>
       <Upload
-        listType="picture-card"
+        listType='picture-card'
         fileList={fileList}
         onPreview={handlePreview}
         onChange={handleChange}
         beforeUpload={beforeUpload}
       >
-        {fileList.length >= 1 ? null : uploadButton}
-      </Upload>
+        {fileList.length >= 1 ?null : uploadButton}
+        </Upload>
       <Image
         src={previewImage}
         style={{display:'none'}}
       />
-      {/* <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
-        <img
-          alt="example"
-          style={{
-            width: '100%',
-          }}
-          src={previewImage}
-        />
-      </Modal> */}
+      
     </>
     
   );

@@ -1,18 +1,18 @@
-import React, { Component,lazy } from 'react'
-import { Input, Modal, Button, Form, Segmented } from 'antd'
-import {BarsOutlined,AppstoreOutlined} from '@ant-design/icons'
+import React, { Component } from 'react'
+import { Input, Modal, Button, Form, Segmented,Affix } from 'antd'
+import {BarsOutlined,AppstoreOutlined,SearchOutlined} from '@ant-design/icons'
 import { connect } from 'react-redux';
 import {Refresh} from '@/redux/actions/refresh'
 import {loadingactionasync} from '@/redux/actions/loading'
 import Selectfile from '@/components/Selectfile';
-const PubTable=lazy(()=>import ('@/public/PubTable'))
+import PubTable from '@/public/PubTable'
 import Content from '@/public/Content';
 import { markID } from '@/utils/globalType';
 
 
 
 class Activity extends Component{
-  state = { isModalOpen: false,data:[123],value:'',show:'show',activityfile:[]}
+  state = { isModalOpen: false,data:[123],value:'',show:'show',activityfile:[],min:0,values:{}}
   showModal = () => this.setState({isModalOpen:true});
   handleOk = () => {
     const { submit } = this.refs;
@@ -24,7 +24,8 @@ class Activity extends Component{
     
   }
   showchange = (value) => {
-    this.setState({show:value})
+    this.setState({ show: value })
+    if(value==='show')sessionStorage.setItem('search',false)
   }
   onFinish = (values) => {
     const { activityname, activitydes, nftname, nftdes, password, number } = values;
@@ -40,14 +41,22 @@ class Activity extends Component{
       console.log(err);
     })
   };
+  onFinish1 = (values) => {
+    this.setState({values})
+    sessionStorage.setItem('contentsearch',true)
+  }
   returnvalue = () => {
     if (this.state.value.trim != '') return { value:this.state.value}
     else return {}
   }
   componentDidMount() {
+    sessionStorage.setItem('contentsearch',false)
     PubSub.subscribe("activityfile", (msg, data) => {
       data===1?this.setState({activityfile:[]}):this.setState({activityfile:[data]})
     })
+  }
+  componentWillUnmount() {
+    sessionStorage.setItem('contentsearch',false)
   }
   render(){
     return <div>
@@ -84,7 +93,9 @@ class Activity extends Component{
         label="文件"
         name="file"
       >
-        <Selectfile type='create'/>
+        <div style={{ width: '104px', height: '104px' }}>
+          <Selectfile type='create'/>
+        </div>
       </Form.Item>
 
       <Form.Item
@@ -176,25 +187,48 @@ class Activity extends Component{
       </Form.Item>
       </Form>
         </Modal>
-        <Segmented
-            options={[
-              {
-                label: '展示',
-                value: 'show',
-                icon: <AppstoreOutlined />,
-              },
-              {
-                label: '列表',
-                value: 'list',
-                icon: <BarsOutlined />,
-              }
-            ]}
-            style={{ float: 'left',marginTop:'10px',marginLeft:'8px' }}
-          onChange={this.showchange}
-        />
-        <Button type='primary' style={{ float: 'right', marginTop: '10px' }} onClick={this.showModal}>创建活动</Button>
+        <Affix offsetTop={0}>
+            <div style={{ height: '80px',backgroundColor:'#f8fbff',padding:'24px 0'  }}>
+              <Form
+                  layout='inline'
+                  ref='form'
+                  onFinish={this.onFinish1}
+                  style={{float:'left'}}
+                >
+                  <Form.Item label="作者" name="author">
+                      <Input placeholder="请输入作者名" />
+                  </Form.Item>
+                  <Form.Item label={this.props.markID==='activity'?'活动':'作品' } name="name">
+                      <Input placeholder={`请输入${this.props.markID==='activity'?'活动':'作品' }名`}/>
+                  </Form.Item>
+                  <Form.Item >
+                      <Button type="primary" shape="round" icon={<SearchOutlined />} htmlType="submit"></Button>
+                  </Form.Item>
+              </Form>
+              <Segmented
+                options={[
+                  {
+                    label: '展示',
+                    value: 'show',
+                    icon: <AppstoreOutlined />,
+                  },
+                  {
+                    label: '列表',
+                    value: 'list',
+                    icon: <BarsOutlined />,
+                  }
+                ]}
+                style={{ float: 'right',marginLeft:'8px' }}
+                onChange={this.showchange}
+            />
+            <Button type='primary' style={{ float: 'right' }} onClick={this.showModal}>创建活动</Button>
+            </div>
+        </Affix>
+        
       </div>
-      {this.state.show==='show'?<Content markID={markID.activity} {...this.returnvalue()} />:<PubTable markID={markID.activity} issearch={true}/>}
+      {this.state.show === 'show' ?
+        <Content markID={markID.activity} {...this.returnvalue()} value={this.state.values}/> :
+        <PubTable markID={markID.activity} value={this.state.values}/>}
       
     </div>
   }

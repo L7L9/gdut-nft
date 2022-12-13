@@ -7,6 +7,8 @@ import loading from './loading'
 import data from './data'
 //引入为refresh服务的reducer
 import refresh from './refresh'
+//引入为contentloading服务的reducer
+import contentloading from './contentloading'
 
 import {combineReducers } from 'redux'
 
@@ -15,6 +17,7 @@ import {combineReducers } from 'redux'
 const allreducer=combineReducers({
     loading,
     data,
-    refresh
+    refresh,
+    contentloading
 })
 export default allreducer

@@ -308,7 +308,7 @@ const nftModel = {
                     gas: 1000000
                 })
                 message.success("铸造完成", 1);
-                setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
+                setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/news")},100)
                 
                 var noticeDes = "用户(" + userName + ")创建了" +"一个藏品:" + name;
                 await createNotice("铸造个人藏品",noticeDes,0).send({
@@ -396,7 +396,6 @@ const nftModel = {
             },
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
-                console.log(result.docs[i])
                 ipfsResult = await ipfs.get(result.docs[i].cid);
                 content = ipfsResult[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
@@ -881,7 +880,6 @@ const pageModel = {
                 url = window.URL.createObjectURL(new Blob([content]));
                 var authorInfo = await getUserInfoByAddress(res[3]).call();
                 var authorName = authorInfo[0];
-                console.log(res[7]);
                 result.push({
                     url,
                     tokenId: res[0],//tokenId
@@ -930,7 +928,7 @@ const pageModel = {
                 var authorName = authorInfo[0];
                 var ownerInfo = await getUserInfoByAddress(res[4]).call();
                 var ownerName = ownerInfo[0];
-                result.push({
+                result.unshift({
                     url,
                     tokenId: res[0],//tokenId
                     nftName: res[2],//nft名字

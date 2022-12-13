@@ -1,0 +1,36 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+::-webkit-scrollbar{
+    width: 0;
+}
+
+.ant-image-preview-operations {
+    height: 100px;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-100%);
+    top: 100vh !important;
+    background-color: transparent !important;
+}
+
+.ant-image-preview-operations-operation {
+    margin: 0 20px;
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .7);
+}
+
+.ant-image-preview-operations-operation svg {
+    width: 1.25em !important;
+    height: 1.25em !important;
+    fill: var(--invert-main-color)
+}
+
+.ant-image-mask {
+    display: none;
+}

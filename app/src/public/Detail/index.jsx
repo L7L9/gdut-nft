@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
-import { Layout, Card, Button, Modal, Input, message,Spin } from 'antd';
+import { Layout, Card, Button, Modal, Input, message,Spin,Image } from 'antd';
 import { LeftOutlined,RightOutlined } from '@ant-design/icons';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css'
 import { connect } from 'react-redux'
 import Loading from '@/components/Loading';
 import { Setdata } from '@/redux/actions/data'
-import {Refresh} from '@/redux/actions/refresh'
+import { Refresh } from '@/redux/actions/refresh'
+import './index.less'
+import { getmainColor } from '@/utils/getmainColor';
 const { Header, Footer, Sider, Content } = Layout;
 const {Meta}=Card
 
@@ -20,7 +22,8 @@ class Detail extends Component {
         startIndex: 0,
         currentindex:0,
         leftbutton: 'leave',
-        rightbutton: 'leave'
+        rightbutton: 'leave',
+        previewimage:''
     }
     back = () => {
         window.history.back()
@@ -165,7 +168,7 @@ class Detail extends Component {
                 position: 'absolute',
                 zIndex: 1,
                 top: '50%',
-                [direction]:'-30px',
+                [direction]:'-65px',
                 transform: 'translateY(-50%)',
                 color: hover==='leave'?'#aeb0b2':'#337ab7',
                 fontSize: '80px',
@@ -184,7 +187,21 @@ class Detail extends Component {
         sessionStorage.setItem('refresh',true)
         let details = JSON.parse(sessionStorage.getItem('currentdetail'))
         if(JSON.parse(sessionStorage.getItem('search')) === true)details = JSON.parse(sessionStorage.getItem('searchdetails'))
+        setTimeout(()=>{this.setState({ details: details[index], spinning: false })},300)
+    }
+    slide = (index) => {
+        this.setState({ spinning: true, currentindex: index })
+        sessionStorage.setItem('index',index)
+        sessionStorage.setItem('refresh',true)
+        let details = JSON.parse(sessionStorage.getItem('currentdetail'))
+        if(JSON.parse(sessionStorage.getItem('search')) === true)details = JSON.parse(sessionStorage.getItem('searchdetails'))
         setTimeout(()=>{this.setState({ details: details[index], spinning: false })},200)
+    }
+    preview = (event) => {
+        let clickimage = document.querySelector('.ant-image');
+        this.setState({ previewimage: event.target.src })
+        getmainColor(event.target.src)
+        clickimage.click()
     }
     componentDidMount() {
         const { alldata, markID, details } = this.props
@@ -194,18 +211,20 @@ class Detail extends Component {
         markID === 'messagedetail' ? 'mynft' : 
         markID === 'nftsearch'?'nftsearch':null
         let items = []
-        const data=alldata[markid]===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata[markid]))
-        let currentdetails=alldata[markid]===undefined?data:alldata[markid]
+        const data=alldata.currentdata===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata.currentdata))
+        let currentdetails=alldata.currentdata===undefined?data:alldata.currentdata
         currentdetails.map(item => {
             items.push({
                 original: item.url,
+                thumbnail: item.url,
+                // originalHeight:'auto'
             })
         })
         let current = sessionStorage.getItem('index')
         let isrefresh = sessionStorage.getItem('refresh')
         startIndex=current!==null?
         (isrefresh==='true'?Number(current): startIndex):startIndex
-        this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex })
+        this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:currentdetails[startIndex].url })
         if (JSON.parse(sessionStorage.getItem('search')) === true) {
             let searchdetails = JSON.parse(sessionStorage.getItem('searchdetails'))
             items=[]
@@ -215,7 +234,7 @@ class Detail extends Component {
                 })
             })
             console.log(startIndex);
-            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex })
+            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:searchdetails[startIndex].url })
         }
     }
     componentWillUnmount() {
@@ -234,19 +253,24 @@ class Detail extends Component {
                         >
                             <Layout >
                                 <Sider style={{ borderRadius: '15px',backgroundColor: '#f8fbff' }} width='500px'>
-                                <ImageGallery
+                                    <ImageGallery
                                     useTranslate3D={false} // 取消3d
                                     infinite={false} // 取消无限轮播
                                     showFullscreenButton={false} // 隐藏全屏按钮
-                                    // showIndex={true} // 显示几分之几
+                                    showIndex={true} // 显示几分之几
                                     showPlayButton={false} // 隐藏播放按钮
                                     disableKeyDown={false} // 开启键盘左右键
                                     items={items}
                                     startIndex={startIndex}
+                                    onThumbnailClick={(event, index)=>{this.slide(index)}}
                                     renderLeftNav={(onClick, disabled)=>this.renderNav(onClick,disabled,'left')}
-                                    renderRightNav={(onClick, disabled)=>this.renderNav(onClick,disabled,'right')}        
-                                />
-                                    {/* <img src={details.url} alt="" style={{ width: '500px',  borderRadius: '15px' }} /> */}
+                                    renderRightNav={(onClick, disabled) => this.renderNav(onClick, disabled, 'right')}
+                                    onClick={(event)=>{this.preview(event)}}
+                                    />
+                                    <Image
+                                        src={this.state.previewimage}
+                                        style={{display:'none'}}
+                                    />
                                 </Sider>
                                 <Layout style={{backgroundColor: '#f8fbff'}}>
                                 <Header style={{ backgroundColor: '#f8fbff' }}>{this.returnHeader()}</Header>
