@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Table, Button, Image,Tag,Space,Modal,Input } from 'antd';
+import { Table, Button, Image,Tag,Space,Modal,Input,message } from 'antd';
 import {
     ClearOutlined,
     FireOutlined
@@ -63,7 +63,7 @@ class PubTable extends Component {
             align: 'center',
             render: (value) =>
                 <Tag icon={value?<FireOutlined />:<ClearOutlined />} color={value?'success':'error'}>
-                    {value?'售卖中':'非卖品'}
+                    {value?'售卖中':'已售罄'}
                 </Tag>
             },
             {
@@ -142,7 +142,7 @@ class PubTable extends Component {
             datasource.push({
                 preview: item.url,
                 name: item.nftName,
-                number: item.tokenId,
+                number: item.cid,
                 status:item.status,
                 price: item.price,
                 author:item.authorName,
@@ -265,9 +265,9 @@ class PubTable extends Component {
             if (value.highprice !== null && value.lowprice !== null && value.highprice <= value.lowprice) message.error('请选择好价格范围')
             else {
                 changeloading(true)
-                let {name,author,lowprice,highprice}=value
-                nftModel.select(name,author,lowprice,highprice).then((res) => {
-                    updatedata({ ...alldata, currentdata:res })
+                let { name, author, lowprice, highprice } = value
+                nftModel.selectSell(name, author, lowprice, highprice).then((res) => {
+                    updatedata({ ...alldata, currentdata: res, });
                     let datasource = this.handledata(res)
                     changeloading(false)
                     this.setState({ data: datasource })

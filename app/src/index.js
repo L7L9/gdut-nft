@@ -571,13 +571,13 @@ const nftModel = {
                 var authorInfo = await getUserInfoByAddress(res[5]).call();
                 var authorName = authorInfo[0];
                 
-                temp.push({
+                temp.unshift({
                     url,
-                    name: res[4],
-                    description: res[1],
+                    nftName: res[4],
+                    nftDes: res[1],
                     price: res[2],
                     amount: res[3],
-                    left:res[7],
+                    left:Number(res[7]),
                     cid: res[0],
                     authorAddress: res[5],
                     authorName: authorName,
@@ -918,14 +918,13 @@ const pageModel = {
                 url = window.URL.createObjectURL(new Blob([content]));
                 var authorInfo = await getUserInfoByAddress(res[5]).call();
                 var authorName = authorInfo[0];
-                result.push({
+                result.unshift({
                     url,
-                    id: i,
-                    name: res[4],
-                    description: res[1],
+                    nftName: res[4],
+                    nftDes: res[1],
                     price: res[2],
                     amount: res[3],
-                    left:res[7],
+                    left:Number(res[7]),
                     cid: res[0],
                     authorAddress: res[5],
                     authorName: authorName,

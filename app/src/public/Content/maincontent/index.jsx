@@ -17,7 +17,7 @@ class Content extends Component {
     showallnft = () => {
         const { markID, alldata, updatedata, value,changerefresh,refresh,changeloading } = this.props
         changeloading(true)
-        pageModel.showAllNFT().then(res => {
+        pageModel.showSellNFT().then(res => {
             updatedata({ ...alldata, [markID]: res, currentdata: res });
             this.setState({ data: res })
             changeloading(false)
@@ -82,11 +82,14 @@ class Content extends Component {
         }
     };
     handleOk = async () => {
+        const { changerefresh,refresh } = this.props
         const { id } = this.state
         const { pass: { input} } = this.refs
         let password = input.value;
+        message.loading('正在领取,1')
         await activityModel.getNFT(id, password)
         this.setState({ isModalOpen: false })
+        changerefresh({ ...refresh, message: true })
     };
     handleCancel = () => this.setState({ isModalOpen: false });
     componentDidMount() {
@@ -196,16 +199,21 @@ class Content extends Component {
                 if (value.highprice!==null&&value.lowprice!==null&&value.highprice <= value.lowprice) message.error('请选择好价格范围')
                 else {
                     changeloading(true)
-                    let {name,author,lowprice,highprice}=value
-                    nftModel.select(name, author, lowprice,highprice).then((res) => {
-                        console.log(res);
+                    let { name, author, lowprice, highprice } = value
                     if (markID === 'nftsearch') {
-                        updatedata({ ...alldata, currentdata: res,[markID]:res});
+                        nftModel.select(name, null, null, null).then(res => {
+                            updatedata({ ...alldata, currentdata: res, [markID]: res });
+                            this.setState({ data: res })
+                            changeloading(false)
+                        })
+                    } else {
+                        nftModel.selectSell(name, author, lowprice, highprice).then((res) => {
+                            updatedata({ ...alldata, currentdata: res, });
+                            this.setState({ data: res })
+                            changeloading(false)
+                        })
                     }
-                    else updatedata({ ...alldata, currentdata: res,});
-                    this.setState({ data: res })
-                    changeloading(false)
-                    })
+                    
                 }
             }
         }

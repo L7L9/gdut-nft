@@ -24,20 +24,30 @@ class Detail extends Component {
         currentindex:0,
         leftbutton: 'leave',
         rightbutton: 'leave',
-        previewimage:''
+        previewimage: '',
+        left:0
     }
     back = () => {
         window.history.back()
     }
     buy = () => {
-        const { details: { ownerAddress, tokenId } } = this.state
-        message.loading('正在加载',.8)
-        nftModel.buyNft(ownerAddress,tokenId)
+        const { details: { cid },currentindex,left } = this.state
+        const {refresh,changerefresh}=this.props
+        message.loading('正在加载', .8)
+        this.setState({spinning:true})
+        nftModel.getSellNft(cid).then(() => {
+            let newdetails = JSON.parse(sessionStorage.getItem('currentdetail'))
+            newdetails[currentindex].left -= 1
+            sessionStorage.setItem('currentdetail',JSON.stringify(newdetails))
+            this.setState({left:left-1,details:newdetails[currentindex]})
+            this.setState({spinning:false})
+        })
+        changerefresh({ ...refresh, home: true, message: true })
     }
     returnextra = () => {
         const { markID } = this.props
-        const {details} =this.state
-        return markID === 'homedetail' ? <Button type='primary' disabled={!details.status} onClick={this.buy}>购买</Button> :
+        const { details } = this.state
+        return markID === 'homedetail' ? <Button type='primary' disabled={details.left===0?true:false} onClick={this.buy}>购买</Button> :
             markID === 'messagedetail' ? <Button type='primary' onClick={this.showModal}>转赠</Button> :
             markID === 'activitydetail' ? <Button type='primary' onClick={this.showModal}>领取NFT</Button>:null
     }
@@ -65,9 +75,10 @@ class Detail extends Component {
                         <p style={{color:'#959599'}}>{details.amount}</p>
                     </> :
                     <>
-                        {details.status ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>非卖品</Text>}
+                        {details.left!==0 ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>已售罄</Text>}
                         <h3 style={{ marginTop: '30px', fontSize: '18px', fontWeight: '400' }}>商品描述</h3>
-                        <p style={{ color: '#959599',fontSize:'15px'}}>{details.nftDes}</p>
+                        <p style={{ color: '#959599', fontSize: '15px' }}>{details.nftDes}</p>
+                        {markID !== 'messagedetail' ?<h4>总发行数量 :<span style={{ color: '#959599',marginLeft:'5px',marginRight:'20px' }}>{details.amount}</span>剩余数量 :<span style={{color:'#959599',marginLeft:'5px'}}>{details.left}</span></h4>:null}
                     </>
             }
         </Card>
@@ -77,15 +88,15 @@ class Detail extends Component {
         const { details } = this.state
         return markID === 'activitydetail' ?
             <Meta
-            title={<span style={{fontSize:'13px',color:'gray'}}>举办者</span>}
+            title={<span style={{fontSize:'15px',color:'gray'}}>举办者</span>}
             description={<span style={{fontSize:'18px',color:'black'}}>{details.hostName} / <span style={{color:'#0070ef',fontSize:'14px'}}>{details.hostAddress}</span></span>}
             /> :
             <>
             <Meta
-                title={<span style={{fontSize:'13px',color:'gray'}}>创作者</span>}
+                title={<span style={{fontSize:'15px',color:'gray'}}>创作者</span>}
                 description={<span style={{fontSize:'18px',color:'black'}}>{details.authorName} / <span style={{color:'#0070ef',fontSize:'14px'}}>{details.authorAddress}</span></span>}
             />
-            {markID === 'homedetail' ? <Meta
+            {/* {markID === 'homedetail' ? <Meta
                 title={<span style={{fontSize:'13px',color:'gray'}}>拥有者</span>}
                 description={<span style={{ fontSize: '18px', color: 'black' }}>{details.ownerName} / <span style={{ color: '#0070ef', fontSize: '14px' }}>{details.ownerAddress}</span></span>}
                 style={{marginTop:'8px'}}
@@ -94,7 +105,7 @@ class Detail extends Component {
                 title={<span style={{fontSize:'13px',color:'gray'}}>图片TokenId</span>}
                 description={<span style={{ color: '#0070ef', fontSize: '14px' }}>{details.tokenId}</span>}
                 style={{marginTop:'8px'}}
-            />
+            /> */}
         </>
     }
     returnModal = () => {
@@ -229,7 +240,7 @@ class Detail extends Component {
         let isrefresh = sessionStorage.getItem('refresh')
         startIndex=current!==null?
         (isrefresh==='true'?Number(current): startIndex):startIndex
-        this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:currentdetails[startIndex].url })
+        this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:currentdetails[startIndex].url,left:currentdetails[startIndex].left })
         if (JSON.parse(sessionStorage.getItem('search')) === true) {
             let searchdetails = JSON.parse(sessionStorage.getItem('searchdetails'))
             items=[]
@@ -239,7 +250,7 @@ class Detail extends Component {
                 })
             })
             console.log(startIndex);
-            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:searchdetails[startIndex].url })
+            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:searchdetails[startIndex].url,left:searchdetails[startIndex].left })
         }
     }
     componentWillUnmount() {
