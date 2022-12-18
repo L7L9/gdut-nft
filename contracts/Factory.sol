@@ -46,12 +46,20 @@ contract Factory is ERC721{
         uint256 price;
 
         uint256 amount;
+
+        uint256 left;
+
+        uint256 createTime;
     }
 
     //id -> nft
     mapping(uint256 => nftProperty) nftMap;
 
+    //id -> sell
     mapping(uint256 => nftSell) sellMap;
+
+    //cid ->sellId
+    mapping(string => uint256) sellId;
 
     //tokenId -> id
     mapping(uint256 => uint256) tokenIdToId;
@@ -89,21 +97,40 @@ contract Factory is ERC721{
             author: msg.sender,
             description: _description,
             price: _price,
-            amount: _amount
+            amount: _amount,
+            left: _amount,
+            createTime: block.timestamp
         });
 
         sellMap[sellAmount] = newSellNft;
+        sellId[_cid] = sellAmount;
         sellAmount++;
     }
 
-    function getSellNFT(uint256 _id) external returns(string memory,string memory,uint256,uint256,string memory){
+    //显示sell
+    function showSell(uint256 _id) external view returns(string memory,string memory,uint256,uint256,string memory,address,uint256,uint256){
         nftSell memory sellNft = sellMap[_id];
-        sellNft.amount--;
-        sellMap[_id] = sellNft;
-        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount,sellNft.name);
+        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount,sellNft.name,sellNft.author,sellNft.createTime,sellNft.left);
     }
 
-    function getSellAmonut() external view returns(uint256){
+    //显示sell
+    function showSellByCid(string memory _cid) external view returns(string memory,string memory,uint256,uint256,string memory,address,uint256,uint256){
+        nftSell memory sellNft = sellMap[sellId[_cid]];
+        return (sellNft.cid,sellNft.description,sellNft.price,sellNft.amount,sellNft.name,sellNft.author,sellNft.createTime,sellNft.left);
+    }
+
+    //购买
+    function getSellNFT(uint256 _tokenId, string memory _cid) external{
+        nftSell memory sellNft = sellMap[sellId[_cid]];
+
+        mint(_tokenId, sellNft.name, _cid, sellNft.description, 0, sellNft.price, false);
+        nftMap[tokenIdToId[_tokenId]].author = sellNft.author;
+
+        sellNft.left--;
+        sellMap[sellId[_cid]] = sellNft;
+    }
+
+    function getSellAmount() external view returns(uint256){
         return sellAmount;
     }
 
@@ -115,7 +142,7 @@ contract Factory is ERC721{
         string memory _description,
         uint256 _activityId,
         uint256 _price,
-        bool _status) external{
+        bool _status) public{
         nftProperty memory nft = nftProperty({
             id: nftAmount,
             tokenId: _tokenId,

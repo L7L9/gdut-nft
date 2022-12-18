@@ -26,6 +26,8 @@ var account = null;
 var nftDB = new PouchDB("nft_db");
 //activty链下数据库c
 var activityDB = new PouchDB("activity_db");
+//nftSell链下数据库
+var nftSellDB = new PouchDB("nftSell_db");
 
 // nftDB.destroy();
 // activityDB.destroy();
@@ -150,19 +152,20 @@ const nftModel = {
         })
     },
 
-    newCreate:async function(name, des, price, status, file0, amount){
+    newCreate:async function(name, des, price, status, file, amount){
         const { setCidStatus } = factory.methods;
         const { createSell } = factory.methods;
         const { getCidStatus } = factory.methods;
         const { createNotice } = noticeSolidity.methods;
         const { getUserInfoByAddress } = userSolidity.methods;
+        const { getSellAmount } = factory.methods;
 
-        if (file0.length != 0) {
+        if (file.length != 0) {
             //将文件存入ipfs中并获取cid
             var cid = null;
             var reader = new FileReader();
             //读取文件转为buffer以上传
-            reader.readAsArrayBuffer(file0[0]);
+            reader.readAsArrayBuffer(file[0]);
             reader.onloadend = async function () {
                 
                 // console.log(reader.result);
@@ -175,7 +178,7 @@ const nftModel = {
                 if(!cidStatus){
                     if(!status){
                         price = 0;
-                        this.create(name, des, price, status, cid, amount);
+                        nftModel.create(name, des, price, status, file);
 
                         await setCidStatus(cid).send({
                             from: account,
@@ -186,7 +189,7 @@ const nftModel = {
                         var userInfo = await getUserInfoByAddress(account).call();
                         var userName = userInfo[0];
 
-                        await createSell(cid, name,des, price, amount).send({
+                        await createSell(cid, name, des, price, amount).send({
                             from: account,
                             gas: 1000000
                         })
@@ -199,12 +202,29 @@ const nftModel = {
                         message.success("铸造完成", 1);
                         setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
                         
+                        var doc = {
+                            _id : await getSellAmount().call(),
+                            name : name,
+                            cid : cid,
+                            author : userName,
+                            price : parseInt(price)
+                        }
+                        nftSellDB.put(doc, function(err, response) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log("Document created Successfully");
+                            }
+                        })
+
                         var noticeDes = "用户(" + userName + ")创建了" + amount +"个藏品:" + name;
                         await createNotice("铸造个人藏品",noticeDes,0).send({
                             from: account,
                             gas: 1000000
                         }).then(res=>console.log(res))
                     }
+                } else {
+                    message.error("该图片已经使用过", 1);
                 }   
             }
         } else {
@@ -215,30 +235,32 @@ const nftModel = {
         }
     },
 
-    getSellNft: async function(id){
+    getSellNft: async function(cid){
+        const { mint } = factory.methods;
         const { buy } = userSolidity.methods;
         const { getMoney } = userSolidity.methods;
+        const { showSellByCid } = factory.methods;
         const { getSellNFT } = factory.methods; 
 
-        var result = await getSellNFT(id).call();
+        var result = await showSellByCid(cid).call();
+        // cid description price amount name author createTime left
         var money = await getMoney().call({from:account});
-        if(new Number(money) >= new Number(result[3])){
+        if(parseInt(money) >= parseInt(result[2])){
             try {
-                await buy(price,owner).send({
+                await buy(parseInt(result[2]),result[5]).send({
                     from:account,
                     gas: 1000000
                 }).on('error',function(error){
                     throw error;
                 }).then(async function(){
-                    if(result[3] >= 0){
-                        this.create(result[4],result[1],result[2],true,result[0],result[3]);
+                    if(parseInt(result[7]) > 0){
+                        var tokenId = web3.utils.sha3(account + cid + result[7]);
+                        await getSellNFT(tokenId,cid).send({from: account,gas:1000000})
+                        message.success("购买成功");
                     } else {
                         message.error("数量不够",1)
                     }
-
-                }).then(()=>{
-                    message.success("购买成功");
-                });
+                })
             } catch (error) {
                 message.error("购买失败",1)
             }
@@ -472,7 +494,7 @@ const nftModel = {
         })
     },
 
-    //多条件筛选
+    //多条件筛选链上nft
     select : async function (name,author,priceMin,priceMax){
         const { getUserInfoByAddress } = userSolidity.methods;
         var content;
@@ -518,6 +540,53 @@ const nftModel = {
         })
         return new Promise(reslove => {
             reslove(res)
+        })
+    },
+    //多条件筛选待售新品
+    selectSell : async function (name,author,priceMin,priceMax){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        const { showSellByCid } = factory.methods;
+        var content;
+        var url;
+        var temp = [];
+        var ipfsResult;
+        await nftSellDB.find({
+            selector: {
+                name:{"$regex": name==null?"":name},
+                author:{"$regex": author==null?"":author},
+                price:{
+                    "$gte": priceMin==null?0:priceMin,
+                    "$lte": priceMax==null?Number.MAX_SAFE_INTEGER:priceMax
+                }
+            },
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                console.log(result.docs[i])
+                var res = await showSellByCid(result.docs[i].cid).call();
+                
+                ipfsResult = await ipfs.get(result.docs[i].cid);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                
+                var authorInfo = await getUserInfoByAddress(res[5]).call();
+                var authorName = authorInfo[0];
+                
+                temp.push({
+                    url,
+                    name: res[4],
+                    description: res[1],
+                    price: res[2],
+                    amount: res[3],
+                    left:res[7],
+                    cid: res[0],
+                    authorAddress: res[5],
+                    authorName: authorName,
+                    createTime: res[6],
+                })
+            }     
+        })
+        return new Promise(reslove => {
+            reslove(temp)
         })
     }
 }
@@ -832,27 +901,35 @@ const pageModel = {
 
     showSellNFT: async function(){
         const { getSellAmount } = factory.methods;
-        const { getSellNFT } = factory.methods;
+        const { showSell } = factory.methods;
+        const { getUserInfoByAddress } = userSolidity.methods;
 
         var amount = await getSellAmount().call();
-        if(amount > 0){
+        if(parseInt(amount) > 0){
             var res = null;
             var ipfsReturn = null;
             var content = null;
             var url = null;
+            var result = [];
             for(let i = 0;i < amount;i++){
-                res = await getSellNFT(i).call();
-                //res[0]->cid  res[1]->description  res[2]->price  res[3]->amount  res[4]->name
+                res = await showSell(i).call();
                 ipfsReturn = await ipfs.get(res[0]);
                 content = ipfsReturn[0].content;
                 url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[5]).call();
+                var authorName = authorInfo[0];
                 result.push({
                     url,
                     id: i,
                     name: res[4],
                     description: res[1],
                     price: res[2],
-                    amount: res[3]+1
+                    amount: res[3],
+                    left:res[7],
+                    cid: res[0],
+                    authorAddress: res[5],
+                    authorName: authorName,
+                    createTime: res[6],
                 })
             }
         }
@@ -907,6 +984,8 @@ const pageModel = {
     },
     
     showAllNFT: async function(){
+        // console.log(await this.showSellNFT())
+        console.log(await nftModel.selectSell(null,null,null,null))
         const { getNFTAmount } = factory.methods;
         //获取查询信息的方法
         const { getProperty } = factory.methods;
