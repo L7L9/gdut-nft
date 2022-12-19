@@ -31,6 +31,7 @@ var nftSellDB = new PouchDB("nftSell_db");
 
 // nftDB.destroy();
 // activityDB.destroy();
+// nftSellDB.destroy();
 
 const init = {
     getAccount: async function(){
@@ -256,6 +257,26 @@ const nftModel = {
                     if(parseInt(result[7]) > 0){
                         var tokenId = web3.utils.sha3(account + cid + result[7]);
                         await getSellNFT(tokenId,cid).send({from: account,gas:1000000})
+                            .then(async()=>{
+                                const { getUserInfoByAddress } = userSolidity.methods;
+                                var userInfo = await getUserInfoByAddress(result[5]).call();
+                                var userName = userInfo[0];
+                                var doc = {
+                                    _id : tokenId,
+                                    name : result[4],
+                                    cid : result[0],
+                                    author : userName,
+                                    price : parseInt(result[2])
+                                }
+                                nftDB.put(doc, function(err, response) {
+                                    if (err) {
+                                        console.log(err);
+                                        // throw err;
+                                    } else {
+                                        console.log("Document created Successfully");
+                                    }
+                                })
+                            })
                         message.success("购买成功");
                     } else {
                         message.error("数量不够",1)
@@ -442,7 +463,7 @@ const nftModel = {
                     price: temp[8],//价格(若不能被购买则为0)  其他=>活动发行
                     mintTime: temp[9]
                 })
-            }   
+            } 
         })
         return new Promise(reslove => {
             reslove(res)
