@@ -204,7 +204,7 @@ const nftModel = {
                         setTimeout(()=>{window.location.replace("http://localhost:8081/#/GDUT-nft/home")},100)
                         
                         var doc = {
-                            _id : await getSellAmount().call(),
+                            _id : (parseInt(await getSellAmount().call())-1).toString(),
                             name : name,
                             cid : cid,
                             author : userName,
@@ -429,14 +429,13 @@ const nftModel = {
     //搜索
     search: async function (value) {
         const { getUserInfoByAddress } = userSolidity.methods;
-        var regExp = new RegExp('.*' + value + '.*', 'i');
         var content;
         var url;
         var res = [];
         var ipfsResult;
         await nftDB.find({
             selector: {
-                name:{"$regex": regExp},
+                name:{"$regex": value},
             },
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
@@ -473,14 +472,13 @@ const nftModel = {
     //搜索某位作者的所有作品
     searchByAuthor : async function (value){
         const { getUserInfoByAddress } = userSolidity.methods;
-        var regExp = new RegExp('.*' + value + '.*', 'i');
         var content;
         var url;
         var res = [];
         var ipfsResult;
         await nftDB.find({
             selector: {
-                author:{"$regex": regExp},
+                author:{"$regex": value},
             },
         }).then(async function(result){
             for (let i = 0; result.docs[i] != null; i++){
@@ -761,7 +759,6 @@ const activityModel = {
         const { getUserInfoByAddress } = userSolidity.methods;
         const { getActivityProperty } = activity.methods;
         const { showActivityNFT } = activity.methods;
-        var regExp = new RegExp('.*' + value + '.*', 'i');
         var searchRes = [];
         var res = null;
         var content = null;
@@ -770,7 +767,7 @@ const activityModel = {
         var nftRes = null;
         await activityDB.find({
             selector: {
-                name:{"$regex": regExp},
+                name:{"$regex": value},
             },
         }).then(async function(result){
             for(let i=0;result.docs[i]!=null;i++){
@@ -808,7 +805,6 @@ const activityModel = {
         const { getUserInfoByAddress } = userSolidity.methods;
         const { getActivityProperty } = activity.methods;
         const { showActivityNFT } = activity.methods;
-        var regExp = new RegExp('.*' + host + '.*', 'i');
         var searchRes = [];
         var res = null;
         var content = null;
@@ -817,7 +813,7 @@ const activityModel = {
         var nftRes = null;
         await activityDB.find({
             selector: {
-                host:{"$regex": regExp},
+                host:{"$regex": host},
             },
         }).then(async function(result){
             for(let i=0;result.docs[i]!=null;i++){
@@ -855,7 +851,6 @@ const activityModel = {
         const { getUserInfoByAddress } = userSolidity.methods;
         const { getActivityProperty } = activity.methods;
         const { showActivityNFT } = activity.methods;
-        var regExp = new RegExp('.*' + name + '.*', 'i');
         var searchRes = [];
         var res = null;
         var content = null;
@@ -864,7 +859,7 @@ const activityModel = {
         var nftRes = null;
         await activityDB.find({
             selector: {
-                name:{"$regex": regExp},
+                name:{"$regex": name},
                 host:host
             },
         }).then(async function(result){
@@ -958,6 +953,46 @@ const pageModel = {
         })
     },
 
+    showMySell: async function(){
+        const { getUserInfoByAddress } = userSolidity.methods;
+        const { showSell } = factory.methods;
+        var userInfo = await getUserInfoByAddress(account).call();
+        var userName = userInfo[0];
+        var content;
+        var url;
+        var temp = [];
+        var ipfsResult;
+
+        await nftSellDB.find({
+            selector: {
+                author:userName,
+            },
+        }).then(async function(result){
+            for (let i = 0; result.docs[i] != null; i++){
+                var res = await showSell(result.docs[i]._id).call();
+                ipfsResult = await ipfs.get(res[0]);
+                content = ipfsResult[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                
+                temp.unshift({
+                    url,
+                    nftName: res[4],
+                    nftDes: res[1],
+                    price: res[2],
+                    amount: res[3],
+                    left:Number(res[7]),
+                    cid: res[0],
+                    authorAddress: account,
+                    authorName: userName,
+                    createTime: res[6],
+                })
+            } 
+        })
+        return new Promise(reslove => {
+            reslove(temp)
+        })
+    },
+
     showMyNFT: async function(){
         const { getPersonalNFT } = factory.methods;
         const { balanceOf } = factory.methods;
@@ -1004,7 +1039,6 @@ const pageModel = {
     },
     
     showAllNFT: async function(){
-        // console.log(await this.showSellNFT())
         console.log(await nftModel.selectSell(null,null,null,null))
         const { getNFTAmount } = factory.methods;
         //获取查询信息的方法
