@@ -75,10 +75,10 @@ class Detail extends Component {
                         <p style={{color:'#959599'}}>{details.amount}</p>
                     </> :
                     <>
-                        {details.left!==0 ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>已售罄</Text>}
+                        {markID !== 'nftsearch'?(details.left!==0 ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>已售罄</Text>):<Text italic style={{fontSize:'24px'}}>非卖品</Text>}
                         <h3 style={{ marginTop: '30px', fontSize: '18px', fontWeight: '400' }}>商品描述</h3>
                         <p style={{ color: '#959599', fontSize: '15px' }}>{details.nftDes}</p>
-                        {markID !== 'messagedetail' ?<h4>总发行数量 :<span style={{ color: '#959599',marginLeft:'5px',marginRight:'20px' }}>{details.amount}</span>剩余数量 :<span style={{color:'#959599',marginLeft:'5px'}}>{details.left}</span></h4>:null}
+                        {markID !== 'messagedetail'&&markID !== 'nftsearch' ?<h4>总发行数量 :<span style={{ color: '#959599',marginLeft:'5px',marginRight:'20px' }}>{details.amount}</span>剩余数量 :<span style={{color:'#959599',marginLeft:'5px'}}>{details.left}</span></h4>:null}
                     </>
             }
         </Card>
@@ -96,16 +96,16 @@ class Detail extends Component {
                 title={<span style={{fontSize:'15px',color:'gray'}}>创作者</span>}
                 description={<span style={{fontSize:'18px',color:'black'}}>{details.authorName} / <span style={{color:'#0070ef',fontSize:'14px'}}>{details.authorAddress}</span></span>}
             />
-            {/* {markID === 'homedetail' ? <Meta
+            {markID === 'nftsearch' ? <><Meta
                 title={<span style={{fontSize:'13px',color:'gray'}}>拥有者</span>}
                 description={<span style={{ fontSize: '18px', color: 'black' }}>{details.ownerName} / <span style={{ color: '#0070ef', fontSize: '14px' }}>{details.ownerAddress}</span></span>}
                 style={{marginTop:'8px'}}
-            />:null}
+            />
             <Meta
                 title={<span style={{fontSize:'13px',color:'gray'}}>图片TokenId</span>}
                 description={<span style={{ color: '#0070ef', fontSize: '14px' }}>{details.tokenId}</span>}
                 style={{marginTop:'8px'}}
-            /> */}
+            /></>:null}
         </>
     }
     returnModal = () => {

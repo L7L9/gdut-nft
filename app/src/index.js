@@ -903,14 +903,14 @@ const pageModel = {
         const { getSellAmount } = factory.methods;
         const { showSell } = factory.methods;
         const { getUserInfoByAddress } = userSolidity.methods;
-
+        var result = [];
         var amount = await getSellAmount().call();
         if(parseInt(amount) > 0){
             var res = null;
             var ipfsReturn = null;
             var content = null;
             var url = null;
-            var result = [];
+            
             for(let i = 0;i < amount;i++){
                 res = await showSell(i).call();
                 ipfsReturn = await ipfs.get(res[0]);

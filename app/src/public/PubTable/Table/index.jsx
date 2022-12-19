@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import { Table, Button, Image,Tag,Space,Modal,Input,message } from 'antd';
 import {
     ClearOutlined,
-    FireOutlined
+    FireOutlined,
+    SketchOutlined
 } from '@ant-design/icons';
 import { Setdata } from '@/redux/actions/data'
 import { Contentloading } from '@/redux/actions/contentloading'
@@ -62,9 +63,9 @@ class PubTable extends Component {
             dataIndex: 'status',
             align: 'center',
             render: (value) =>
-                <Tag icon={value?<FireOutlined />:<ClearOutlined />} color={value?'success':'error'}>
-                    {value?'售卖中':'已售罄'}
-                </Tag>
+                {return markID!=='nftsearch'?<Tag icon={value!==0?<FireOutlined />:<ClearOutlined />} color={value!==0?'success':'error'}>
+                    {value!==0?'售卖中':'已售罄'}
+                </Tag>:<Tag icon={<SketchOutlined />} color='gold'>非卖品</Tag>}
             },
             {
             title: '价格',
@@ -142,8 +143,8 @@ class PubTable extends Component {
             datasource.push({
                 preview: item.url,
                 name: item.nftName,
-                number: item.cid,
-                status:item.status,
+                number: markID!=='nftsearch'?item.cid:item.tokenId,
+                status:markID!=='nftsearch'?item.left:item.status,
                 price: item.price,
                 author:item.authorName,
                 detail:[item,index],

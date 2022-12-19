@@ -201,7 +201,7 @@ class Content extends Component {
                     changeloading(true)
                     let { name, author, lowprice, highprice } = value
                     if (markID === 'nftsearch') {
-                        nftModel.select(name, null, null, null).then(res => {
+                        nftModel.search(name).then(res => {
                             updatedata({ ...alldata, currentdata: res, [markID]: res });
                             this.setState({ data: res })
                             changeloading(false)
