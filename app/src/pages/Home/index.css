@@ -1,0 +1,11 @@
+.title{
+    margin-top: 25px;
+    width: 100%;
+    text-align: center;
+}
+
+.intro{
+    padding: 12px;
+    height: 150px;
+    /* background-color: aqua; */
+}
