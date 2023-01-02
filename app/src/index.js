@@ -953,6 +953,45 @@ const pageModel = {
         })
     },
 
+    //获取首页展示的前四个新品
+    showHomePageSellNFT: async function(){
+        const { getSellAmount } = factory.methods;
+        const { showSell } = factory.methods;
+        const { getUserInfoByAddress } = userSolidity.methods;
+        var result = [];
+        var amount = await getSellAmount().call();
+        if(parseInt(amount) > 0){
+            var res = null;
+            var ipfsReturn = null;
+            var content = null;
+            var url = null;
+            
+            for(let i = amount-4; i < amount; i++){
+                res = await showSell(i).call();
+                ipfsReturn = await ipfs.get(res[0]);
+                content = ipfsReturn[0].content;
+                url = window.URL.createObjectURL(new Blob([content]));
+                var authorInfo = await getUserInfoByAddress(res[5]).call();
+                var authorName = authorInfo[0];
+                result.unshift({
+                    url,
+                    nftName: res[4],
+                    nftDes: res[1],
+                    price: res[2],
+                    amount: res[3],
+                    left:Number(res[7]),
+                    cid: res[0],
+                    authorAddress: res[5],
+                    authorName: authorName,
+                    createTime: res[6],
+                })
+            }
+        }
+        return new Promise((reslove, reject) => {
+            reslove(result)
+        })
+    },
+
     showMySell: async function(){
         const { getUserInfoByAddress } = userSolidity.methods;
         const { showSell } = factory.methods;
