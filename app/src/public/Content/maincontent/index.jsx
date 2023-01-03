@@ -27,11 +27,14 @@ class Content extends Component {
     showmynft = () => {
         const { markID, alldata, updatedata,changerefresh,refresh,changeloading } = this.props
         changeloading(true)
-        pageModel.showMySell().then(res => {
-            updatedata({ ...alldata, [markID]: res,currentdata:res })
-            this.setState({ data: res })
-            changeloading(false)
-            changerefresh({...refresh,message:false})
+        pageModel.showMySell().then(res1 => {
+            pageModel.showMyNFT(res2 => {
+                updatedata({ ...alldata, [markID]: [...res1,...res2],currentdata:[...res1,...res2] })
+                this.setState({ data: [...res1,...res2] })
+                changeloading(false)
+                changerefresh({...refresh,message:false})
+            })
+            
         })
     }
     showactivity = () => {
