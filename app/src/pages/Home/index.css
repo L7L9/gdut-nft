@@ -9,3 +9,13 @@
     height: 150px;
     /* background-color: aqua; */
 }
+
+.images{
+    position: relative;
+    margin-top: -30px;
+    width: 1300px;
+    height: 750px;
+    left: 50%;
+    /* background-color: cadetblue; */
+    transform: translate(-50%);
+}

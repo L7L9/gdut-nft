@@ -226,7 +226,7 @@ class Detail extends Component {
         const markid = markID === 'homedetail' ? 'allnft' :
         markID === 'activitydetail' ? 'activity' :
         markID === 'messagedetail' ? 'mynft' : 
-        markID === 'nftsearch'?'nftsearch':null
+        markID === 'nftsearch'?'nftsearch':'allnft'
         let items = []
         const data=alldata.currentdata===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata.currentdata))
         let currentdetails=alldata.currentdata===undefined?data:alldata.currentdata

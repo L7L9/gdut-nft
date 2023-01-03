@@ -1,33 +1,73 @@
 import React, { Component } from 'react'
-import { Carousel, Typography,Col, Row } from 'antd';
-const { Title,Paragraph } = Typography;
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux'
+import { Carousel, Typography, Col, Row, Image, Layout, Statistic, Card, Button } from 'antd';
+import { ArrowRightOutlined } from '@ant-design/icons';
+import Loading from '@/components/Loading';
+import { getmainColor } from '@/utils/getmainColor';
+import { Setdata } from '@/redux/actions/data'
+const { Title, Paragraph } = Typography;
+const { Sider, Content,Footer } = Layout;
 import './index.css'
-const contentStyle = {
-    height: '400px',
-    color: '#fff',
-    lineHeight: '350px',
-    textAlign: 'center',
-    background: '#364d79',
-};
 
-export default class Home extends Component {
+class Home extends Component {
+    state = {
+        contentStyle: {
+            height: '750px',
+            color: '#fff',
+            lineHeight: '750px',
+            textAlign: 'center',
+            // background: '#364d79'
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundImage:''
+        },
+        homesellnft: [],
+        loading:true
+    }
+
+    componentDidMount() {
+        const {alldata,updatedata}=this.props
+        pageModel.showHomePageSellNFT().then(res => {
+            let homesellnft = []
+            res.map(item => {
+                homesellnft.push(item)
+            })
+            this.setState({ homesellnft, loading: false })
+            updatedata({...alldata,currentdata:res})
+        })
+    }
     render() {
+        const {loading,homesellnft}=this.state
         return (
-            <div>
-                <Carousel autoplay style={{marginTop:'-50px',marginLeft:'-50px',height:'400px',width:'110%'}}>
-                    <div>
-                    <h3 style={contentStyle}>1</h3>
-                    </div>
-                    <div>
-                    <h3 style={contentStyle}>2</h3>
-                    </div>
-                    <div>
-                    <h3 style={contentStyle}>3</h3>
-                    </div>
-                    <div>
-                    <h3 style={contentStyle}>4</h3>
-                    </div>
+            loading?<Loading/>:<div>
+                <div className='images'>
+                <Carousel autoplay  effect='fade'>
+                    {homesellnft.map((item,index) => {
+                        return <div key={index}>
+                            <Layout style={{height:'750px',backgroundColor:'#f8fbff'}}>
+                                <Content style={{ borderRadius: '15px',backgroundColor:'#f8fbff'}} width={850}>
+                                    <Image src={item.url} style={{ height:'750px',objectFit: 'cover',borderRadius:'15px' }} width={850} onClick={getmainColor(item.url)} />
+                                </Content>
+                                <Sider style={{ position:'relative',marginLeft: '50px', backgroundColor:'#f8fbff' }} width={400}>
+                                    <Title level={1} className="title">{item.nftName}</Title>
+                                    <Statistic title="创作者" value={item.authorName} style={{ marginTop: '50px', paddingLeft: '30px' }} />
+                                    <Card style={{marginTop:'20px',borderRadius:'5px'}}>
+                                        <Title level={5}>寄售价格</Title>
+                                        <span style={{fontSize:'40px'}}>￥{item.price}</span>
+                                        <Title level={5} style={{marginTop:'10px'}}>商品描述</Title>
+                                        <span style={{ color: '#959599' }}>{item.nftDes}</span>
+                                    </Card>
+                                    <Link to='/GDUT-nft/news/detail' state={{ ...item,index }} style={{position:'absolute',bottom: '80px',zIndex:'99',width:'100%'}} ref='link'>
+                                        <Button type="primary" block style={{ height: '50px', borderRadius: '8px' }} icon={<ArrowRightOutlined />} >前往购买</Button>
+                                    </Link>
+                                </Sider> 
+                            </Layout>
+                            
+                        </div>
+                    })}
                 </Carousel>
+                </div>
                 <Title level={2} className="title">什么是数字藏品</Title>
                 <Row style={{marginTop:'40px'}}>
                     <Col span={8} className='intro'>
@@ -57,4 +97,12 @@ export default class Home extends Component {
         )
     }
 }
+
+
+export default connect(
+    state => ({alldata:state.data}),
+    {
+        updatedata: Setdata,
+    }
+)(Home)
 
