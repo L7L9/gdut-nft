@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { getmainColor } from '@/utils/getmainColor';
 
 
-
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -46,30 +45,28 @@ const Selectnft = (props) => {
       </div>
     </div>
   );
-  const handleChange = async ({ fileList: newFileList, file }) => {
+  const handleChange = ({ fileList: newFileList, file }) => {
     const { type } = props
-    console.log(file.status);
     if (file.status === 'removed') {
       setFileList([]);
       type === 'foundry' ? PubSub.publish("nftfile", 1) :
       type==='create'?PubSub.publish("activityfile",1):null
-    }
-    else {
+    }else {
       newFileList[0].status = 'done'
-      if (!file.url && !file.preview) {
-        file.preview = await getBase64(file.originFileObj);
+      if (fileList.length === 0) {
+        setFileList(newFileList)
+        setTimeout(async() => {
+          if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj);
+            message.success('上传成功', .5)
+            setPreviewImage(file.url || file.preview);
+            let image=document.querySelector('.ant-upload-list-item-image')
+            image.src = file.preview
+          }
+        }, 200)
+        type === 'foundry' ? PubSub.publish("nftfile", newFileList[0].originFileObj) :
+        type==='create'?PubSub.publish("activityfile",newFileList[0].originFileObj):null
       }
-      setPreviewImage(file.url || file.preview);
-      setTimeout(() => {
-        setFileList(newFileList);
-        setTimeout(() => {
-          let image=document.querySelector('.ant-upload-list-item-image')
-          image.src = file.preview
-          message.success('上传成功', .5)
-        }, 100)
-      }, 200)
-      type === 'foundry' ? PubSub.publish("nftfile", newFileList[0].originFileObj) :
-      type==='create'?PubSub.publish("activityfile",newFileList[0].originFileObj):null
     }
   };
   const beforeUpload = (file) => {

@@ -42,7 +42,7 @@ class Home extends Component {
         return (
             loading?<Loading/>:<div>
                 <div className='images'>
-                <Carousel autoplay  effect='fade'>
+                <Carousel autoplaySpeed={2000}  effect='fade' autoplay>
                     {homesellnft.map((item,index) => {
                         return <div key={index}>
                             <Layout style={{height:'750px',backgroundColor:'#f8fbff'}}>
