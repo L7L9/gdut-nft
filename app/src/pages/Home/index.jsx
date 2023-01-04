@@ -47,7 +47,7 @@ class Home extends Component {
                         return <div key={index}>
                             <Layout style={{height:'750px',backgroundColor:'#f8fbff'}}>
                                 <Content style={{ borderRadius: '15px',backgroundColor:'#f8fbff'}} width={850}>
-                                    <Image src={item.url} style={{ height:'750px',objectFit: 'cover',borderRadius:'15px' }} width={850} onClick={getmainColor(item.url)} />
+                                    <Image src={item.url} style={{ height:'750px',objectFit: 'cover',borderRadius:'15px' }} width={850} onClick={()=>getmainColor(item.url)} />
                                 </Content>
                                 <Sider style={{ position:'relative',marginLeft: '50px', backgroundColor:'#f8fbff' }} width={400}>
                                     <Title level={1} className="title">{item.nftName}</Title>
