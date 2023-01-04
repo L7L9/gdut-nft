@@ -1,14 +1,20 @@
-import React, { Component } from 'react'
-import { Segmented, PageHeader, Row, Tag, Typography,Statistic,Affix,Form,Input,InputNumber,Button } from 'antd'
+import React, { Component,useMemo } from 'react'
+import { Segmented, PageHeader, Row, Tag, Typography,Statistic,Affix,Form,Input,InputNumber,Button,Tabs } from 'antd'
 import {BarsOutlined,AppstoreOutlined,PayCircleOutlined,SearchOutlined,SwapRightOutlined } from '@ant-design/icons'
 import Content from '@/public/Content';
 import PubTable from '@/public/PubTable'
+import { Setdata } from '@/redux/actions/data'
+import { Contentloading } from '@/redux/actions/contentloading'
+import { connect } from 'react-redux';
 import { markID } from '@/utils/globalType';
 
-export default class PersonMessage extends Component{
-  state = { person: [],show:'show',values:{},min:0 }
+
+
+class PersonMessage extends Component{
+  state = { person: [], show: 'show', values: {}, min: 0}
   showchange = (value) => {
     this.setState({ show: value })
+    sessionStorage.setItem('changetable',JSON.stringify(true))
     if(value==='show')sessionStorage.setItem('search',false)
   }
   getperson = async () => {
@@ -18,6 +24,20 @@ export default class PersonMessage extends Component{
   componentDidMount() {
     this.getperson()
     sessionStorage.setItem('contentsearch',false)
+  }
+  onChange = (key) => {
+    sessionStorage.setItem('changetable',JSON.stringify(true))
+    const { alldata, updatedata, changeloading } = this.props
+    changeloading(true)
+    if (alldata.hasOwnProperty('mynft') && key === '2') {
+      updatedata({ ...alldata, currentdata: alldata.mynft })
+      setTimeout(()=>{changeloading(false)},100)
+    }
+    if (alldata.hasOwnProperty('mysell') && key === '1') {
+      updatedata({ ...alldata, currentdata: alldata.mysell })
+      setTimeout(()=>{changeloading(false)},100)
+    }
+    
   }
   onFinish = (values) => {
     this.setState({values})
@@ -42,6 +62,52 @@ export default class PersonMessage extends Component{
       </PageHeader>
       <h1 style={{ fontSize: '35px', fontWeight: '600', display: 'inline-block' }}>我的</h1>
       <Affix offsetTop={0}>
+        <Tabs
+          tabBarExtraContent={{
+            right:
+              <div style={{ width: '1100px', height: '68px', backgroundColor: '#f8fbff', padding: '24px 0' }}>
+              <Segmented
+                options={[
+              {
+                label: '展示',
+                value: 'show',
+                icon: <AppstoreOutlined />,
+              },
+              {
+                label: '列表',
+                value: 'list',
+                icon: <BarsOutlined />,
+              }
+            ]}
+            style={{ float: 'right' }}
+                onChange={this.showchange}
+              />
+              </div>
+          }}
+          destroyInactiveTabPane={true}
+          defaultActiveKey="1"
+          onChange={this.onChange}
+          type='card'
+          tabBarGutter={20}
+          items={[
+          {
+            label: '发布',
+            key: '1',
+            children: this.state.show === 'show' ?
+              <Content markID={markID.mysell} value={this.state.values} /> :
+              <PubTable markID={markID.mysell} value={this.state.values} />,
+          },
+          {
+            label: '拥有',
+            key: '2',
+            children: this.state.show === 'show' ?
+            <Content markID={markID.mynft} value={this.state.values} /> :
+            <PubTable markID={markID.mynft} value={this.state.values}  />,
+          }
+          ]}
+        />
+      </Affix>
+      {/* <Affix offsetTop={0}>
             <div style={{ height: '80px',backgroundColor:'#f8fbff',padding:'24px 0'  }}>
               <Form
                   layout='inline'
@@ -80,10 +146,20 @@ export default class PersonMessage extends Component{
                 onChange={this.showchange}
               />
             </div>
-      </Affix>
-      {this.state.show === 'show' ?
+      </Affix> */}
+      
+      {/* {this.state.show === 'show' ?
         <Content markID={markID.mynft} value={this.state.values}/> :
-        <PubTable markID={markID.mynft} value={this.state.values}/>}
+        <PubTable markID={markID.mynft} value={this.state.values}/>} */}
   </div>
   }
 }
+
+
+export default connect(
+  state => ({alldata:state.data,contentloading:state.contentloading}),
+  {
+    updatedata: Setdata,
+    changeloading:Contentloading
+  }
+)(PersonMessage)

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {BarsOutlined,AppstoreOutlined,SearchOutlined,SwapRightOutlined} from '@ant-design/icons'
 import { Segmented, Affix,Layout,Form,Input,Button, InputNumber, } from 'antd';
-import SearchForm from '@/public/PubTable/SearchFrom'
 import Content from '@/public/Content';
 import PubTable from '@/public/PubTable'
 import { markID } from '@/utils/globalType';

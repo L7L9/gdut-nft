@@ -46,6 +46,7 @@ class Detail extends Component {
     }
     returnextra = () => {
         const { markID } = this.props
+        console.log(markID);
         const { details } = this.state
         return markID === 'homedetail' ? <Button type='primary' disabled={details.left===0?true:false} onClick={this.buy}>购买</Button> :
             markID === 'messagedetail' ? <Button type='primary' onClick={this.showModal}>转赠</Button> :
@@ -226,6 +227,7 @@ class Detail extends Component {
         const markid = markID === 'homedetail' ? 'allnft' :
         markID === 'activitydetail' ? 'activity' :
         markID === 'messagedetail' ? 'mynft' : 
+        markID === 'myselldetail' ? 'mysell' : 
         markID === 'nftsearch'?'nftsearch':'allnft'
         let items = []
         const data=alldata.currentdata===undefined?JSON.parse(sessionStorage.getItem('currentdetail')):sessionStorage.setItem('currentdetail',JSON.stringify(alldata.currentdata))

@@ -88,7 +88,8 @@ export default function BaseLayout() {
         <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
         <Route path="/activity/detail"  element={<Adetail/>}/>
         <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />
-        <Route path="/message/detail" element={<Mydetail/>} />
+        <Route path="/message/detail" element={<Mydetail type='message' />} />
+        <Route path="/mysell/detail" element={<Mydetail type='mysell'/>} />
         <Route path="/notify"  element={<Notify/>} />
         <Route path="/message"  element={loading?<Loading/>:<Message/>} />
         </Routes>
