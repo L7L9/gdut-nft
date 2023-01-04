@@ -61,7 +61,7 @@ class PersonMessage extends Component{
         </Row>
       </PageHeader>
       <h1 style={{ fontSize: '35px', fontWeight: '600', display: 'inline-block' }}>我的</h1>
-      <Affix offsetTop={0}>
+      {/* <Affix offsetTop={0}> */}
         <Tabs
           tabBarExtraContent={{
             right:
@@ -106,7 +106,7 @@ class PersonMessage extends Component{
           }
           ]}
         />
-      </Affix>
+      {/* </Affix> */}
       {/* <Affix offsetTop={0}>
             <div style={{ height: '80px',backgroundColor:'#f8fbff',padding:'24px 0'  }}>
               <Form

@@ -27,7 +27,7 @@ export default function Mynft() {
     let { userName, des, price, status, amount} = values;
     status ? nftModel.newCreate(userName, des, price, status, nftfile, amount) :
     nftModel.newCreate(userName, des, 0, status, nftfile, 1)
-    dispatch(Refresh({...refresh,home:true,message:true}))
+    dispatch(Refresh({...refresh,home:true,message:{mynft:true,mysell:true}}))
   };
   const onChange = (e) => {
     setValue(e.target.value);
