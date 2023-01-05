@@ -1,31 +1,27 @@
 import React, { useEffect,useState,lazy,Suspense } from 'react'
-import {} from 'react-redux'
+//引入connect用于连接UI组件与redux
+import { useSelector,useDispatch } from 'react-redux'
 import { Menu, Layout, message } from 'antd';
 const { Header, Content, Footer } = Layout;
 import { Routes, Route,useLocation,useNavigate } from 'react-router-dom';
 import {loadingaction} from '@/redux/actions/loading'
 import { items } from '@/routes/allmenuitems';
 import { Navigate } from "react-router-dom";
-const Home=lazy(()=>import ('@/pages/Home'))
-const News=lazy(()=>import ('@/pages/News'))
-const Nftdetail=lazy(()=>import ('@/pages/News/Nftdetail'))
-const Adetail=lazy(()=>import ('@/pages/Activity/Detail'))
-const Mydetail=lazy(()=>import ('@/pages/Message/Detail'))
-const Searchdetail=lazy(()=>import ('@/pages/Search/Detail'))
-const Search=lazy(()=>import ('@/pages/Search'))
-const Activity=lazy(()=>import ('@/pages/Activity'))
-const Mynft=lazy(()=>import ('@/pages/Mynft'))
-const Notify=lazy(()=>import ('@/pages/Notify'))
-const Message=lazy(()=>import ('@/pages/Message'))
+import ErrorBoundry from '@/components/ErrorBoundry'
 import Loading from '@/components/Loading'
+import Search from '@/pages/Search'
 import './index.css'
 
-//引入connect用于连接UI组件与redux
-import { useSelector,useDispatch } from 'react-redux'
-
+const lazyload = (path,props) => {
+  const Route = lazy(() => import(`@/pages/${path}`))
+  return <ErrorBoundry><Route {...props} /></ErrorBoundry>
+}
 
 export default function BaseLayout() {
   const [currentpath, setcurrentpath] = useState(['首页']);
+  const [allpath, setallpath] = useState([
+    'Home','News','Activity','Create','Message','Notify','news/detail','search/detail','activity/detail','message/detail','mysell/detail'
+  ]);
   // 拿到location
   const location = useLocation();
 
@@ -33,7 +29,6 @@ export default function BaseLayout() {
 	const dispatch = useDispatch()
 	
   const navigate = useNavigate();
-  // useEffect(effectFunc, []) 类似于 componentDidMount
   useEffect(() => {
     if (sessionStorage.getItem('islogin') != 'true') {
       message.info('请先登陆账号',2)
@@ -78,20 +73,32 @@ export default function BaseLayout() {
         }}
     >
       <Suspense>
-        <Routes>
-        <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
-        <Route path="/home"  element={loading?<Loading/>:<Home/>}  />
-        <Route path="/news"  element={loading?<Loading/>:<News/>}  />
-        <Route path="/news/detail"  element={<Nftdetail/>}  />
-        <Route path="/search" element={<Search />} />
-        <Route path='/search/detail' element={<Searchdetail />} />
-        <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/>
-        <Route path="/activity/detail"  element={<Adetail/>}/>
-        <Route path="/mynft" element={loading?<Loading/>:<Mynft/>} />
-        <Route path="/message/detail" element={<Mydetail type='message' />} />
-        <Route path="/mysell/detail" element={<Mydetail type='mysell'/>} />
-        <Route path="/notify"  element={<Notify/>} />
-        <Route path="/message"  element={loading?<Loading/>:<Message/>} />
+          <Routes>
+            <Route path="/" element={<Navigate to={"/GDUT-nft/home"} />} />
+            <Route path="/search" element={<Search/>} />
+            {allpath.map((path,index) => {
+              if (!path.split('/').includes('detail')) {
+                const element=lazyload(path)
+                return <Route path={'/' + path.toLowerCase()} element={loading ? <Loading /> : element} key={index} />
+              } else {
+                const Details = path.split('/')[0] === 'message' ? lazyload('Details', { type: 'message' }) :
+                path.split('/')[0] === 'mysell'?lazyload('Details', {type:'mysell'}):lazyload('Details')
+                return <Route path={'/'+path} element={Details} key={index}/>
+              }
+            })}
+            
+            {/* <Route path="/home"  element={loading?<Loading/>:<Home/>}  /> */}
+            {/* <Route path="/news"  element={loading?<Loading/>:<News/>}  /> */}
+            {/* <Route path="/news/detail"  element={<Details/>}  /> */}
+            
+            {/* <Route path='/search/detail' element={<Details/>} /> */}
+            {/* <Route path="/activity"  element={loading?<Loading/>:<Activity/>}/> */}
+            {/* <Route path="/activity/detail"  element={<Details/>}/> */}
+            {/* <Route path="/create" element={loading?<Loading/>:<Create/>} /> */}
+            {/* <Route path="/message/detail" element={lazyload('Details', {type:'message'})} /> */}
+            {/* <Route path="/mysell/detail" element={lazyload('Details', {type:'mysell'})} /> */}
+            {/* <Route path="/notify"  element={<Notify/>} /> */}
+            {/* <Route path="/message"  element={loading?<Loading/>:<Message/>} /> */}
         </Routes>
       </Suspense>
       

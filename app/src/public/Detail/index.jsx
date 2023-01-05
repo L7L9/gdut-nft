@@ -46,7 +46,6 @@ class Detail extends Component {
     }
     returnextra = () => {
         const { markID } = this.props
-        console.log(markID);
         const { details } = this.state
         return markID === 'homedetail' ? <Button type='primary' disabled={details.left===0?true:false} onClick={this.buy}>购买</Button> :
             markID === 'messagedetail' ? <Button type='primary' onClick={this.showModal}>转赠</Button> :
@@ -204,7 +203,7 @@ class Detail extends Component {
         sessionStorage.setItem('index',index)
         sessionStorage.setItem('refresh',true)
         let details = JSON.parse(sessionStorage.getItem('currentdetail'))
-        if(JSON.parse(sessionStorage.getItem('search')) === true)details = JSON.parse(sessionStorage.getItem('searchdetails'))
+        // if(JSON.parse(sessionStorage.getItem('search')) === true)details = JSON.parse(sessionStorage.getItem('searchdetails'))
         setTimeout(()=>{this.setState({ details: details[index], spinning: false })},300)
     }
     slide = (index) => {
@@ -243,17 +242,17 @@ class Detail extends Component {
         startIndex=current!==null?
         (isrefresh==='true'?Number(current): startIndex):startIndex
         this.setState({ details: currentdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:currentdetails[startIndex].url,left:currentdetails[startIndex].left })
-        if (JSON.parse(sessionStorage.getItem('search')) === true) {
-            let searchdetails = JSON.parse(sessionStorage.getItem('searchdetails'))
-            items=[]
-            searchdetails.map(item => {
-                items.push({
-                    original: item.url,
-                })
-            })
-            console.log(startIndex);
-            this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:searchdetails[startIndex].url,left:searchdetails[startIndex].left })
-        }
+        // if (JSON.parse(sessionStorage.getItem('search')) === true) {
+        //     let searchdetails = JSON.parse(sessionStorage.getItem('searchdetails'))
+        //     items=[]
+        //     searchdetails.map(item => {
+        //         items.push({
+        //             original: item.url,
+        //         })
+        //     })
+        //     console.log(startIndex);
+        //     this.setState({ details: searchdetails[startIndex], items, startIndex, spinning: false, currentindex: startIndex,previewimage:searchdetails[startIndex].url,left:searchdetails[startIndex].left })
+        // }
     }
     componentWillUnmount() {
         sessionStorage.setItem('refresh', false)

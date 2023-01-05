@@ -9,7 +9,7 @@ import './index.css'
 const { Header, Footer, Sider, Content } = Layout;
 
 
-export default function Mynft() {
+export default function Create() {
   const navigate = useNavigate();
   const [value, setValue] = useState(true)
   const [nftfile, setNftfile] = useState([])

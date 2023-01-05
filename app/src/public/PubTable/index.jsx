@@ -80,7 +80,7 @@ class PubTable extends Component {
                 align: 'center',
                 key: 'x',
                 fixed:'right',
-                render: (value) => <Link to={this.returnpath()} state={{...value[0],index:value[1]}}><Button type='primary'>查看详情</Button></Link>,
+                render: (value) => <Link to={this.returnpath()} state={{...value[0],index:value[1],markID}}><Button type='primary'>查看详情</Button></Link>,
             }
         ]
         const activityextra = [
@@ -200,78 +200,6 @@ class PubTable extends Component {
         }
         
         if (preprops.name !== name || preprops.author !== author || preprops.value !== value) {
-            
-            // sessionStorage.setItem('search', JSON.stringify(true));
-            // if (name.trim() === '' && author.trim() === '') {
-            //     if (markID === 'nftsearch') {
-            //         this.setState({ loading: true })
-            //         nftModel.search(value).then((res) => {
-            //             let datasource = this.handledata(res)
-            //             changeloading(false)
-            //             this.setState({ data: datasource })
-            //             updatedata({ ...alldata, [markID]: res,currentdata:res })
-            //             sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //         })
-            //     }
-            //     else {
-            //         changeloading(true)
-            //         let datasource = this.handledata(alldata[markID])
-            //         updatedata({ ...alldata, currentdata:alldata[markID] })
-            //         this.setState({ data:datasource  })
-            //         setTimeout(() => { changeloading(false) }, 200)
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(alldata[markID]));
-            //     }
-                
-            // } else if (name.trim() === ''&&author.trim() !== '') {
-            //     changeloading(true)
-            //     markID !== 'activity' ?
-            //     nftModel.searchByAuthor(author).then((res) => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     }) : activityModel.searchByHost(author).then(res => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     })
-                
-            // } else if (name.trim() !== '' && author.trim() === '') {
-            //     changeloading(true)
-            //     markID !== 'activity' ?
-            //     nftModel.search(name).then((res) => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     }) : activityModel.search(name).then(res => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     })
-            // }
-            // else {
-            //     changeloading(true)
-            //     markID!=='activity'?nftModel.selectByAuthor(name,author).then((res) => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     }) : activityModel.selectByHost(name, author).then(res => {
-            //         updatedata({ ...alldata, currentdata:res })
-            //         let datasource = this.handledata(res)
-            //         changeloading(false)
-            //         this.setState({ data: datasource })
-            //         sessionStorage.setItem('searchdetails', JSON.stringify(res));
-            //     })
-            // }
             for (const key in value) {
                 if(value[key]===undefined)value[key]=null
             }

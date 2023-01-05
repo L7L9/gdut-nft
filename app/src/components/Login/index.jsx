@@ -11,7 +11,6 @@ const Login = () => {
             setTimeout(function () {
                 if (sessionStorage.getItem('islogin') == 'true') {
                     navigate('/GDUT-nft')
-                    console.log(123);
                 }
             },100)
         })

@@ -67,9 +67,9 @@ class Content extends Component {
     }
     nftsearch = () => {
         const { alldata, updatedata, value, changeloading } = this.props
-        console.log('search');
         changeloading(true)
         nftModel.search(value.name).then(res => {
+            console.log(res);
             updatedata({ ...alldata, nftsearch: res,currentdata:res });
             this.setState({ data:res })
             changeloading(false)
@@ -105,7 +105,7 @@ class Content extends Component {
     };
     handleCancel = () => this.setState({ isModalOpen: false });
     componentDidMount() {
-        const { markID,alldata, changeloading, updatedata,mykey } = this.props
+        const { markID,alldata, changeloading, updatedata } = this.props
         let timer
         markID === 'allnft' ?
             (this.props.refresh.home ? this.showallnft() :
@@ -184,10 +184,6 @@ class Content extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const { markID, value, alldata,changeloading,updatedata } = this.props
         if (snapshot) {
-            // markID === 'nftsearch'?this.nftsearch():
-            // markID === 'allnft' ? this.showallnft() :
-            // markID === 'mynft' ? this.showmynft() : 
-            // markID === 'activity' && value.trim() !== '' ? this.activitysearch() : this.showactivity()
             updatedata({ ...alldata, currentdata:undefined});
             if (markID === 'activity') {
                 changeloading(true)
@@ -261,7 +257,7 @@ class Content extends Component {
                     this.state.data.map((item,index) => {
                         return (
                             <div className="item" key={nanoid()} style={{height:this.returnheight()}}>  
-                            <Link to={this.returnpath()} state={{ ...item,index }} >
+                            <Link to={this.returnpath()} state={{ ...item,index,markID }} >
                                 <div className='imgbox'>
                                 <img src={item.url} />
                                 </div>
