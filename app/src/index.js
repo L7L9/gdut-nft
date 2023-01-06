@@ -1164,7 +1164,7 @@ const pageModel = {
                     amount:res[5],//发行nft数量
                     nftName:nftRes[0],//nft名字
                     nftDes: nftRes[1],//nft描述
-                    nftRest: nftRes[2]//该活动还剩余可被领取的nft数量
+                    nftRest: Number(nftRes[2])//该活动还剩余可被领取的nft数量
                 });
             }
             

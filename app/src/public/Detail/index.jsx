@@ -49,7 +49,7 @@ class Detail extends Component {
         const { details } = this.state
         return markID === 'homedetail' ? <Button type='primary' disabled={details.left===0?true:false} onClick={this.buy}>购买</Button> :
             markID === 'messagedetail' ? <Button type='primary' onClick={this.showModal}>转赠</Button> :
-            markID === 'activitydetail' ? <Button type='primary' onClick={this.showModal}>领取NFT</Button>:null
+            markID === 'activitydetail' ? <Button type='primary' disabled={details.nftRest===0?true:false} onClick={this.showModal}>领取NFT</Button>:null
     }
     returnHeader = () => {
         const { markID } = this.props
@@ -71,8 +71,9 @@ class Detail extends Component {
                     <>
                         <h4>活动描述</h4>
                         <p style={{color:'#959599'}}>{details.des}</p>    
-                        <h4>nft发行数量</h4>
-                        <p style={{color:'#959599'}}>{details.amount}</p>
+                        {/* <h4>nft发行数量</h4>
+                        <p style={{ color: '#959599' }}>{details.amount}</p> */}
+                        <h4>nft发行数量 :<span style={{ color: '#959599',marginLeft:'5px',marginRight:'20px' }}>{details.amount}</span>剩余数量 :<span style={{color:'#959599',marginLeft:'5px'}}>{details.nftRest}</span></h4>
                     </> :
                     <>
                         {markID !== 'nftsearch'?(details.left!==0 ?<h2 style={{ fontSize: '30px' }}>{`￥ ${details.price}`}</h2>:<Text italic style={{fontSize:'24px'}}>已售罄</Text>):<Text italic style={{fontSize:'24px'}}>非卖品</Text>}
@@ -146,18 +147,22 @@ class Detail extends Component {
         })
     }
     getnft = async () => {
-        const { refresh, changerefresh, markID } = this.props
-        const {details: { id }} =this.state
+        const { refresh, changerefresh } = this.props
+        const { details,currentindex } = this.state
         const {pass} = this.refs
         let password = pass.input.value;
         this.setState({confirmLoading:true})
-        await activityModel.getNFT(id, password)
+        await activityModel.getNFT(details.id, password)
         this.setState({open:false})
         this.setState({ confirmLoading: false })
+        let newdetails = JSON.parse(sessionStorage.getItem('currentdetail'))
+        newdetails[currentindex].nftRest -= 1
+        sessionStorage.setItem('currentdetail',JSON.stringify(newdetails))
+        this.setState({details:newdetails[currentindex]})
         // const str=markID === 'homedetail' ? 'home' :
         // markID === 'activitydetail' ? 'activity' :
         // markID === 'messagedetail' ? 'message' : null
-        changerefresh({...refresh,message:{mynft:true,mysell:refresh.message.mysell}})
+        changerefresh({...refresh,message:{mynft:true,mysell:refresh.message.mysell},activity:true})
     }
     showModal = () => {
         this.setState({open:true});

@@ -94,13 +94,17 @@ class Content extends Component {
         }
     };
     handleOk = async () => {
+        let { data: newdata } = this.state
         const { changerefresh,refresh } = this.props
         const { id } = this.state
         const { pass: { input} } = this.refs
         let password = input.value;
         message.loading('正在领取')
         await activityModel.getNFT(id, password)
-        this.setState({ isModalOpen: false })
+        newdata.map(item => {
+            if(item.id===id)item.nftRest=item.nftRest-1
+        })
+        this.setState({ isModalOpen: false,data:newdata })
         changerefresh({ ...refresh, message: {mynft:true,mysell:refresh.message.mysell} })
     };
     handleCancel = () => this.setState({ isModalOpen: false });
@@ -267,7 +271,7 @@ class Content extends Component {
                                 </div>
                             </Link>
                             <div style={{textAlign:'center'}}>
-                                {markID=='activity'?<Button type="dashed" onClick={this.showModal(item.id)}>领取NFT</Button>:null}    
+                                {markID=='activity'?<Button type="dashed" disabled={item.nftRest===0?true:false} onClick={this.showModal(item.id)}>领取NFT</Button>:null}    
                             </div>    
                         </div>
                     )

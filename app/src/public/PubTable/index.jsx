@@ -6,6 +6,7 @@ import {
     SketchOutlined
 } from '@ant-design/icons';
 import { Setdata } from '@/redux/actions/data'
+import { Refresh } from '@/redux/actions/refresh'
 import { Contentloading } from '@/redux/actions/contentloading'
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux'
@@ -14,12 +15,23 @@ import './index.css'
 
 class PubTable extends Component {
     state = { data: [], isModalOpen: false,id:'',value:'' }
-    handleOk = () => {
-        const { id } = this.state
+    handleOk = async() => {
+        const {refresh,changeloading,changerefresh}=this.props
+        const { id, data: newdata } = this.state
         const { pass: { input} } = this.refs
         let password = input.value;
-        activityModel.getNFT(id, password)
         this.setState({ isModalOpen: false })
+        changeloading(true)
+        await activityModel.getNFT(id, password)
+        newdata.map(item => {
+            if (item.detail[0].id === id) {
+                item.remain -= 1
+                item.detail[0].nftRest-=1
+            }
+        })
+        this.setState({ data: newdata })
+        changeloading(false)
+        changerefresh({...refresh,message:{mynft:true,mysell:refresh.message.mysell},activity:true})
     };
     handleCancel = () => this.setState({isModalOpen:false});
     returnpath = () => {
@@ -63,7 +75,7 @@ class PubTable extends Component {
             dataIndex: 'status',
             align: 'center',
             render: (value) =>
-                {return markID!=='nftsearch'?<Tag icon={value!==0?<FireOutlined />:<ClearOutlined />} color={value!==0?'success':'error'}>
+                {return markID!=='nftsearch'&&markID!=='mynft'?<Tag icon={value!==0?<FireOutlined />:<ClearOutlined />} color={value!==0?'success':'error'}>
                     {value!==0?'售卖中':'已售罄'}
                 </Tag>:<Tag icon={<SketchOutlined />} color='gold'>非卖品</Tag>}
             },
@@ -127,8 +139,8 @@ class PubTable extends Component {
                 fixed:'right',
                 render: (value) => <>
                     <Space>
-                        <Button type='primary' onClick={()=>{this.setState({ isModalOpen: true,id:value[0].id})}}>领取nft</Button>
-                        <Link to={this.returnpath()} state={{...value[0],index:value[1]}}><Button type='primary'>查看详情</Button></Link>
+                        <Button type='primary' disabled={value[0].nftRest===0?true:false} onClick={()=>{this.setState({ isModalOpen: true,id:value[0].id})}}>领取nft</Button>
+                        <Link to={this.returnpath()} state={{...value[0],index:value[1],markID}}><Button type='primary'>查看详情</Button></Link>
                     </Space>
                     
                 </>,
@@ -246,6 +258,7 @@ export default connect(
     state => ({alldata:state.data,refresh:state.refresh,contentloading:state.contentloading}),
     {
         updatedata: Setdata,
-        changeloading:Contentloading
+        changeloading: Contentloading,
+        changerefresh:Refresh
     }
 )(PubTable)
