@@ -98,10 +98,10 @@ class Content extends Component {
         const { id } = this.state
         const { pass: { input} } = this.refs
         let password = input.value;
-        message.loading('正在领取,1')
+        message.loading('正在领取')
         await activityModel.getNFT(id, password)
         this.setState({ isModalOpen: false })
-        changerefresh({ ...refresh, message: true })
+        changerefresh({ ...refresh, message: {mynft:true,mysell:refresh.message.mysell} })
     };
     handleCancel = () => this.setState({ isModalOpen: false });
     componentDidMount() {

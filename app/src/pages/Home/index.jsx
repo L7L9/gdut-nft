@@ -6,6 +6,7 @@ import { ArrowRightOutlined } from '@ant-design/icons';
 import Loading from '@/components/Loading';
 import { getmainColor } from '@/utils/getmainColor';
 import { Setdata } from '@/redux/actions/data'
+import { markID } from '@/utils/globalType';
 const { Title, Paragraph } = Typography;
 const { Sider, Content,Footer } = Layout;
 import './index.css'
@@ -58,7 +59,7 @@ class Home extends Component {
                                         <Title level={5} style={{marginTop:'10px'}}>商品描述</Title>
                                         <span style={{ color: '#959599' }}>{item.nftDes}</span>
                                     </Card>
-                                    <Link to='/GDUT-nft/news/detail' state={{ ...item,index }} style={{position:'absolute',bottom: '80px',zIndex:'99',width:'100%'}} ref='link'>
+                                    <Link to='/GDUT-nft/news/detail' state={{ ...item,index,markID:markID.allnft }} style={{position:'absolute',bottom: '80px',zIndex:'99',width:'100%'}} ref='link'>
                                         <Button type="primary" block style={{ height: '50px', borderRadius: '8px' }} icon={<ArrowRightOutlined />} >前往购买</Button>
                                     </Link>
                                 </Sider> 

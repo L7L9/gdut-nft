@@ -42,7 +42,7 @@ class Detail extends Component {
             this.setState({left:left-1,details:newdetails[currentindex]})
             this.setState({spinning:false})
         })
-        changerefresh({ ...refresh, home: true, message: true })
+        changerefresh({ ...refresh, home: true, message: {mynft:true,mysell:refresh.message.mysell} })
     }
     returnextra = () => {
         const { markID } = this.props
@@ -154,10 +154,10 @@ class Detail extends Component {
         await activityModel.getNFT(id, password)
         this.setState({open:false})
         this.setState({ confirmLoading: false })
-        const str=markID === 'homedetail' ? 'home' :
-        markID === 'activitydetail' ? 'activity' :
-        markID === 'messagedetail' ? 'message' : null
-        changerefresh({...refresh,str:true})
+        // const str=markID === 'homedetail' ? 'home' :
+        // markID === 'activitydetail' ? 'activity' :
+        // markID === 'messagedetail' ? 'message' : null
+        changerefresh({...refresh,message:{mynft:true,mysell:refresh.message.mysell}})
     }
     showModal = () => {
         this.setState({open:true});
